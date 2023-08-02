@@ -1,0 +1,31 @@
+container BBG
+{
+	unit<uint32> Overig_binnenwater 
+	:	DialogData  = "geometry_rd"
+	,	DialogType  = "Map"
+	,	StorageName = "='%LocalDataDir%/NLDB/BBG/bbg_2015_overig_binnenwater.fss'"
+	,	StorageReadOnly = "true"
+	,	FreeData = "false"
+	{
+		attribute<geometries/rdc>       geometry (poly);
+		// attribute<classifications/BBG>  BBG_code;
+		attribute<uint32>               IsMRAwater := rlookup(id(.), MRA_water_overlay/second_rel);
+		
+		unit<uint32> MRA_water_overlay := overlay_polygon(RegioIndelingen/PC6_vlakken/Subset/geometry[ipoint], geometry[ipoint]);
+		
+		unit<uint32> MRA_water := subset(IsDefined(IsMRAwater))
+		,	FreeData        = "false"
+		,	DialogType      = "map"
+		,	DialogData      = "geometry_rd"
+		{
+			attribute<geometries/rdc>       geometry_rd (poly) := ../geometry[nr_OrgEntity];
+			attribute<float32>              area  := area(geometry_rd, m2);
+			
+			unit<uint32> groot_water := subset(id(.) == 2072 || id(.) == 6495 || id(.) == 8160 || id(.) == 5366 || id(.) == 6211 || id(.) == 5571 || id(.) == 2062 || id(.) == 3042 || id(.) == 2810 || id(.) == 3180 || id(.) == 8103 || id(.) == 6866 || id(.) == 7334 || id(.) == 2950 || id(.) == 783 || id(.) == 6089 || id(.) == 8458 || id(.) == 4023 || id(.) == 8367 || id(.) == 8381 || id(.) == 7528 || id(.) == 8242 || id(.) == 7366 || id(.) == 8206 || id(.) == 7211 || id(.) == 5064 || id(.) == 6504 || id(.) ==  2414 || id(.) == 6087 || id(.) ==  6983 || id(.) == 3583 || id(.) == 4954 || id(.) == 7324 || id(.) == 8268)
+			{
+				attribute<geometries/rdc>       geometry_rd (poly) := ../geometry_rd[nr_OrgEntity];
+				parameter<ipoint> union (poly) := union_polygon(ipolygon(geometry_rd));
+			}
+		}
+	}
+}

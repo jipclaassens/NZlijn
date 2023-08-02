@@ -1,0 +1,68 @@
+container Analysis: Using = "Units;Classifications;geometries;sourceData/RegioIndelingen"
+{   
+	container NZ_accessibility_Analyse
+	{
+		
+		unit<uint32>      Orgs                              := /geometries/NL_grid/points_100m/Points_100m_Buurt;
+		
+		parameter<string> OrgSet                            := 'Point100m'; //'PC6sub_MRA' Buurtsub_MRA
+		parameter<uint32> Reistijd_grens                    := 30; //min
+		parameter<string> LISA_locaties_schaal              := '100m';
+		parameter<string> StudyArea                         := 'Amsterdam';
+		parameter<string> DestSet_string                    := 'LISA'; //' ARRA_100m LISA_100m LISA_500m' 'dest_PC4selectie'
+		parameter<string> Arrival_or_Departure_at_time      := 'Departure'; 
+		parameter<string> WegingWachttijdThuisVoortransport := '0'; //0= geen wachttijd thuis meenemen, 1= wel wachttijd meenemen.
+
+		unit<uint64> ReadReistijd_VoorOpening
+		: StorageName = "='%LocalDataDir%/NZLijn/OD_'+string(Reistijd_grens)+'min_W_OV_W_with_W_W_'+ModelParameters/Date_voorOpening+'_'+Arrival_or_Departure_at_time+'_ORG-'+Orgset+'_DEST-'+DestSet_string+'_SA-'+StudyArea+'_WT-'+string(WegingWachttijdThuisVoortransport)+'.gpkg'"
+		, StorageType = "gdal.vect"
+		, StorageReadOnly = "true";
+
+		unit<uint64> ReadReistijd_NaOpening
+		: StorageName = "='%LocalDataDir%/NZLijn/OD_'+string(Reistijd_grens)+'min_W_OV_W_with_W_W_'+ModelParameters/Date_NaOpeningOkt+'_'+Arrival_or_Departure_at_time+'_ORG-'+Orgset+'_DEST-'+DestSet_string+'_SA-'+StudyArea+'_WT-'+string(WegingWachttijdThuisVoortransport)+'.gpkg'"
+		, StorageType = "gdal.vect"
+		, StorageReadOnly = "true";
+			
+		container Results_points := Orgs
+		, FreeData = "false"
+		{
+			attribute<string>                label      (Orgs)                   := Orgs/label, DialogType = "LabelText";
+			
+			container Jobs_30min_Voor := 
+				for_each_nedv(
+					ModelParameters/MeasureMoments/Name
+					, 'union_data(orgs,ReadReistijd_VoorOpening/'+ModelParameters/MeasureMoments/Name+')'
+					, Orgs
+					, float32
+				);
+			container Jobs_30min_Na := 
+				for_each_nedv(
+					ModelParameters/MeasureMoments/Name
+					, 'union_data(orgs,ReadReistijd_NaOpening/'+ModelParameters/MeasureMoments/Name+')'
+					, Orgs
+					, float32
+				);
+				
+			attribute<float32>               Jobs_30min_spits_Voor    (Orgs)  := ='add('+AsList('Jobs_30min_Voor/'+ModelParameters/MeasureMoments/Name, ',')+') / #ModelParameters/MeasureMoments[float32]';
+			attribute<float32>               Jobs_30min_spits_Na      (Orgs)  := ='add('+AsList('Jobs_30min_Na/'+ModelParameters/MeasureMoments/Name, ',')+') / #ModelParameters/MeasureMoments[float32]';
+			
+			attribute<Job_diff>              Jobs_30min_spits_abs     (Orgs)  := classify((Jobs_30min_spits_Na - Jobs_30min_spits_Voor)[int32], classifications/Job_diff/Classes);
+			attribute<Job_diff_percentage>   Jobs_30min_spits_perc    (Orgs)  := classify((Jobs_30min_spits_Na - Jobs_30min_spits_Voor) / Jobs_30min_spits_Voor, classifications/Job_diff_percentage/Classes);
+			
+			container Grids 
+			{
+				attribute<int32>                 Spits_Voor       (NL_grid/domain)  := Jobs_30min_Spits_Voor[invert(orgs/per_grid)][int32];
+				attribute<int32>                 Spits_Na         (NL_grid/domain)  := Jobs_30min_Spits_Na[invert(orgs/per_grid)][int32];
+				
+				attribute<int32>                 diff_Spits_abs   (NL_grid/domain)  := Spits_Na - Spits_Voor;                                            //,   StorageName = "='%LocalDataDir%/OVGTFS/Results/OD_30min_DiffPiekAbs_W_OV_W_with_W_W_ORG-'+Orgset+'_DEST-'+DestSet_string+'_NETWERK-'+NetwerkExtent+'_SA-'+StudyArea+'_TRSFdist-'+string(TransferDistance)+'.tif'";
+				attribute<float32>               diff_Spits_perc  (NL_grid/domain)  := (Spits_Na[float32] - Spits_Voor[float32]) / Spits_Voor[float32]; //,   StorageName = "='%LocalDataDir%/OVGTFS/Results/OD_30min_DiffPiekAbs_W_OV_W_with_W_W_ORG-'+Orgset+'_DEST-'+DestSet_string+'_NETWERK-'+NetwerkExtent+'_SA-'+StudyArea+'_TRSFdist-'+string(TransferDistance)+'.tif'";
+
+				attribute<Jobs>                  Spits_Voor_class (NL_grid/domain)  := classify(Spits_Voor, classifications/Jobs/Classes);
+				attribute<Jobs>                  Spits_Na_class   (NL_grid/domain)  := classify(Spits_Na, classifications/Jobs/Classes);
+
+				attribute<Job_diff>              diff_Spits_abs_class  (NL_grid/domain)  := classify(diff_Spits_abs, classifications/Job_diff/Classes);
+				attribute<Job_diff_percentage>   diff_Spits_perc_class (NL_grid/domain)  := classify(diff_Spits_perc, classifications/Job_diff_percentage/Classes);
+			}
+		}
+	}
+}

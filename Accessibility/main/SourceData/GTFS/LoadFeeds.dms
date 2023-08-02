@@ -1,0 +1,246 @@
+container LoadFeeds : using = "classifications"
+{ 
+	parameter<bool>              storefss         := True, ExplicitSuppliers = "= AsList('impl/'+File_Structure/Name+'/CreateFSS/MakeFSS',';')";
+	unit<uint32>                 File_Structure   : NrOfRows = 9
+	{
+		attribute<string> Name: ['agency','calendar','calendar_dates','routes','shapes','stop_times','stops','transfers','trips'];
+	}
+	unit<uint32>                 Attribute_Structure   : NrOfRows = 26
+	{
+		attribute<string> Name: ['stop_id','stop_lat','stop_lon','stop_name','route_id','route_type','route_short_name','route_long_name','trip_id','route_id','service_id','stop_sequence','departure_time','arrival_time','monday','tuesday','wednesday','thursday','friday','saturday','sunday','start_date','end_date','date','exception_type','wheelchair_boarding'];
+	}
+	
+	
+	container impl := 
+		for_each_ne(
+			File_Structure/Name
+			, 'Templates/LoadCSVThroughGDAL(File_Structure,'+string(id(File_Structure))+')'
+		);
+	
+	container ReadFSS := 
+		for_each_ne(
+			File_Structure/Name
+			, 'ReadFSS_T(File_Structure,'+string(id(File_Structure))+')'
+		);
+	
+	Template ReadFSS_T
+	{
+		unit<uint32> File_Structure;
+		parameter<File_Structure> inFile;
+		
+		container read_domain
+		: StorageName = "= '%SourceDataDir%/GTFS/data/_feeds/'+ModelParameters/GTFS_FileDate+'/fss/'+File_Structure/Name[inFile]+'_domain.fss'"
+		, StorageReadOnly = "True"
+		{
+			unit<uint32> domain;
+		}
+		
+		container data := 
+			for_each_ndv(
+				Attribute_Structure/name
+				, read_domain/domain
+				, string
+			)
+		, StorageName = "= '%SourceDataDir%/GTFS/data/_feeds/'+ModelParameters/GTFS_FileDate+'/fss/'+File_Structure/Name[inFile]+'.fss'"
+		, StorageReadOnly = "True";
+	}
+	
+	unit<uint32> protoStops := ReadFSS/Stops/read_domain/domain
+	, DialogData = "point"
+	, DialogType = "map" 
+	{
+		attribute<float64>  stop_lat   := float64(ReadFSS/Stops/data/stop_lat);
+		attribute<float64>  stop_lon   := float64(ReadFSS/Stops/data/stop_lon);
+		attribute<float64>  wheelchair_boarding   := float64(ReadFSS/Stops/data/wheelchair_boarding);
+		attribute<string>	stop_id	   := ReadFSS/Stops/data/stop_id;
+		attribute<string>   stop_name  := ReadFSS/Stops/data/stop_name;
+		attribute<dpoint>   point_wgs  := point(float64(stop_lon), float64(stop_lat), geometries/wgs84_base);
+		attribute<fpoint>   point_rd   := LatLongWgs842RD(point_wgs[fpoint], rdc);
+		attribute<rdc>      point      := point_rd;
+		attribute<string>   LabelText  := stop_name;
+		attribute<bool>     StopUsed   := (any(AllStopTimes/SelToday, AllStopTimes/pStopRef) || any(AllStopTimes/SelYesterday, AllStopTimes/pStopRef));
+		attribute<geometries/selection_polygon>        StudyArea_rel := point_in_polygon(point, /geometries/selection_polygon/polygon);
+		attribute<bool>     InStudyArea   	:= IsDefined(StudyArea_rel);
+		attribute<bool>		TripInStudyArea	:= any(AllStopTimes/TripInStudyArea && (AllStopTimes/SelToday || AllStopTimes/SelYesterday), AllStopTimes/pStopRef);
+	}
+	unit<uint32> Stops := subset(protoStops/StopUsed && protoStops/TripInStudyArea)
+	, DialogData = "point"
+	, DialogType = "map" 
+	{  
+		attribute<string>           stop_name           := protoStops/stop_name[Nr_OrgEntity];
+		attribute<string>           stop_id             := protoStops/stop_id[Nr_OrgEntity];
+		attribute<rdc>              point               := protoStops/point[Nr_OrgEntity];
+		attribute<float64>          wheelchair_boarding := protoStops/wheelchair_boarding[Nr_OrgEntity];
+		
+		attribute<string>           LabelText       := stop_name, DialogType = "LabelText";
+		attribute<uint32>           NrTripsPerDay   := pcount(LoadFeeds/AllStopTimes/seltoday ? LoadFeeds/AllStopTimes/StopRef : (0/0)[Stops]);
+		attribute<ModesList/List_selectie>   Mode            := modus(LoadFeeds/AllStopTimes/Mode, LoadFeeds/AllStopTimes/StopRef);
+		
+	}
+	
+	unit<uint32> ScheduledLinks := union_unit(AllStopTimes/Yesterday/Links, AllStopTimes/Today/Links)
+	, DialogData = "Line"
+	, DialogType = "map" 
+	{
+		attribute<rdc>       Line (arc) := union_data(., AllStopTimes/Yesterday/Links/Line, 		AllStopTimes/Today/Links/Line);
+		attribute<Stops>     fromStop   := union_data(., AllStopTimes/Yesterday/Links/fromStop, 	AllStopTimes/Today/Links/fromStop);
+		attribute<Stops>     toStop     := union_data(., AllStopTimes/Yesterday/Links/toStop, 		AllStopTimes/Today/Links/toStop);
+		attribute<Time>      depTime    := union_data(., AllStopTimes/Yesterday/Links/depTime, 	AllStopTimes/Today/Links/depTime);
+		attribute<Time>      arrTime    := union_data(., AllStopTimes/Yesterday/Links/arrTime, 	AllStopTimes/Today/Links/arrTime);
+		attribute<uint32>    TripRef    := union_data(., AllStopTimes/Yesterday/Links/TripRef,  	AllStopTimes/Today/Links/TripRef);
+		attribute<ModesList/List_selectie>     Mode       := Trips/Mode[TripRef];
+		attribute<string>     RouteName       := Trips/RouteName[TripRef];
+	}
+	
+	container DateSelection      := Templates/doDateSelection(ReadFSS, Services);
+	
+	unit<uint32> Calendar        := DateSelection/Calendar; 
+	unit<uint32> Calendar_dates  := DateSelection/Calendar_dates;
+	
+	unit<uint32> Services := unique(Trips/service_id)
+	{
+		attribute<uint32>  Today_exc     := sum(Calendar_dates/Today * Calendar_dates/nType, Calendar_dates/ServicesRef);
+		attribute<uint32>  Yesterday_exc := sum(Calendar_dates/Yesterday * Calendar_dates/nType, Calendar_dates/ServicesRef);
+	}
+	
+	unit<uint32> Routes := ReadFSS/Routes/read_domain/domain
+	, DialogType = "map"
+	{
+		attribute<string> route_id   := ReadFSS/Routes/data/route_id;
+		attribute<string> route_type := ReadFSS/Routes/data/route_type;
+		attribute<bool>	  nzl        := uint32(ReadFSS/Routes/data/route_short_name) = 52;
+		attribute<string> route_long_name := ReadFSS/Routes/data/route_long_name;
+		attribute<string> route_short_name := ReadFSS/Routes/data/route_short_name;
+		
+		attribute<string> route_name      := route_short_name+ ' ' +route_long_name;
+	}
+	
+	// unit<uint32> Transfers  := LoadCsvs/Transfers/refdomain
+	// , FreeData = "false"
+	// {
+		// attribute<string>   from_stop_id      := LoadCsvs/Transfers/dataLink/from_stop_id;
+		// attribute<string>   to_stop_id        := LoadCsvs/Transfers/dataLink/to_stop_id;
+		// attribute<string>   from_route_id     := LoadCsvs/Transfers/dataLink/from_route_id;
+		// attribute<string>   to_route_id       := LoadCsvs/Transfers/dataLink/to_route_id;
+		// attribute<string>   from_trip_id      := LoadCsvs/Transfers/dataLink/from_trip_id;
+		// attribute<string>   to_trip_id        := LoadCsvs/Transfers/dataLink/to_trip_id;
+		// attribute<string>   transfer_type     := LoadCsvs/Transfers/dataLink/transfer_type;
+	// }
+	
+	unit<uint32> Trips  := ReadFSS/Trips/read_domain/domain
+	{
+		attribute<string>   trip_nr       := string(id(.));
+		attribute<string>   trip_id       := ReadFSS/Trips/data/trip_id;
+		attribute<string>   route_id      := ReadFSS/Trips/data/route_id;
+		attribute<string>   service_id    := ReadFSS/Trips/data/service_id;
+		attribute<Routes>   RouteRef      := rlookup(route_id, Routes/route_id);
+		attribute<string>   RouteName     := Routes/route_name[RouteRef];
+		attribute<ModesList/List_selectie>    Mode          := rlookup(uint32(Routes/route_type)[RouteRef], ModesList/List_selectie/ModeNr);
+		attribute<Calendar> CalendarRef   := rlookup(service_id, Calendar/service_id);
+		attribute<Services> ServicesRef   := rlookup(service_id, Services/Values);
+		attribute<bool>     act_today     := = 'bool(Calendar/'+Weekdays/Name[ModelParameters/Today]+'[CalendarRef]) && Calendar/Today_in_daterange[CalendarRef]';
+		attribute<bool>     act_yesterday := = 'bool(Calendar/'+Weekdays/Name[ModelParameters/Yesterday]+'[CalendarRef]) && Calendar/Yesterday_in_daterange[CalendarRef]';
+		attribute<bool>     sel_today     := (act_today && !Services/Today_exc[ServicesRef] = 2) || (Services/Today_exc[ServicesRef] = 1);
+		attribute<bool>     sel_yesterday := (act_yesterday && !Services/Yesterday_exc[ServicesRef] = 2) || (Services/Yesterday_exc[ServicesRef] = 1);
+		attribute<bool>		inStudyArea   := any(AllStopTimes/StopinStudyArea, AllStopTimes/TripRef);
+		attribute<Trips_x_order_uq> first_txo:= min_index(Trips_x_order_uq/ord, Trips_x_order_uq/trip_rel);
+	}
+	
+	unit<uint32> Trips_x_order_uq := unique(AllStopTimes/Trip_x_Ordinal) 
+	{
+		attribute<Trips>  trip_rel:= pointRow(Values)[Trips];
+		attribute<uint32> ord     := pointCol(Values);
+	}
+	
+	unit<uint32> AllStopTimes := ReadFSS/Stop_times/read_domain/domain
+	{
+		attribute<Trips>            TripRef         := rlookup(ReadFSS/Stop_times/data/trip_id, Trips/trip_id);
+		attribute<bool>             SelToday        := Trips/sel_today[TripRef];
+		attribute<bool>             SelYesterday    := Trips/sel_yesterday[TripRef] && (Time/Day[departureTime/TimesVector/TimeRef] > 0);
+		attribute<protoStops>       pStopRef        := rlookup(ReadFSS/Stop_times/data/stop_id, protoStops/stop_id);
+		attribute<bool>             StopinStudyArea	:= protoStops/inStudyArea[pStopRef];
+		attribute<bool>             TripInStudyArea	:= Trips/inStudyArea[TripRef];
+		
+		attribute<ModesList/List_selectie>   Mode            := Trips/Mode[TripRef];
+		attribute<ModesList/List_selectie>   Mode_perstop    := modus(Mode, StopRef)[StopRef];
+		
+		attribute<string>           stop_id         := ReadFSS/Stop_times/data/stop_id;
+		attribute<Stops>            StopRef         := rlookup(ReadFSS/Stop_times/data/stop_id, Stops/stop_id);
+		attribute<uint32>           Ordinal         := uint32(ReadFSS/Stop_times/data/stop_sequence);
+		 
+		attribute<upoint>           Trip_x_Ordinal  := point(Ordinal, TripRef, upoint);
+		attribute<Trips_x_order_uq> txo_uq_rel      := rlookup(Trip_x_Ordinal, Trips_x_order_uq/Values);
+		attribute<uint32>           ordered_ord     := txo_uq_rel - Trips/first_txo[TripRef];
+		
+		attribute<upoint>           ThisStopUni     := point(TripRef, ordered_ord, upoint);
+		attribute<upoint>           NextStopUni     := point(TripRef, ordered_ord+1, upoint);
+		attribute<upoint>           PrevStopUni     := point(TripRef, ordered_ord-1, upoint);
+		attribute<AllStopTimes>     NextStopId      := rlookup(NextStopUni, ThisStopUni);
+		attribute<AllStopTimes>     PrevStopId      := rlookup(PrevStopUni, ThisStopUni);
+		attribute<rdc>         FromPoint       := Stops/point[StopRef];
+		attribute<rdc>         NextPoint       := Stops/point[StopRef[NextStopId]];
+		attribute<rdc>         PrevPoint       := Stops/point[StopRef[PrevStopId]];
+		attribute<bool>             EndPoint        := IsNull(NextStopId);
+		
+		container departureTime := getTimes(AllStopTimes,ReadFSS/Stop_times/data/departure_time);
+		container arrivalTime   := getTimes(AllStopTimes,ReadFSS/Stop_times/data/arrival_time);
+	
+		container Yesterday 
+		{
+			unit<uint32> Links := subset(SelYesterday && !EndPoint && TripInStudyArea)
+			{
+				attribute<rdc> FromPoint: 			expr = "AllStopTimes/FromPoint[Nr_OrgEntity]";
+				attribute<rdc> ToPoint:			expr = "AllStopTimes/NextPoint[Nr_OrgEntity]";
+				attribute<rdc>	Line (arc):			expr = "points2sequence(GenLines/Points,GenLines/Seq,GenLines/Ord)";
+				attribute<Trips>	TripRef:			expr = "AllStopTimes/TripRef[Nr_OrgEntity]";
+				attribute<Stops> 	fromStop:			expr = "AllStopTimes/StopRef[Nr_OrgEntity]";
+				attribute<Stops>	toStop:				expr = "AllStopTimes/StopRef[NextStopId[Nr_OrgEntity]]";
+				attribute<Time> 	depTime: 			expr = "departureTime/TimesVector/TimeRef[Nr_OrgEntity] - (24*60*60)";
+				attribute<Time> 	arrTime: 			expr = "arrivalTime/TimesVector/TimeRef[NextStopId[Nr_OrgEntity]] - (24*60*60)";
+			}
+			unit<uint32> GenLines: 	expr = "union_unit(Links, Links)" 
+			{
+				attribute<rdc> 		Points:		expr = "union_data(., Links/FromPoint, Links/ToPoint)";
+				attribute<Links>			Seq:		expr = "union_data(., id(Links), id(Links))";
+				attribute<uint32> 			Ord:		expr = "union_data(., const(0,Links,uint32), const(1,Links,uint32))";
+			}
+		}
+		container Today  
+		{
+			unit<uint32> Links: expr = "subset(SelToday && !EndPoint && TripInStudyArea)" 
+			{
+				attribute<rdc> FromPoint: 			expr = "AllStopTimes/FromPoint[Nr_OrgEntity]";
+				attribute<rdc> ToPoint:			expr = "AllStopTimes/NextPoint[Nr_OrgEntity]";
+				attribute<rdc>	Line (arc):			expr = "points2sequence(GenLines/Points,GenLines/Seq,GenLines/Ord)";
+				attribute<Trips>	TripRef:			expr = "AllStopTimes/TripRef[Nr_OrgEntity]";
+				attribute<Stops> 	fromStop:			expr = "AllStopTimes/StopRef[Nr_OrgEntity]";
+				attribute<Stops>	toStop:				expr = "AllStopTimes/StopRef[NextStopId[Nr_OrgEntity]]";
+				attribute<Time> 	depTime: 			expr = "departureTime/TimesVector/TimeRef[Nr_OrgEntity]";
+				attribute<Time> 	arrTime: 			expr = "arrivalTime/TimesVector/TimeRef[NextStopId[Nr_OrgEntity]]";
+			}
+			unit<uint32> GenLines: 	expr = "union_unit(Links, Links)" 
+			{
+				attribute<rdc> 		Points:		expr = "union_data(., Links/FromPoint, Links/ToPoint)";
+				attribute<Links>			Seq:		expr = "union_data(., id(Links), id(Links))";
+				attribute<uint32> 			Ord:		expr = "union_data(., const(0,Links,uint32), const(1,Links,uint32))";
+			}
+		}
+	}
+	
+	Template getTimes 
+	{
+		unit<uint32> inVector;
+		attribute<string> TimesString (inVector);
+		
+		unit<uint32> TimesVector := inVector
+		{
+			attribute<uint32>		hour_sep:	expr = "strpos(TimesString, ':')";
+			attribute<uint32>		sec_sep := strrpos(TimesString, ':');
+			attribute<uint32> 		hour:		expr = "uint32(substr(TimesString, 0, hour_sep))";
+			attribute<uint32>		min:		expr = "uint32(substr(TimesString, hour_sep + 1, sec_sep - hour_sep - 1))";
+			attribute<uint32>		sec:		expr = "uint32(substr(TimesString, sec_sep + 1, 2))";
+			attribute<uint32>		hoursyst:	expr = "hour <= max(Time/Hour) ? hour : hour - max(Time/Hour)";
+			attribute<Time>			TimeRef:	expr = "((hoursyst * 60 * 60) + (min * 60) + sec)[Time]";
+		}
+	}
+}

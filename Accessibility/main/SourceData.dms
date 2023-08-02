@@ -1,0 +1,43 @@
+container SourceData: Using = "Units;Classifications;geometries"
+{     
+	
+	
+	#include<GTFS.dms>
+	#include<lisa.dms>
+	#include<arra.dms>
+	#include<RegioIndelingen.dms>
+	#include<BBG.dms>
+	#include<OSM.dms>
+	#include<Infrastructuur.dms>
+	
+	// unit<uint32> Inwoners 
+	// :	StorageName     = "%SourceDataDir%/CBS/CBSVierkanten/CBS_vierkanten_inwoner2017.shp"
+	// ,	StorageType     = "gdal.vect"
+	// ,	StorageReadOnly = "True"
+	// ,	SyncMode = "None"
+	// , 	FreeData = "False"
+	// ,	DialogData = "geometry"
+	// ,	DialogType = "map"
+	// {
+		// attribute<geometries/rdc>   geometry;
+		// attribute<uint32>           nr_inwoners  := INWONER201[uint32];
+		// attribute<uint32>           INWONER201;
+		// attribute<.>                pc4_rel      := point_in_polygon(geometry, RegioIndelingen/PC4_vlakken/Geometry);
+		// attribute<.>                pc6_rel      := point_in_polygon(geometry, RegioIndelingen/PC6_vlakken/Geometry);
+		// attribute<.>                buurt_rel    := point_in_polygon(geometry, RegioIndelingen/Buurten/Geometry);
+		// attribute<.>                buurtsub_rel := point_in_polygon(geometry, RegioIndelingen/Buurten/Subset/Geometry);
+		
+		// attribute<.>                StudyArea_rel := point_in_polygon(geometry, /geometries/selection_polygon_MRA/polygon);
+		
+		// unit<uint32> HeeftInwoners := subset(IsDefined(StudyArea_rel) && nr_inwoners > 0)
+		// {  
+			// attribute<geometries/rdc>   point        := ../geometry[nr_OrgEntity];
+			// attribute<uint32>           nr_inwoners  := ../nr_inwoners[nr_OrgEntity];
+			// attribute<string>           name         := 'd' + string(id(.));
+			// attribute<NL_grid/domain>   NL_grid_domain_100m_rel := point[NL_grid/domain];
+			// attribute<uint32>           sum_inwoners_per_grid_100m  (NL_grid/domain)   := sum(nr_inwoners, NL_grid_domain_100m_rel);
+			// attribute<uint32>           HeeftBanen_grid_100m     (NL_grid/domain)   := sum_inwoners_per_grid_100m > 0 ? sum_inwoners_per_grid_100m : (0/0);
+		// }
+	// }
+	
+}

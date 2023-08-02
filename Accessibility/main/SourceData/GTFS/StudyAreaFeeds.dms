@@ -1,0 +1,119 @@
+container StudyAreaFeeds : using = "classifications"
+{
+	unit<uint32> Stops := LoadFeeds/Stops
+	, DialogData = "point"
+	, DialogType = "map" 
+	{
+		attribute<rdc> point       := LoadFeeds/Stops/point;
+		attribute<uint32>	orgStopId   := id(LoadFeeds/Stops);
+		attribute<uint32> 	feedId      := const(0, LoadFeeds/Stops, uint32);
+		attribute<upoint>	uni_StopId  := point(feedId, orgStopId, upoint);
+		attribute<string>	Name        := LoadFeeds/Stops/stop_name;
+		attribute<string> 	LabelText   := Name, DialogType = "LabelText";
+		attribute<m>        Dist2IC     := rjoin(point, uq_points/values, DefineICstations/dist);
+		
+		unit<uint32> uq_points := unique(point)
+		{
+			attribute<float32>  x           := PointCol(values);
+			attribute<float32>  y           := PointRow(values);
+		}
+		
+		container DefineICstations 
+		{
+			unit<uint32>                IC_dom                  :=  SourceData/Infrastructuur/IC_Stations/uq;
+			attribute<rdc>         geometry  (IC_dom)      := IC_dom/Geometry;
+			attribute<float32>          x         (IC_dom)      := PointCol(geometry);
+			attribute<float32>          y         (IC_dom)      := PointRow(geometry);
+			
+			attribute<uint32>           point_rel (uq_points)       := connect(geometry, uq_points/values);
+
+			attribute<float32>          x_targetdomain (uq_points)  := PointCol(geometry)[point_rel];
+			attribute<float32>          y_targetdomain (uq_points)  := PointRow(geometry)[point_rel];
+			attribute<float32>          delta_x (uq_points)         := abs(x_targetdomain - uq_points/x)^2f;
+			attribute<float32>          delta_y (uq_points)         := abs(y_targetdomain - uq_points/y)^2f;
+
+			attribute<m>                dist (uq_points)            := sqrt(delta_x + delta_y)[m];
+		}
+		
+		container ModesServed := 
+			for_each_nedv(
+				AvailableModes/Name
+				, 'sum(uint32(Links/Mode = '+string(AvailableModes/Values)+'), Links/FromStop) + sum(uint32(Links/Mode = '+string(AvailableModes/Values)+'), Links/ToStop)'
+				, Stops
+				, uint32
+			)
+		{
+			attribute<uint32> Total (Stops) := ='add('+AsItemList(AvailableModes/Name)+')';
+		}
+		
+		attribute<StopsGrid> GridId       := point[StopsGrid];
+		attribute<uint32>    Grid1D       := StopsGrid/uniId[GridId];
+		attribute<uint32>    cumu_in_grid := cumulate(const(1,.,uint32), GridId) - 1;
+		attribute<upoint>    unique_id    := point(cumu_in_grid, Grid1D, upoint);
+		attribute<uint32>    nTransfers   := StopsGrid/nTransfers[GridId];
+		
+		unit<spoint> StopsGrid := MakeStopsGrid/StopsGrid
+		{
+			attribute<uint32> nStops     := pcount(GridId);
+			attribute<uint32> nTransfers := nTop + nRight + nBottom + nLeft + (nStops - 1);
+			attribute<uint32> nTop       := potential(float32(nStops), float32(Templates/Neighbourhood/Top))[uint32];
+			attribute<uint32> nRight     := potential(float32(nStops), float32(Templates/Neighbourhood/Right))[uint32];
+			attribute<uint32> nBottom    := potential(float32(nStops), float32(Templates/Neighbourhood/Bottom))[uint32];
+			attribute<uint32> nLeft      := potential(float32(nStops), float32(Templates/Neighbourhood/Left))[uint32];
+			attribute<uint32> uniId      := cumulate(const(1,.,uint32))-1;
+		}
+		
+		container MakeStopsGrid 
+		{
+			parameter<rdc> bottomleft := point(min(pointCol(point)), min(PointRow(point)), rdc);
+			parameter<rdc>	upperright := point(max(pointCol(point)), max(PointRow(point)), rdc);
+			parameter<rdc>	resolution := point((ModelParameters/MaxTransferDistKm) * 0.5f, (ModelParameters/MaxTransferDistKm) * 0.5f, rdc);
+			parameter<spoint>   size       := spoint((upperright - bottomleft) / resolution) + point(1s, 1s, spoint);
+		
+			unit<spoint> StopsGrid := range(gridset(rdc, resolution, bottomleft, wpoint), point(0s, 0s), size)
+			{
+			}
+		}
+	}
+	
+	unit<uint32> StopsIC := subset(Stops/Dist2IC < 200[m])
+	, DialogData = "point"
+	, DialogType = "map" 
+	{
+		attribute<rdc> point       := Stops/point[nr_OrgEntity];
+		attribute<uint32>	orgStopId   := Stops/orgStopId[nr_OrgEntity];
+		attribute<uint32> 	feedId      := Stops/feedId[nr_OrgEntity];
+		attribute<upoint>	uni_StopId  := Stops/uni_StopId[nr_OrgEntity];
+		attribute<string>	Name        := Stops/Name[nr_OrgEntity];
+		attribute<string> 	LabelText   := Stops/LabelText[nr_OrgEntity], DialogType = "LabelText";
+		
+		attribute<uint32>   Stops_rel   := nr_OrgEntity;
+	}
+	
+	unit<uint32> Links := LoadFeeds/ScheduledLinks
+	, DialogData = "Line"
+	, DialogType = "map" 
+	{
+		attribute<rdc>	Line (arc):			 = LoadFeeds/ScheduledLinks/Line;
+		attribute<uint32>	feedId:				 = const(0, LoadFeeds/ScheduledLinks, uint32);
+		attribute<uint32> 	OrgfromStop:		 = LoadFeeds/ScheduledLinks/fromStop;
+		attribute<uint32>	OrgtoStop:			 = LoadFeeds/ScheduledLinks/toStop;
+		attribute<Time> 	depTime: 			 = LoadFeeds/ScheduledLinks/depTime;
+		attribute<Time> 	arrTime: 			 = LoadFeeds/ScheduledLinks/arrTime;
+		attribute<ModesList/List_selectie> 	Mode:				 = LoadFeeds/ScheduledLinks/Mode;
+		attribute<Stops>	FromStop:			 = rlookup(uni_fStopId, Stops/uni_StopId);
+		attribute<Stops>	ToStop:				 = rlookup(uni_tStopId, Stops/uni_StopId);
+		attribute<upoint>	uni_fStopId:		 = point(feedId, OrgfromStop, upoint);
+		attribute<upoint>	uni_tStopId:		 = point(feedId, OrgtoStop, upoint);	
+		attribute<AvailableModes>	avMode_id:	 = rlookup(Mode, AvailableModes/Values);
+		attribute<uint32>    TripRef    := LoadFeeds/ScheduledLinks/TripRef;
+		attribute<string>    RouteName    := LoadFeeds/ScheduledLinks/RouteName;
+	}
+	
+	unit<uint32> AvailableModes:	 = unique(Links/Mode) 
+	{
+		attribute<string> Name: 	 = ModesList/List_selectie/Name[Values];
+		attribute<uint32> NrLinks:	 = pcount(Links/avMode_id);
+	}
+	
+}

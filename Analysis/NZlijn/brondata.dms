@@ -1077,7 +1077,7 @@ container Brondata : using = "eenheden;geography;typeringen"
 		}
 		
 		unit<uint32> Stadsdelen
-		:  StorageName = "%ProjDir%/Data/borders/stadsdelen_2010.shp"
+		:  StorageName = "%ProjDir%/Data/stadsdelen_2010.shp"
 		,  StorageType = "gdal.vect"
 		,	StorageReadOnly = "True"
 		{

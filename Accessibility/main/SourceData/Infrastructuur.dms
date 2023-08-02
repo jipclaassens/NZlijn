@@ -1,0 +1,69 @@
+container Infrastructuur
+{
+	unit<uint32> IC_Stations
+	: StorageName = "%SourceDataDir%/SpatialData/IC_Stations_2019.fss"
+	, StorageReadOnly = "true"
+	, DialogData = "geometry"
+	, DialogType = "map"
+	{
+		attribute<geometries/rdc>     geometry;
+		attribute<string>             label : DialogType = "LabelText";
+		
+		unit<uint32> uq := unique(geometry)
+		{
+			attribute<geometries/rdc>     geometry := values;
+		}
+	}
+
+
+	unit<uint32> Read_TramMetroLijnen_shape 
+	: StorageName = "%SourceDataDir%/Overig/TRAMMETRO_LIJNEN_2020.shp"
+	, StorageType = "gdal.vect"
+	, StorageReadOnly = "True"
+	, DialogData = "geometry_rd"
+	, DialogType = "map" 
+	, SyncMode = "none"
+	{
+		attribute<dpoint>     geometry (arc);
+		attribute<CoordSys>   geometry_rd (arc) := LatLongWgs842RD(geometry[fpoint], CoordSys);
+		attribute<int32>      lijn;
+		
+		unit<uint32> Metro52 := subset(lijn == 52i || id(.) == 81)
+		{
+			attribute<CoordSys>   geometry_rd (arc) := ../geometry_rd[nr_OrgEntity];
+		}
+	}
+
+	unit<uint32> Read_TramMetroStations_shape 
+	: StorageName = "%SourceDataDir%/Overig/TRAMMETRO_PUNTEN_2020.shp"
+	, StorageType = "gdal.vect"
+	, StorageReadOnly = "True"
+	, DialogData = "geometry_rd"
+	, DialogType = "map" 
+	, SyncMode = "none"
+	{
+		attribute<dpoint>     geometry ;
+		attribute<CoordSys>   geometry_rd  := LatLongWgs842RD(geometry[fpoint], CoordSys);
+		attribute<string>     Modaliteit;
+		attribute<string>     Lijn;
+		attribute<string>     naam : DialogType = "LabelText";
+		attribute<bool>       IsLijn52     := IsDefined(strpos(Lijn, '52'));
+		
+		unit<uint32> Lijn52_src  := Subset(IsLijn52)
+		, SyncMode = "None"
+		,	DialogData = "geometry"
+		,	DialogType = "map"
+		{
+			attribute<CoordSys>        geometry   := ../geometry_rd[nr_OrgEntity];
+			attribute<string>          naam       := ../naam[nr_OrgEntity], DialogType = "LabelText";
+		}
+		
+		unit<uint32> Lijn52  := unique(Lijn52_src/geometry)
+		,	DialogData = "geometry"
+		,	DialogType = "map"
+		{
+			attribute<CoordSys>        geometry   := values;
+			attribute<string>          naam       := replace(rjoin(values, Lijn52_src/geometry, Lijn52_src/naam),'Vijzelgracht /Weteringcircuit','Vijzelgracht'), DialogType = "LabelText";
+		}
+	}
+}

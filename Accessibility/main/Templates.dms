@@ -1,0 +1,229 @@
+container Templates: Using = "Units;Classifications"
+{  
+	#include <netwerk.dms>
+	
+	Template createNetwork : using = "geometries"
+	{
+		unit<uint32>      inStart;
+		unit<uint32>      inEind;
+		unit<uint32>      Roads;
+		parameter<string> TravelMode;
+		parameter<string> Direction;
+		////
+		parameter<min_f> MaxDistSelectie_min := ='ModelParameters/Max'+TravelMode+'Time_'+Direction;
+		parameter<s_f>   MaxDistSelectie_sec := convert(MaxDistSelectie_min, s_f);
+		
+		unit<uint32> points := TiledUnit(25000[union_unit(inStart, inEind)])
+		{
+			attribute<rdc>    geometry               := union_data(., inStart/point, inEind/point);
+			attribute<string> Name                   := union_data(., inStart/name , inEind/name), DialogType = "LabelText";
+		}
+		
+		unit<uint32> Lines := Roads
+		{
+			attribute<rdc>        geometry (arc) := Roads/geometry;
+			attribute<float32>    length         := arc_length(geometry, m);
+			parameter<string>     speed_str      := 'const(ModelParameters/WalkingSpeed_kmhr,.)';
+			attribute<km_hr>      speed          := =speed_str;
+		}
+		
+		unit<uint32> Network := connect(Lines/geometry, points/geometry)
+		{
+			attribute<rdc>      geometry (arc)      := UnionData;
+			attribute<rdc>      fromPoint           := first_point(geometry);
+			attribute<rdc>      toPoint             := last_point(geometry);
+			attribute<km_hr>    speed               := Lines/speed[nr_OrgEntity];
+			attribute<m_s>      speed_ms            := convert(speed, m_s);
+			attribute<m>        Length              := arc_length(geometry, m);
+			attribute<s_f>      Seconds             := MakeDefined(Length / speed_ms, 1[s_f]);
+			attribute<s_f>      Duration            := Seconds;
+			// attribute<s_f>      Duration            := MakeDefined(Length / speed_ms, 1[s_f]);
+			unit<uint32>        PointSet            := union_unit(Network, Network)
+			{
+				attribute<rdc>  points              := union_data(.,fromPoint,toPoint);
+			}
+			
+			unit<uint32>        NodeSet             := unique(PointSet/points);
+			
+			attribute<NodeSet>  F1                  := rlookup(fromPoint,NodeSet/Values);
+			attribute<NodeSet>  F2                  := rlookup(toPoint,NodeSet/Values);
+			
+			attribute<NodeSet>  org_node (inStart)  := rlookup(inStart/point, NodeSet/Values);
+			attribute<NodeSet>  dst_node (inEind)   := rlookup(inEind/point, NodeSet/Values);
+			
+			unit<uint32> NetCheck := connected_parts(F1, F2);
+			
+			unit<uint32> ODMatrix :=
+				dijkstra_m('bidirectional;startPoint(Node_rel):max_imp;endPoint(Node_rel);cut(OrgZone_max_imp);limit(OrgZone_max_mass,DstZone_mass);alternative(link_imp):alt_imp;od:impedance,OrgZone_rel,DstZone_rel'
+					, Seconds
+					, F1
+					, F2
+					, org_node
+					, dst_node
+					, MaxDistSelectie_sec //cut impedance      
+					, ModelParameters/MaxODconn, 1f //limit
+					, Length //alt imp
+				)
+			{
+				attribute<Time>	   Duration                         := RoundUp(Impedance)[uint32][Time];
+				attribute<float32> Duration_minutes                 := Impedance / 60f;
+				attribute<inStart> StartRef                         := OrgZone_rel; 
+				attribute<inEind>  EindRef                          := DstZone_rel; 
+				attribute<string>  StartName                        := inStart/name[StartRef];
+				attribute<string>  EindName                         := inEind/name[EindRef];
+				attribute<m>       Distance                         := float32(alt_imp)[m]; 
+				attribute<rdc>     Start_point                      := inStart/point[StartRef];
+				attribute<rdc>     Eind_point                       := inEind/point[EindRef];
+				attribute<Complete_Stops_Domain> Complete_Stops_rel := inEind/Stops_rel[EindRef]; 
+				attribute<rdc>     geometry (arc)                   := points2sequence(LinkPoints/geometry, LinkPoints/ODPathRel, LinkPoints/CumulOrdinal);
+				attribute<string>  LabelText                        := TravelMode+' path from: ' + StartName + ' to ' + EindName, DialogType = "LabelText";
+
+				unit<uint32> LinkPoints := union_unit(., .)
+				{
+					attribute<..>                   ODPathRel    := union_data(., id(..), id(..));
+					attribute<rdc>                  geometry     := union_data(., ../Start_point, ../Eind_point);
+					attribute<uint32>               CumulOrdinal := union_data(., const(0,..,uint32), const(1,..,uint32));
+				}
+				
+				unit<uint32> Complete_Stops_Domain := SourceData/Infrastructuur/GTFS/StudyAreaFeeds/Stops;
+			}
+		}
+	}
+	
+	Template MakeOD_BanenPerNetwerkType : FreeData = "false"
+	{
+		unit<uint32>       org;
+		unit<uint32>       dest;
+		parameter<string>  netwerk_type_OSM;
+		parameter<km_hr>   maxspeed_OSM;
+		parameter<string>  netwerk_type_Logit := netwerk_type_OSM == 'pedestrian' ? 'Bike' : netwerk_type_OSM;
+		
+		container NetwerkSpec := =
+			'templates/netwerk(
+				  org
+				, dest
+				, SourceData/OSM/Read_OSM_fss_Nederland_'+string(netwerk_type_OSM)+'
+				, org/geometry
+				, dest/point
+				, SourceData/OSM/Read_OSM_fss_Nederland_'+string(netwerk_type_OSM)+'/line
+				, '+quote(netwerk_type_OSM)+'
+			)';
+
+		unit<uint64> OD_traveltime := 
+			dijkstra_m64('bidirectional(link_flag);startPoint(Node_rel);endPoint(Node_rel);od:impedance,OrgZone_rel,DstZone_rel'
+				, NetwerkSpec/OrgToDest/impedance
+				, NetwerkSpec/OrgToDest/F1
+				, NetwerkSpec/OrgToDest/F2
+				, NetwerkSpec/OrgToDest/LinkSet/wegtype != classifications/OSM/wegtype/V/motorway  && NetwerkSpec/OrgToDest/LinkSet/wegtype != classifications/OSM/wegtype/V/motorway_link // motor way en motor way link, snelwegen zijn niet bidirectional
+				, NetwerkSpec/OrgToDest/nr_orgNode 
+				, NetwerkSpec/OrgToDest/nr_destNode 
+			)
+		, StorageName = "='%LocalDataDir%/OVGTFS/ODfull_'+netwerk_type_OSM+'_ORG-'+SourceData/Orgset+'_DEST-'+DestSet_string+'_NETWERK-'+SourceData/NetwerkExtent+'_SA-'+SourceData/StudyArea+'.fss'"
+		{
+			attribute<float32> reistijd_min              := impedance / 60f;
+			attribute<uint64>  OD_nummer                 := combine_data(., OrgZone_rel, DstZone_rel);
+			
+			attribute<float32> banen                     := dests/nr_banen[float32][DstZone_rel];
+			attribute<float32> decay_function            := ='reistijd_min == 0f ? 1f : 1f / (1f + exp(parameters/'+netwerk_type_Logit+'_a + parameters/'+netwerk_type_Logit+'_b*log(reistijd_min) + parameters/'+netwerk_type_Logit+'_c*reistijd_min))';
+			attribute<float32> banen_decayed             := MakeDefined(banen * decay_function,0f);
+			
+			attribute<float32> banen_bereikbaar (org)   := sum(banen_decayed, OrgZone_rel);
+		}
+		
+		unit<uint64> OD_traveltime_limit30m := 
+			dijkstra_m64('bidirectional(link_flag);startPoint(Node_rel);endPoint(Node_rel);cut(OrgZone_max_imp);od:impedance,OrgZone_rel,DstZone_rel'
+				, NetwerkSpec/OrgToDest/impedance
+				, NetwerkSpec/OrgToDest/F1
+				, NetwerkSpec/OrgToDest/F2
+				, NetwerkSpec/OrgToDest/LinkSet/wegtype != classifications/OSM/wegtype/V/motorway  && NetwerkSpec/OrgToDest/LinkSet/wegtype != classifications/OSM/wegtype/V/motorway_link // motor way en motor way link, snelwegen zijn niet bidirectional
+				, NetwerkSpec/OrgToDest/nr_orgNode 
+				, NetwerkSpec/OrgToDest/nr_destNode 
+				, 1800f
+			)
+		, StorageName = "='%LocalDataDir%/OVGTFS/OD_30min_'+netwerk_type_OSM+'_ORG-'+SourceData/Orgset+'_DEST-'+DestSet_string+'_NETWERK-'+SourceData/NetwerkExtent+'_SA-'+SourceData/StudyArea+'.fss'"
+		{
+			attribute<float32> reistijd_min              := impedance / 60f;
+			attribute<uint64>  OD_nummer                 := combine_data(., OrgZone_rel, DstZone_rel);
+			
+			attribute<float32> banen                     := dests/nr_banen[float32][DstZone_rel];
+			attribute<float32> decay_function            := ='reistijd_min == 0f ? 1f : 1f / (1f + exp(parameters/'+netwerk_type_Logit+'_a + parameters/'+netwerk_type_Logit+'_b*log(reistijd_min) + parameters/'+netwerk_type_Logit+'_c*reistijd_min))';
+			attribute<float32> banen_decayed             := MakeDefined(banen * decay_function,0f);
+			
+			attribute<float32> banen_bereikbaar_decayed (org) := sum(banen_decayed, OrgZone_rel);
+			attribute<float32> banen_bereikbaar (org)         := sum(banen, OrgZone_rel);
+		}
+	}
+	
+	#include<StaticNetsCreator.dms>
+
+	Template LoadCSVThroughGDAL 
+	{
+		unit<uint32> File_Structure;
+		parameter<File_Structure> inFile;
+		
+		container CreateFSS
+		{
+			unit<uint32> ReadCSV
+			: StorageName     = "= '%SourceDataDir%/GTFS/data/_feeds/'+ModelParameters/GTFS_filedate+'/'+File_Structure/Name[inFile]+'.csv'"
+			, StorageType     = "gdal.vect"
+			, StorageReadOnly = "True";
+
+			unit<uint32> CSV_attributes := SubItem_PropValues(ReadCSV,'name');
+			
+			container MakeFSSDomain : StorageName = "= '%SourceDataDir%/GTFS/data/_feeds/'+ModelParameters/GTFS_filedate+'/fss/'+File_Structure/Name[inFile]+'_domain.fss'"
+			{
+				unit<uint32> domain := ReadCSV;
+			}
+	
+			container MakeFSS := 
+				for_each_nedv(
+					CSV_attributes/name
+					, 'ReadCSV/' + CSV_attributes/name
+					, MakeFSSDomain/domain
+					, string
+				),	StorageName = "= '%SourceDataDir%/GTFS/data/_feeds/'+ModelParameters/GTFS_filedate+'/fss/'+File_Structure/Name[inFile]+'.fss'"
+			{
+				unit<uint32> domain := MakeFSSDomain/domain;
+			}
+		}
+	}
+	
+	Template doDateSelection 
+	{
+		container Data;
+		unit<uint32> Services;
+		
+		unit<uint32> Calendar:= Data/Calendar/read_domain/domain
+		{
+			attribute<string> monday                  := Data/Calendar/data/monday;
+			attribute<string> tuesday                 := Data/Calendar/data/tuesday;
+			attribute<string> wednesday               := Data/Calendar/data/wednesday;
+			attribute<string> thursday                := Data/Calendar/data/thursday;
+			attribute<string> friday                  := Data/Calendar/data/friday;
+			attribute<string> saturday                := Data/Calendar/data/saturday;
+			attribute<string> sunday                  := Data/Calendar/data/sunday;
+			attribute<string> service_id              := Data/Calendar/data/service_id;
+			attribute<uint32> nStartDate              := MakeDefined(uint32(Data/Calendar/data/start_date), 0/0);
+			attribute<uint32> nEndDate                := uint32(Data/Calendar/data/end_date);
+			attribute<bool>   Today_in_daterange      := uint32(ModelParameters/Analysis_date) >= nStartDate && uint32(ModelParameters/Analysis_date) <= nEndDate;
+			attribute<bool>   Yesterday_in_daterange  := uint32(ModelParameters/PrevDate) >= nStartDate && uint32(ModelParameters/PrevDate) <= nEndDate;
+		}
+		
+		unit<uint32> Calendar_dates := Data/Calendar_dates/read_domain/domain  
+		{
+			attribute<uint32>   nDate       := uint32(Data/Calendar_dates/data/date);
+			attribute<uint32>   nType       := uint32(Data/Calendar_dates/data/exception_type);
+			attribute<Services> ServicesRef := rlookup(Data/Calendar_dates/data/service_id, Services/Values);
+			attribute<uint32>   Today       := uint32(uint32(ModelParameters/Analysis_date) = nDate);  
+			attribute<uint32>   Yesterday   := uint32(uint32(ModelParameters/PrevDate) = nDate);
+		}
+	}
+
+	unit<SPoint> Neighbourhood: Expr = "range(spoint, point(int16(-1), int16(-1)), point(int16(2), int16(2)))", Descr = "Rooks case contiguous neighbours (first order)"
+	{
+		attribute<uint32> Top : 	Expr = "uint32(id(.) = point(int16(0),int16(1),spoint))";
+		attribute<uint32> Right : 	Expr = "uint32(id(.) = point(int16(1),int16(0),spoint))";
+		attribute<uint32> Bottom : 	Expr = "uint32(id(.) = point(int16(0),int16(-1),spoint))";
+		attribute<uint32> Left : 	Expr = "uint32(id(.) = point(int16(-1),int16(0),spoint))";
+	}
+}

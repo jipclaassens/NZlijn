@@ -1,0 +1,82 @@
+////////////////////////////////////////////////////////////////////////////////////////
+//                                                                                    //
+//                                                                                    //
+//                       Configuratie voor project: Open Data Analyse                 //
+//                                                                                    //
+//                              Object Vision 2011                                    //
+//                                                                                    //
+////////////////////////////////////////////////////////////////////////////////////////
+//                                                                                    //
+//                  Configuratiebestand voor opbouw Connected Netwerk                 //
+//                                                                                    //
+// De niet gesloten links halen we uit de analyse, om te voorkomen dat daar de        //
+// begin en eindpunten aan zouden worden gekoppeld, hetgeen tot oneindige afstanden   //
+// zou leiden.                                                                        //
+//                                                                                    //
+// De grote netwerken (> 1km) zijn handmatig doorlopen en hiervoor zijn extra links   //
+// toegevoegd.                                                                        //
+//                                                                                    //
+////////////////////////////////////////////////////////////////////////////////////////
+
+container MakeConnectedRoads
+{ 
+	unit <uint32> LinkSet := arc2segm(roads)
+	,	DialogData = "segments"
+	,	DialogType = "Map"
+	{
+		attribute<geometries/rdc>                point;
+		attribute<geometries/rdc>                nextpoint;
+		attribute<roadDomain>                    SequenceNr;
+		attribute<classifications/OSM/wegtype>   wegtype          := roadDomain/wegtype[SequenceNr];
+		attribute<float32>                       congestion_speed := roadDomain/congestion_speed[SequenceNr];
+		attribute<float32>                       maxspeed         := value(roadDomain/maxspeed, float32)[SequenceNr];
+		attribute<m>                             lengte           := arc_length(segments, m);
+		attribute<bool>                          isConnected      := all(pointset/isConnected, pointset/ArcID);
+
+		unit<uint32> pointset := Union_Unit(LinkSet, LinkSet)
+		{
+			attribute<geometries/rdc>   point        := Union_Data(pointset, LinkSet/point, LinkSet/nextpoint);
+			attribute<bool>             isConnected  := isNull(rlookup(point, NodesNotConnected/point));
+			attribute<roadDomain>       roadsnr      := Union_Data(pointset, LinkSet/SequenceNr, LinkSet/SequenceNr);
+			attribute<LinkSet>          ArcID        := value(ID(pointset) % nrofrows(LinkSet), LinkSet);
+			attribute<uint32>           VolgNr       := ID(pointset) / nrofrows(LinkSet);
+		}
+		attribute<geometries/rdc> segments(arc) := points2sequence(pointset/point, pointset/ArcID, pointset/VolgNr);
+	}
+	unit<uint32> NodeSet := unique(LinkSet/pointset/point)
+	,	DialogData = "Values"
+	,	DialogType = "Map"
+	{
+		attribute<geometries/rdc>   Values;
+		attribute<Linkset>          LinkSetnr := rlookup(Values, LinkSet/point);
+		attribute<roadDomain>       roadsnr := LinkSet/SequenceNr[LinkSetnr];
+	}
+	attribute<NodeSet> F1(LinkSet)  := rlookup(LinkSet/point,     NodeSet/Values);
+	attribute<NodeSet> F2(LinkSet)  := rlookup(LinkSet/nextpoint, NodeSet/Values);
+
+	unit<uint32> networks := connected_parts(F1, F2)
+	{
+		attribute<uint32>   nr_nodes    := sum(const(1, NodeSet, uint32), partnr);
+		attribute<float32>  Lengte      := sum(LinkSet/lengte[NodeSet/LinkSetnr], partnr);
+		parameter<uint32>   MaxNrNodex  := max(networks/nr_nodes);
+		parameter<networks> main        := rlookup(MaxNrNodex, nr_nodes); // we gaan ervan uit dat het netwerk met de meeste nodes het hoofd netwerk is
+	}
+	unit<uint32> NodesNotConnected := Subset(networks/partnr <> networks/main)
+	{
+		attribute<geometries/rdc> point := NodeSet/Values[Nr_OrgEntity];
+	}
+	unit<uint32> NodesNotConnectedNetwork_gt5km := Subset(networks/partnr <> networks/main && networks/lengte[networks/partnr] > float32(5000))
+	{
+		attribute<geometries/rdc> point := NodeSet/Values[Nr_OrgEntity];
+	}
+	
+	unit<uint32> result := Subset(Linkset/isConnected)
+	,	DialogType = "Map"
+	,	DialogData = "line"
+	{
+		attribute<geometries/rdc>              line (arc)         := Linkset/Segments[nr_OrgEntity];
+		attribute<classifications/OSM/wegtype> wegtype            := Linkset/wegtype[nr_OrgEntity];
+		attribute<float32>                     maxspeed           := Linkset/maxspeed[nr_OrgEntity];
+		attribute<float32>                     congestion_speed   := Linkset/congestion_speed[nr_OrgEntity];
+	}
+}

@@ -1,0 +1,78 @@
+unit<uint32> ARRA 
+:	StorageName     = "%SourceDataDir%/ARRA/Arra_2016.fss"
+,  DialogType      = "map"
+,  DialogData      = "geometry"
+,  StorageReadOnly = "True"
+,  FreeData        = "False"
+{
+	attribute<CoordSys>             geometry;
+	attribute<string>               SBI;
+	attribute<uint32>               banen;
+	attribute<string>               zaaknaam;
+	attribute<string>               vestnum;
+
+	attribute<NL_grid/domain>                       NL_grid_domain_100m_rel                          := geometry[NL_grid/domain];
+	attribute<NL_grid/domain_500m>                  NL_grid_domain_500m_rel                          := geometry[NL_grid/domain_500m];
+	
+	attribute<uint32>                               sum_banen_per_grid_100m  (NL_grid/domain)   := sum(banen[uint32], NL_grid_domain_100m_rel);
+	attribute<uint32>                               HeeftBanen_grid_100m     (NL_grid/domain)   := sum_banen_per_grid_100m > 0 ? sum_banen_per_grid_100m : (0/0);
+
+	attribute<uint32>                               sum_banen_per_grid_500m  (NL_grid/domain_500m)   := sum(banen[uint32], NL_grid_domain_500m_rel);
+	attribute<uint32>                               HeeftBanen_grid_500m     (NL_grid/domain_500m)   := sum_banen_per_grid_500m > 0 ? sum_banen_per_grid_500m : (0/0);
+
+	parameter<string> Gridsize := SourceData/banen_locaties_schaal;
+	
+	unit<uint32> HeeftBanen := ='subset(HeeftBanen_grid_'+Gridsize+' > 0)'
+	,	DialogData = "geometry"
+	,	DialogType = "map"
+	{
+		attribute<uint32> nr_banen         := ='ARRA/sum_banen_per_grid_'+Gridsize+'[nr_OrgEntity]';
+		attribute<uint32> nr_banen_grid       (NL_grid/domain) := nr_banen[invert(per_grid)];
+		attribute<uint32> nr_banen_grid_class (NL_grid/domain) := nr_banen_grid, cdf = "Classified/Target_9K/ClassBreaks";
+		attribute<rdc>    geometry         := nr_OrgEntity[rdc];
+		attribute<NL_grid/domain> per_grid := geometry[NL_grid/domain];
+		attribute<rdc>    point            := geometry;
+		attribute<uint32> identificatie    := id(.);
+		attribute<string> id_name          := 'dest' + string(identificatie);
+		attribute<string> label            := id_name, DialogType = "LabelText";
+		
+		container Classified := Classifications/Classify_9K(nr_banen_grid, NL_grid/domain);
+
+		
+	} 
+	
+	container impl
+	{
+		unit<uint32> Read_ARRA_csv
+		:  StorageName     = "%SourceDataDir%/ARRA/arra2016_selection.csv"
+		,  StorageType     = "gdal.vect"
+		,  StorageReadOnly = "True"
+		,  FreeData        = "False"
+		// ,  SyncMode        = "None"
+		,  DialogType      = "map"
+		,  DialogData      = "geometry"
+		{
+			attribute<string>         vestnum;
+			attribute<string>         zaaknaam;
+			attribute<string>         xcoord;
+			attribute<string>         ycoord;
+			attribute<float32>        xco                  := xcoord[float32];
+			attribute<float32>        yco                  := ycoord[float32];
+			attribute<CoordSys>       geometry             := point(xco, yco, CoordSys);
+			
+			attribute<string>         sbi_huidig;
+			attribute<string>         wp_tt;
+			attribute<uint32>         werkzame_personen    := wp_tt[uint32];
+		}
+		unit<uint32> Make_ARRA_FSS := Read_ARRA_csv
+		,	StorageName     = "%SourceDataDir%/ARRA/Arra_2016.fss"
+		{
+			attribute<CoordSys>             geometry      := Read_ARRA_csv/geometry;
+			attribute<string>               SBI           := Read_ARRA_csv/sbi_huidig;
+			attribute<uint32>               banen         := Read_ARRA_csv/werkzame_personen;
+			attribute<string>               zaaknaam      := Read_ARRA_csv/zaaknaam;
+			attribute<string>               vestnum       := Read_ARRA_csv/vestnum;
+		}
+	}
+}
+

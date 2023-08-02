@@ -1,0 +1,46 @@
+unit<uint32> LISA
+: StorageName = "%LocalDataDir%/NLDB/LISA/LISA2018.fss"
+, StorageReadOnly = "true"
+, DialogData = "geometry"
+, DialogType = "map" 
+{
+	attribute<rdc>                                  geometry;
+	attribute<classifications/LISA/SBI2008_sectie>  sectie_rel;
+	attribute<.>                                    pc6_rel;
+	attribute<float64>                              banen;
+	attribute<string>                               LISAnr;
+	attribute<string>                               naam;
+	
+	attribute<NL_grid/domain>                       NL_grid_domain_100m_rel                          := geometry[NL_grid/domain];
+	attribute<NL_grid/domain_500m>                  NL_grid_domain_500m_rel                          := geometry[NL_grid/domain_500m];
+	attribute<NL_grid/domain_1000m>                 NL_grid_domain_1000m_rel                         := geometry[NL_grid/domain_1000m];
+	attribute<NL_grid/domain_5000m>                 NL_grid_domain_5000m_rel                         := geometry[NL_grid/domain_5000m];
+	
+	attribute<uint32>                               sum_banen_per_grid_100m  (NL_grid/domain)   := sum(banen[uint32], NL_grid_domain_100m_rel);
+	attribute<uint32>                               HeeftBanen_grid_100m     (NL_grid/domain)   := sum_banen_per_grid_100m > 0 ? sum_banen_per_grid_100m : (0/0);
+	
+	attribute<uint32>                               sum_banen_per_grid_500m  (NL_grid/domain_500m)   := sum(banen[uint32], NL_grid_domain_500m_rel);
+	attribute<uint32>                               HeeftBanen_grid_500m     (NL_grid/domain_500m)   := sum_banen_per_grid_500m > 0 ? sum_banen_per_grid_500m : (0/0);
+	
+	attribute<uint32>                               sum_banen_per_grid_1000m  (NL_grid/domain_1000m) := sum(banen[uint32], NL_grid_domain_1000m_rel);
+	attribute<uint32>                               HeeftBanen_grid_1000m     (NL_grid/domain_1000m) := sum_banen_per_grid_1000m > 0 ? sum_banen_per_grid_1000m : (0/0);
+	
+	attribute<uint32>                               sum_banen_per_grid_5000m  (NL_grid/domain_5000m) := sum(banen[uint32], NL_grid_domain_5000m_rel);
+	attribute<uint32>                               HeeftBanen_grid_5000m     (NL_grid/domain_5000m) := sum_banen_per_grid_5000m > 0 ? sum_banen_per_grid_5000m : (0/0);
+	
+	attribute<.>                                    MRA_rel                                          := point_in_polygon(geometry, SourceData/RegioIndelingen/Buurten/zonder_water_unioned/Geometry);
+	
+	parameter<string> Gridsize := ModelParameters/banen_locaties_schaal;
+	
+	unit<uint32> HeeftBanen := ='subset(HeeftBanen_grid_'+Gridsize+' > 0)'
+	,	DialogData = "geometry"
+	,	DialogType = "map"
+	{
+		attribute<uint32> nr_banen         := ='LISA/sum_banen_per_grid_'+Gridsize+'[nr_OrgEntity]';
+		attribute<rdc>    geometry         := nr_OrgEntity[rdc];
+		attribute<rdc>    point            := geometry;
+		attribute<uint32> identificatie    := id(.);
+		attribute<string> id_name          := 'dest' + string(identificatie);
+		attribute<string> label            := id_name, DialogType = "LabelText";
+	} 
+}

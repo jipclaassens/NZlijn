@@ -1,0 +1,335 @@
+container NetworkAnalyses : using = "units;ModelParameters;Classifications;geometries"
+{ 
+	unit<uint32>        Orgs           := Setup/Org;
+	unit<uint32>        Dests          := Setup/Dest;
+	
+	container Setup : using = "ModelParameters"
+	{
+		parameter<string> Buurtsub_MRA      := 'SourceData/RegioIndelingen/Buurten/Subset';
+		parameter<string> Point_100m        := 'geometries/NL_grid/points_100m/points_100m_Buurt';
+		parameter<string> PC4_domain_full   := 'SourceData/RegioIndelingen/PC4_punten';
+		parameter<string> PC4_domain_subset := 'SourceData/RegioIndelingen/PC4_punten/'+Destset;
+		parameter<string> PC4_domain_MRA    := 'SourceData/RegioIndelingen/PC4_punten/MRA';
+		parameter<string> PC6_domain_full   := 'SourceData/RegioIndelingen/PC6_punten';
+		parameter<string> PC6_domain_subset_MRA  := 'SourceData/RegioIndelingen/PC6_punten/MRA';
+		parameter<string> PC6_domain_subset_Pijp := 'SourceData/RegioIndelingen/PC6_punten/Pijp';
+		parameter<string> Org_domain        := Orgset == 'PC6full'
+												? PC6_domain_full
+												: Orgset = 'PC4full'
+													? PC4_domain_full
+													: OrgSet = 'PC6sub_MRA'
+														? PC6_domain_subset_MRA
+														: OrgSet = 'PC6sub_Pijp'
+															? PC6_domain_subset_Pijp
+															: OrgSet = 'PC4sub'
+																? PC4_domain_MRA
+																: OrgSet = 'Buurtsub_MRA'
+																	? Buurtsub_MRA
+																	: OrgSet = 'Point100m'
+																		? Point_100m
+																		: PC6_domain_subset_Pijp;
+		unit<uint32> org := =Org_domain
+		, DialogData = "point"
+		, DialogType = "map" 
+		{
+			attribute<rdc>                   point          := =Org_domain+'/point';
+			attribute<string>                name           := =Org_domain+'/name', DialogType = "LabelText";
+			// attribute<float32>               nr_inwoners    := =Org_domain+'/nr_inwoners[float32]', DialogType = "LabelText";
+		}
+		
+		parameter<string> Dest_domain        := Destset == 'LISA' || Destset == 'ARRA'
+												? 'dest_banen'
+												: Destset == 'Inwoners'
+													? 'dest_inwoners'
+													: 'dest_PC4selectie';
+
+		unit<uint32> dest_banen := ='SourceData/'+Destset+'/HeeftBanen' 
+		, DialogData = "point"
+		, DialogType = "map" 
+		{
+			attribute<uint32>                nr_banen       := ='SourceData/'+Destset+'/HeeftBanen/nr_banen';
+			attribute<rdc>                   point          := ='SourceData/'+Destset+'/HeeftBanen/point';
+			attribute<string>                name           := ='SourceData/'+Destset+'/HeeftBanen/id_name', DialogType = "LabelText";
+		}
+		
+		unit<uint32> dest := =Dest_domain
+		, DialogData = "point"
+		, DialogType = "map" 
+		{
+			attribute<uint32>                nr_banen       := =Dest_domain+'/nr_banen';
+			attribute<rdc>                   point          := =Dest_domain+'/point';
+			attribute<string>                name           := =Dest_domain+'/name', DialogType = "LabelText";
+		}
+		
+		
+		unit<uint32> Stops := SourceData/GTFS/StudyAreaFeeds/Stops;
+		
+		container RoadNets_Org2Dest_W   := templates/createNetwork(Org  , Dest    , SourceData/OSM/Network_Pedestrian, 'Walking', 'Org2Dest');
+		container RoadNets_Org2Stop_W   := templates/createNetwork(Org  , Stops   , SourceData/OSM/Network_Pedestrian, 'Walking', 'Org2Stop');
+		container RoadNets_Stop2Dest_W  := templates/createNetwork(Stops, Dest    , SourceData/OSM/Network_Pedestrian, 'Walking', 'Stop2Dest');
+		
+		container StaticNets          := templates/StaticNetsCreator(Stops, SourceData/GTFS/StudyAreaFeeds/Links);
+		
+		container CreateODconnections : using = "StaticNets"
+		{
+			container Sparse_uitwerking_Org2Stop_W
+			{
+				unit<uint32> OD_path := RoadNets_Org2Stop_W/Network/ODMatrix;
+				unit<uint32> AB := join_equal_values_uint32(OD_path/EindRef, ScheduledSpaceTimeEvents/stopRef)
+				{
+					attribute<Stops>                      Stop_rel          := nr_X_rel;
+					attribute<OD_path>                    OD_rel            := nr_1_rel;
+					attribute<ScheduledSpaceTimeEvents>   SSTE_rel          := nr_2_rel;
+					
+					attribute<allLinks/Places>            Place_rel         := stops/PlaceRef[Stop_rel];
+					attribute<Org>                        Org_rel           := OD_path/StartRef[OD_rel];
+					attribute<rdc>    		              geometry (arc)    := OD_path/geometry[OD_rel];
+					
+					attribute<Time>                       Duration_Walk     := OD_path/Duration[OD_rel];
+					attribute<m>                          Distance          := OD_path/Distance[OD_rel];
+					attribute<Time>                       FromTime_Walk     := toTime_Walk[int32] - Duration_Walk[int32] > 0i
+																				? toTime_Walk - Duration_Walk 
+																				: (toTime_Walk[int32] - Duration_Walk[int32] + (#Time / 2)[int32])[uint32];
+					attribute<Time>                       toTime_Walk       := ScheduledSpaceTimeEvents/TimeRef[SSTE_rel];
+					attribute<string>                     LabelText         := OD_path/labeltext[OD_rel], DialogType = "LabelText";
+					
+					attribute<upoint>                     MomentxPlace      := point(toTime_Walk, Place_rel, upoint);
+					attribute<allLinks/NodeSet>           NodeRef           := rlookup(MomentxPlace, allLinks/NodeSet/values);
+					
+					unit<uint32> uq_stops := unique(Place_rel)
+					{
+						attribute<allLinks/Places> UsedStops := values;
+					}
+				}
+			}
+			
+			container Sparse_uitwerking_Stop2Dest_W
+			{
+				unit<uint32> OD_path := RoadNets_Stop2Dest_W/Network/ODMatrix;
+				unit<uint32> AB := join_equal_values_uint32(OD_path/StartRef, ScheduledSpaceTimeEvents/stopRef)
+				{
+					attribute<Stops>                      Stop_rel          := nr_X_rel;
+					attribute<OD_path>                    OD_rel            := nr_1_rel;
+					attribute<ScheduledSpaceTimeEvents>   SSTE_rel          := nr_2_rel;
+					
+					attribute<allLinks/Places>            Place_rel         := stops/PlaceRef[Stop_rel];
+					attribute<Dest>                       Dest_rel          := OD_path/EindRef[OD_rel];
+					attribute<rdc>    		              geometry (arc)    := OD_path/geometry[OD_rel];
+					
+					attribute<Time>                       Duration_Walk     := OD_path/Duration[OD_rel] > #Time / 2
+																				? #Time / 2
+																				: OD_path/Duration[OD_rel];
+					attribute<m>                          Distance          := OD_path/Distance[OD_rel];
+					attribute<Time>                       FromTime_Walk     := ScheduledSpaceTimeEvents/TimeRef[SSTE_rel];
+					attribute<Time>                       ToTime_Walk       := FromTime_Walk + Duration_Walk > #Time
+																				? FromTime_Walk + Duration_Walk - #Time
+																				: FromTime_Walk + Duration_Walk;
+					attribute<string>                     LabelText         := OD_path/labeltext[OD_rel], DialogType = "LabelText";
+					
+					attribute<upoint>                     MomentxPlace      := point(FromTime_Walk, Place_rel, upoint);
+					attribute<allLinks/NodeSet>           NodeRef           := rlookup(MomentxPlace, allLinks/NodeSet/values);
+					
+					unit<uint32> uq_stops := unique(Place_rel)
+					{
+						attribute<allLinks/Places> UsedStops := values;
+					}
+				}
+			}
+		}
+	}
+	
+	container GenerateFSS
+	{
+		parameter<String> Generate_OD_traveltime_W_OV_W_with_W_W := 'Ready',
+			ExplicitSuppliers = "=AsList('NetworkAnalyses/NetworkResults/'+MeasureMoments/Name+'/OD_traveltime_W_OV_W_with_W_W_cut', ';')";
+	}
+		
+	container NetworkResults := 
+		for_each_ne(
+			MeasureMoments/Name
+			, 'GetNetworkAnalysis('+string(MeasureMoments/Moment)+', '+quote(MeasureMoments/name)+')'
+		)
+	{
+		unit<uint64> Combine_OrgDest        := combine_uint64(Setup/Org, Setup/Dest)
+		{
+			// attribute<string> OrgName  := Setup/Org/name[nr_1];
+			// attribute<string> DestName := Setup/Dest/name[nr_2];
+			// attribute<string> Label    := OrgName +'_'+DestName, DialogType = "LabelText";
+		}
+	
+		unit<uint64> Make_OD_traveltime_W_W := 
+			dijkstra_m64('bidirectional;startPoint(Node_rel);endPoint(Node_rel);cut(OrgZone_max_imp);od:OrgZone_rel,DstZone_rel'
+				, Setup/RoadNets_Org2Dest_W/Network/Duration[float32]
+				, Setup/RoadNets_Org2Dest_W/Network/F1
+				, Setup/RoadNets_Org2Dest_W/Network/F2
+				
+				, Setup/RoadNets_Org2Dest_W/Network/org_node 
+				, Setup/RoadNets_Org2Dest_W/Network/dst_node 
+				, convert(ModelParameters/MaxOVTime, s_f)
+			)
+		, StorageName = "='%LocalDataDir%/NZLijn/OD_'+string(ModelParameters/MaxOVTime)+'min_W_W_ORG-'+ModelParameters/Orgset+'_DEST-'+ModelParameters/DestSet+'_SA-'+ModelParameters/StudyArea+'.fss'"
+		{
+			attribute<Combine_OrgDest>  OD_nummer                    := combine_data(Combine_OrgDest, OrgZone_rel, DstZone_rel);
+			attribute<float32>          nr_banen                     := Setup/dest/nr_banen[float32][DstZone_rel];
+		}
+	}
+	
+	container ExportResults :=
+		for_each_nedv(
+			MeasureMoments/name
+			, 'NetworkAnalyses/NetworkResults/'+MeasureMoments/name+'/OD_traveltime_W_OV_W_with_W_W_cut/banen_bereikbaar'
+			, orgs
+			, float32
+		), StorageName = "='%LocalDataDir%/NZLijn/OD_'+string(ModelParameters/MaxOVTime)+'min_W_OV_W_with_W_W_'+ModelParameters/Analysis_date+'_'+ModelParameters/Arrival_or_Departure_at_time+'_ORG-'+ModelParameters/Orgset+'_DEST-'+ModelParameters/DestSet+'_SA-'+ModelParameters/StudyArea+'_WT-'+string(ModelParameters/WegingWachttijdThuisVoortransport)+'.gpkg'", StorageType = "gdalwrite.vect";
+	
+	Template GetNetworkAnalysis 
+	{ 
+		parameter<uint32> 	inTime;
+		parameter<string> 	inTime_string;
+		
+		unit<uint32>        org        := NetworkAnalyses/Setup/org;
+		unit<uint32>        dest       := NetworkAnalyses/Setup/dest;
+		unit<uint32>        Static_net := NetworkAnalyses/Setup/StaticNets/Static_Net;
+		unit<uint32>        Stops      := NetworkAnalyses/Setup/StaticNets/Stops;
+		unit<uint32>        NodeSet    := NetworkAnalyses/Setup/StaticNets/Static_net/NodeSet;
+		unit<uint32>        Places     := NetworkAnalyses/Setup/StaticNets/allLinks/Places;
+		
+		unit<uint32>        Org2Stop_W      := NetworkAnalyses/Setup/CreateODconnections/Sparse_uitwerking_Org2Stop_W/AB;
+		unit<uint32>        Stop2Dest_W     := NetworkAnalyses/Setup/CreateODconnections/Sparse_uitwerking_Stop2Dest_W/AB;
+		
+		unit<uint64>        Combine_OrgDest     := NetworkResults/Combine_OrgDest;
+		
+		container TransitionTypes := 
+			for_each_ne(
+				ModelParameters/TransitionType_list/Type
+			, 'Transition_T('+inTime_string+'/'+string(ModelParameters/TransitionType_list/Type)+', '+quote(ModelParameters/TransitionType_list/Type)+', '+quote(ModelParameters/TransitionType_list/Mode)+', '+string(ModelParameters/TransitionType_list/ModeMax)+'[min_f], '+quote(ModelParameters/TransitionType_list/FromTime)+', '+quote(ModelParameters/TransitionType_list/ToTime)+', '+quote(ModelParameters/TransitionType_list/OrgDest)+')'
+			);
+
+		Template Transition_T
+		{
+			unit<uint32>      OD_unit;
+			parameter<string> OD_unit_name;
+			parameter<string> Mode;
+			parameter<min_f>  ModeMax_min;
+			parameter<string> FromTime_str;
+			parameter<string> ToTime_str;
+			parameter<string> OrgDest;
+			///
+			parameter<Time>     ModeMax_sec := convert(ModeMax_min, s_f)[Time];
+			
+			parameter<string>   Arrive_at_time_CalcStr     := replace('subset(UNIT/FT >= (inTime[Time] - convert(ModelParameters/MaxOVTime, s_f)[Time] - MM)
+																				&& UNIT/TT <= inTime[Time] 
+																				&& UNIT/FT <= inTime[Time] 
+																				&& UNIT/duration_TM <= MM)'
+																					,'UNIT',OD_unit_name,'FT',FromTime_str,'TT', ToTime_str,'TM',Mode,'MM', string(ModeMax_sec));
+			
+			
+			parameter<string>   Departure_at_time_CalcStr  := replace('subset(UNIT/FT >= inTime[Time] 
+																				&& UNIT/TT >= inTime[Time] 
+																				&& UNIT/duration_TM <= MM 
+																				&& UNIT/FT < (inTime[Time] + convert(ModelParameters/MaxOVTime, s_f)[Time] + MM))'
+																					,'UNIT',OD_unit_name,'FT',FromTime_str,'TT', ToTime_str,'TM',Mode,'MM', string(ModeMax_sec));
+			
+			
+			parameter<string>   CalcStr  := ModelParameters/Arrival_or_Departure_at_time == 'Arrival'
+																	? Arrive_at_time_CalcStr
+																	: Departure_at_time_CalcStr;
+
+			unit<uint32> Transition := =CalcStr
+			, FreeData = "false"
+			{
+				attribute<Org>                        Org_rel           := ='OD_unit/'+OrgDest+'_rel[nr_OrgEntity]';
+				attribute<Dest>                       Dest_rel          := ='OD_unit/'+OrgDest+'_rel[nr_OrgEntity]';
+				// attribute<Dest>                       Destzone_rel      := dest/zone_rel[Dest_rel];
+
+				attribute<Stops>                      Stop_rel          := OD_unit/Stop_rel[nr_OrgEntity];
+				attribute<Places>                     Place_rel         := OD_unit/Place_rel[nr_OrgEntity];
+				attribute<rdc>                        geometry (arc)    := OD_unit/geometry[nr_OrgEntity];
+				attribute<m>                          Distance          := OD_unit/Distance[nr_OrgEntity];
+				attribute<Time>                       Duration          := ='OD_unit/Duration_'+Mode+'[nr_OrgEntity]';
+				attribute<Time>                       FromTime          := ='OD_unit/'+FromTime_str+'[nr_OrgEntity]';
+				attribute<Time>                       toTime            := ='OD_unit/'+ToTime_str+'[nr_OrgEntity]';
+				attribute<string>                     LabelText         := OD_unit/LabelText[nr_OrgEntity], DialogType = "LabelText";
+				attribute<upoint>                     MomentxPlace_O2S  := point(toTime, Place_rel, upoint);
+				attribute<upoint>                     MomentxPlace_S2D  := point(FromTime, Place_rel, upoint);
+				attribute<NodeSet>                    NodeRef_O2S       := rlookup(MomentxPlace_O2S, NodeSet/values);
+				attribute<NodeSet>                    NodeRef_S2D       := rlookup(MomentxPlace_S2D, NodeSet/values);
+				
+				attribute<Time>                       Duration_with_WaitingAtOrg  := Duration + ((FromTime - InTime)[float32] * ModelParameters/WegingWachttijdThuisVoortransport)[Time];
+				attribute<Time>                       Duration_with_WaitingAtDest := Duration + ((InTime - FromTime)[float32] * ModelParameters/WegingWachttijdThuisVoortransport)[Time];
+				attribute<Time>                       Duration_withWaiting       := =ModelParameters/Arrival_or_Departure_at_time == 'Arrival' ? 'Duration_with_WaitingAtDest' : 'Duration_with_WaitingAtOrg';
+			}
+		}
+
+		unit<uint32> StaticNet_subset_debug := Static_net
+		{
+			attribute<bool>   IsSub_from := =ModelParameters/Arrival_or_Departure_at_time == 'Arrival' ? 'FromTime > (inTime - convert(ModelParameters/MaxOVTime, s_f)[Time] - convert(ModelParameters/MaxWalkingTime_Org2Stop , s_f)[Time])' : 'FromTime >= inTime' ;
+			attribute<bool>   IsSub_to   := =ModelParameters/Arrival_or_Departure_at_time == 'Arrival' ? 'ToTime <= inTime' : 'ToTime   < (inTime + convert(ModelParameters/MaxOVTime, s_f)[Time] + convert(ModelParameters/MaxWalkingTime_Org2Stop , s_f)[Time])' ;
+			attribute<bool>   IsSub_dur  := duration <= convert(ModelParameters/MaxOVTime , s_f) * 2f;
+		}
+	
+		unit<uint32> StaticNet_subset := subset(StaticNet_subset_debug/IsSub_from && StaticNet_subset_debug/IsSub_to && StaticNet_subset_debug/IsSub_dur)
+		{
+			attribute<rdc>       geometry (arc) := Static_net/line[nr_OrgEntity];
+			attribute<Places>    FromPlace      := Static_net/FromPlace[nr_OrgEntity];
+			attribute<Places>    ToPlace        := Static_net/ToPlace[nr_OrgEntity];
+			attribute<rdc>       FromPoint      := Static_net/FromPoint[nr_OrgEntity];
+			attribute<rdc>       ToPoint        := Static_net/ToPoint[nr_OrgEntity];
+			attribute<string>    LabelText      := Static_net/LabelText[nr_OrgEntity];
+			attribute<Time>      FromTime       := Static_net/FromTime[nr_OrgEntity];
+			attribute<Time>      ToTime         := Static_net/ToTime[nr_OrgEntity];
+			attribute<s_f>       Duration       := Static_net/Duration[nr_OrgEntity];
+			attribute<LinkTypes> LinkType       := Static_net/LinkType[nr_OrgEntity];
+			attribute<NodeSet>   F1             := Static_net/F1[nr_OrgEntity];
+			attribute<NodeSet>   F2             := Static_net/F2[nr_OrgEntity];
+			attribute<uint32>    TripRef        := Static_net/TripRef[nr_OrgEntity];
+			attribute<string>    RouteName      := Static_net/RouteName[nr_OrgEntity];
+			attribute<Classifications/ModesList/List_selectie>    Mode        := Static_net/Mode[nr_OrgEntity];
+		}
+		
+		unit<uint64> OD_traveltime_W_OV_W_cut := 
+			dijkstra_m64('directed;startPoint(Node_rel,impedance,OrgZone_rel);endPoint(Node_rel,impedance,DstZone_rel);cut(OrgZone_max_imp);od:OrgZone_rel,DstZone_rel'
+				, StaticNet_subset/Duration[float32]
+				, StaticNet_subset/F1
+				, StaticNet_subset/F2
+				
+				, TransitionTypes/Org2Stop_W/Transition/NodeRef_O2S, TransitionTypes/Org2Stop_W/Transition/Duration[float32], TransitionTypes/Org2Stop_W/Transition/Org_rel     //sP node_rel, impedance, OrgZone_rel
+				, TransitionTypes/Stop2Dest_W/Transition/NodeRef_S2D, TransitionTypes/Stop2Dest_W/Transition/Duration[float32], TransitionTypes/Stop2Dest_W/Transition/Dest_rel //eP node_rel, impedance, DstZone_rel
+				, convert(ModelParameters/MaxOVTime, s_f)
+			)
+		{
+			attribute<Combine_OrgDest>  OD_nummer                    := combine_data(Combine_OrgDest, OrgZone_rel, DstZone_rel);
+			attribute<float32>          nr_banen                     := dest/nr_banen[float32][DstZone_rel];
+		}
+		
+		
+		unit<uint64> OD_traveltime_W_W
+		: StorageName = "='%LocalDataDir%/NZLijn/OD_'+string(ModelParameters/MaxOVTime)+'min_W_W_ORG-'+ModelParameters/Orgset+'_DEST-'+ModelParameters/DestSet+'_SA-'+ModelParameters/StudyArea+'.fss'"
+		, StorageReadOnly = "true"
+		{
+			attribute<float32> nr_banen;
+			attribute<uint64>  OD_nummer;
+		}
+		
+		//// COMBINE ODs ////
+		unit<uint64> OD_traveltime_W_OV_W_with_W_W_cut := union_unit_uint64(OD_traveltime_W_OV_W_cut, OD_traveltime_W_W)
+		// , StorageName = "='%LocalDataDir%/NZLijn/OD_'+string(ModelParameters/MaxOVTime)+'min_W_OV_W_with_W_W_'+ModelParameters/Analysis_date+'_'+ModelParameters/Arrival_or_Departure_at_time+'_'+inTime_string+'_ORG-'+ModelParameters/Orgset+'_DEST-'+ModelParameters/DestSet+'_SA-'+ModelParameters/StudyArea+'_WT-'+string(ModelParameters/WegingWachttijdThuisVoortransport)+'.fss'"
+		{
+			attribute<float32>          nr_banen                  := union_data(., OD_traveltime_W_OV_W_cut/nr_banen, OD_traveltime_W_W/nr_banen), DisableStorage = "true";
+			attribute<uint64>           OD_nummer                 := union_data(., OD_traveltime_W_OV_W_cut/OD_nummer, OD_traveltime_W_W/OD_nummer), DisableStorage = "true";
+			attribute<UniqueOD>         UniqueOD_rel              := rlookup(OD_nummer, UniqueOD/Values), DisableStorage = "true";
+			
+			attribute<float32>          banen_bereikbaar (Orgs)   := sum(UniqueOD/BestBanen, value(UniqueOD/values / uint64(#dests), orgs));
+			
+			unit<uint64> UniqueOD := unique(OD_nummer), DisableStorage = "true"
+			{
+				attribute<float32>          BestBanen        := max(../nr_banen, ../UniqueOD_rel), DisableStorage = "true";
+				attribute<Combine_OrgDest>  OD_rel           := rlookup(values, id(Combine_OrgDest)), DisableStorage = "true";
+			}
+		}
+	}
+}
+
+
+
+
