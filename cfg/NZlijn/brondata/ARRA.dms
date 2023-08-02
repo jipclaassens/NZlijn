@@ -1,0 +1,37 @@
+container ARRA : using = "typeringen;geography"
+{
+	unit<uint32> Read_2016_csv
+	:  StorageName     = "%SourceDataDir%/ARRA/arra2016_selection.csv"
+	,  StorageType     = "gdal.vect"
+	,  StorageReadOnly = "True"
+	,  FreeData        = "False"
+	// ,  SyncMode        = "None"
+	,  DialogType      = "map"
+	,  DialogData      = "geometry"
+	{
+		attribute<string>        vestnum;
+		attribute<string>        zaaknaam;
+		attribute<string>        xcoord;
+		attribute<string>        ycoord;
+		attribute<float32>       xco                  := xcoord[float32];
+		attribute<float32>       yco                  := ycoord[float32];
+		attribute<geography/rdc> geometry             := point(xco, yco, geography/rdc);
+		
+		attribute<string>        sbi_huidig;
+		attribute<string>        wp_tt;
+		attribute<uint32>        werkzame_personen                := wp_tt[uint32];
+		
+		attribute<NL_grid/domain>             NL_grid_domain_rel   := geometry[NL_grid/domain];
+		
+		attribute<uint32>        wp_per_ha (NL_grid/domain) := sum(werkzame_personen, NL_grid_domain_rel), StorageName = "%SourceDataDir%/ARRA/wp_per_ha_2016.tif";
+
+		unit<uint32>  subset := subset(werkzame_personen >= 100)
+		,  DialogType      = "map"
+		,  DialogData      = "geometry"
+		{
+			attribute<geography/rdc> geometry             := ../geometry[nr_OrgEntity];
+			attribute<uint32>        werkzame_personen    := ../werkzame_personen[nr_OrgEntity];
+		}
+	}
+
+}

@@ -1,0 +1,114 @@
+container Ori:  using = "eenheden"
+{
+	Container ReadRingen := 
+		for_each_ne(
+			typeringen/metro_stations/name
+			, ' MaakRingen(' +quote(typeringen/metro_stations/name)+ ')' 
+		);
+
+	template MaakRingen
+	{
+		///
+		parameter<string> name;
+		///
+		parameter<string> pad := replace('%SourceDataDir%/Overig/Ori/Shape10min/@.shp', '@', name);
+		
+		unit<uint32> Ringen10min
+		:	StorageName     = "=pad"  
+		,	StorageType     = "gdal.vect"
+		,	StorageReadOnly = "True"
+		,	SyncMode        = "None" 
+		{
+			attribute<geography/rdc> 	geometry (polygon);
+
+			attribute<Ringen10min>      vierkant_rel (Brondata/CBS_vierkanten/V2014/points)       := point_in_polygon(Brondata/CBS_vierkanten/V2014/points/Geometry, geometry), FreeData = "True";
+			attribute<float32>          woningen2000                                              := sum(Brondata/CBS_vierkanten/V2014/points/woningen2000, vierkant_rel);
+			attribute<float32>          woningen2001                                              := sum(Brondata/CBS_vierkanten/V2014/points/woningen2001, vierkant_rel);
+			attribute<float32>          woningen2002                                              := sum(Brondata/CBS_vierkanten/V2014/points/woningen2002, vierkant_rel);
+			attribute<float32>          woningen2003                                              := sum(Brondata/CBS_vierkanten/V2014/points/woningen2003, vierkant_rel);
+			attribute<float32>          woningen2004                                              := sum(Brondata/CBS_vierkanten/V2014/points/woningen2004, vierkant_rel);
+			attribute<float32>          woningen2005                                              := sum(Brondata/CBS_vierkanten/V2014/points/woningen2005, vierkant_rel);
+			attribute<float32>          woningen2006                                              := sum(Brondata/CBS_vierkanten/V2014/points/woningen2006, vierkant_rel);
+			attribute<float32>          woningen2007                                              := sum(Brondata/CBS_vierkanten/V2014/points/woningen2007, vierkant_rel);
+			attribute<float32>          woningen2008                                              := sum(Brondata/CBS_vierkanten/V2014/points/woningen2008, vierkant_rel);
+			attribute<float32>          woningen2009                                              := sum(Brondata/CBS_vierkanten/V2014/points/woningen2009, vierkant_rel);
+			attribute<float32>          woningen2010                                              := sum(Brondata/CBS_vierkanten/V2014/points/woningen2010, vierkant_rel);
+			attribute<float32>          woningen2011                                              := sum(Brondata/CBS_vierkanten/V2014/points/woningen2011, vierkant_rel);
+			attribute<float32>          woningen2012                                              := sum(Brondata/CBS_vierkanten/V2014/points/woningen2012, vierkant_rel);
+			
+			attribute<Ringen10min>      vbo_2012_rel (Brondata/BAG/Snapshots/VBOs/vbo2012/Wonen)  := point_in_polygon(Brondata/BAG/Snapshots/VBOs/vbo2012/Wonen/Geometry, geometry), FreeData = "True";
+			attribute<uint32>           count_vbo_2012                                            := pcount(vbo_2012_rel), FreeData = "True";
+			attribute<Ringen10min>      vbo_2013_rel (Brondata/BAG/Snapshots/VBOs/vbo2013/Wonen)  := point_in_polygon(Brondata/BAG/Snapshots/VBOs/vbo2013/Wonen/Geometry, geometry), FreeData = "True";
+			attribute<uint32>           count_vbo_2013                                            := pcount(vbo_2013_rel), FreeData = "True";
+			attribute<Ringen10min>      vbo_2014_rel (Brondata/BAG/Snapshots/VBOs/vbo2014/Wonen)  := point_in_polygon(Brondata/BAG/Snapshots/VBOs/vbo2014/Wonen/Geometry, geometry), FreeData = "True";
+			attribute<uint32>           count_vbo_2014                                            := pcount(vbo_2014_rel), FreeData = "True";
+			attribute<Ringen10min>      vbo_2015_rel (Brondata/BAG/Snapshots/VBOs/vbo2015/Wonen)  := point_in_polygon(Brondata/BAG/Snapshots/VBOs/vbo2015/Wonen/Geometry, geometry), FreeData = "True";
+			attribute<uint32>           count_vbo_2015                                            := pcount(vbo_2015_rel), FreeData = "True";
+			attribute<Ringen10min>      vbo_2016_rel (Brondata/BAG/Snapshots/VBOs/vbo2016/Wonen)  := point_in_polygon(Brondata/BAG/Snapshots/VBOs/vbo2016/Wonen/Geometry, geometry), FreeData = "True";
+			attribute<uint32>           count_vbo_2016                                            := pcount(vbo_2016_rel), FreeData = "True";
+			attribute<Ringen10min>      vbo_2017_rel (Brondata/BAG/Snapshots/VBOs/vbo2017/Wonen)  := point_in_polygon(Brondata/BAG/Snapshots/VBOs/vbo2017/Wonen/Geometry, geometry), FreeData = "True";
+			attribute<uint32>           count_vbo_2017                                            := pcount(vbo_2017_rel), FreeData = "True";
+			attribute<Ringen10min>      vbo_2018_rel (Brondata/BAG/Snapshots/VBOs/vbo2018/Wonen)  := point_in_polygon(Brondata/BAG/Snapshots/VBOs/vbo2018/Wonen/Geometry, geometry), FreeData = "True";
+			attribute<uint32>           count_vbo_2018                                            := pcount(vbo_2018_rel), FreeData = "True";
+			
+			attribute<Ringen10min>      vbo_woon_2012_rel (Brondata/BAG/Snapshots/VBOs/vbo2012/GebruiksdoelSets/woon/GebruiksdoelSet)  := point_in_polygon(Brondata/BAG/Snapshots/VBOs/vbo2012/GebruiksdoelSets/woon/GebruiksdoelSet/Geometry, geometry), FreeData = "True";
+			attribute<int32>            sum_opp_2012_woon                                                                              := sum(Brondata/BAG/Snapshots/VBOs/vbo2012/GebruiksdoelSets/woon/GebruiksdoelSet/oppervlakte_trunc, vbo_woon_2012_rel);
+			attribute<Ringen10min>      vbo_woon_2013_rel (Brondata/BAG/Snapshots/VBOs/vbo2013/GebruiksdoelSets/woon/GebruiksdoelSet)  := point_in_polygon(Brondata/BAG/Snapshots/VBOs/vbo2013/GebruiksdoelSets/woon/GebruiksdoelSet/Geometry, geometry), FreeData = "True";
+			attribute<int32>            sum_opp_2013_woon                                                                              := sum(Brondata/BAG/Snapshots/VBOs/vbo2013/GebruiksdoelSets/woon/GebruiksdoelSet/oppervlakte_trunc, vbo_woon_2013_rel);
+			attribute<Ringen10min>      vbo_woon_2014_rel (Brondata/BAG/Snapshots/VBOs/vbo2014/GebruiksdoelSets/woon/GebruiksdoelSet)  := point_in_polygon(Brondata/BAG/Snapshots/VBOs/vbo2014/GebruiksdoelSets/woon/GebruiksdoelSet/Geometry, geometry), FreeData = "True";
+			attribute<int32>            sum_opp_2014_woon                                                                              := sum(Brondata/BAG/Snapshots/VBOs/vbo2014/GebruiksdoelSets/woon/GebruiksdoelSet/oppervlakte_trunc, vbo_woon_2014_rel);
+			attribute<Ringen10min>      vbo_woon_2015_rel (Brondata/BAG/Snapshots/VBOs/vbo2015/GebruiksdoelSets/woon/GebruiksdoelSet)  := point_in_polygon(Brondata/BAG/Snapshots/VBOs/vbo2015/GebruiksdoelSets/woon/GebruiksdoelSet/Geometry, geometry), FreeData = "True";
+			attribute<int32>            sum_opp_2015_woon                                                                              := sum(Brondata/BAG/Snapshots/VBOs/vbo2015/GebruiksdoelSets/woon/GebruiksdoelSet/oppervlakte_trunc, vbo_woon_2015_rel);
+			attribute<Ringen10min>      vbo_woon_2016_rel (Brondata/BAG/Snapshots/VBOs/vbo2016/GebruiksdoelSets/woon/GebruiksdoelSet)  := point_in_polygon(Brondata/BAG/Snapshots/VBOs/vbo2016/GebruiksdoelSets/woon/GebruiksdoelSet/Geometry, geometry), FreeData = "True";
+			attribute<int32>            sum_opp_2016_woon                                                                              := sum(Brondata/BAG/Snapshots/VBOs/vbo2016/GebruiksdoelSets/woon/GebruiksdoelSet/oppervlakte_trunc, vbo_woon_2016_rel);
+			attribute<Ringen10min>      vbo_woon_2017_rel (Brondata/BAG/Snapshots/VBOs/vbo2017/GebruiksdoelSets/woon/GebruiksdoelSet)  := point_in_polygon(Brondata/BAG/Snapshots/VBOs/vbo2017/GebruiksdoelSets/woon/GebruiksdoelSet/Geometry, geometry), FreeData = "True";
+			attribute<int32>            sum_opp_2017_woon                                                                              := sum(Brondata/BAG/Snapshots/VBOs/vbo2017/GebruiksdoelSets/woon/GebruiksdoelSet/oppervlakte_trunc, vbo_woon_2017_rel);
+			attribute<Ringen10min>      vbo_woon_2018_rel (Brondata/BAG/Snapshots/VBOs/vbo2018/GebruiksdoelSets/woon/GebruiksdoelSet)  := point_in_polygon(Brondata/BAG/Snapshots/VBOs/vbo2018/GebruiksdoelSets/woon/GebruiksdoelSet/Geometry, geometry), FreeData = "True";
+			attribute<int32>            sum_opp_2018_woon                                                                              := sum(Brondata/BAG/Snapshots/VBOs/vbo2018/GebruiksdoelSets/woon/GebruiksdoelSet/oppervlakte_trunc, vbo_woon_2018_rel);
+			
+			container opp_per_functie := 
+				for_each_nedv(
+					typeringen/vbo_gebruiksdoel/name
+					, 'opp_per_functie_raw/' + string(typeringen/vbo_gebruiksdoel/name) + '/oppervlak/' + string(typeringen/vbo_gebruiksdoel/name) + '[0]'
+					, void
+					, int32
+				);
+			
+			container opp_per_functie_raw :=
+				for_each_ne(
+					typeringen/vbo_gebruiksdoel/name
+					, 'opp_per_functie_templ(Brondata/BAG/Snapshots/VBOs/vbo2012/GebruiksdoelSets/' + string(typeringen/vbo_gebruiksdoel/name) + '/GebruiksdoelSet)'
+				);
+			
+			Template opp_per_functie_templ
+			{
+			////
+			unit<uint32>   domain;
+			////
+			
+			// parameter<string>   domain := string(replace('Brondata/BAG/Snapshots/VBOs/vbo2012/GebruiksdoelSets/@/GebruiksdoelSet', '@', domain_name));
+		
+			container functie_rel :=
+				for_each_nedv(
+					 typeringen/vbo_gebruiksdoel/name
+					, 'point_in_polygon(Brondata/BAG/Snapshots/VBOs/vbo2012/GebruiksdoelSets/' +string(typeringen/vbo_gebruiksdoel/name)+ '/GebruiksdoelSet/Geometry, Ringen10min/geometry)'
+					, domain
+					, Ringen10min
+				);
+					
+			container oppervlak :=
+				for_each_nedv(
+					 typeringen/vbo_gebruiksdoel/name
+					, 'sum(Brondata/BAG/Snapshots/VBOs/vbo2012/GebruiksdoelSets/' + typeringen/vbo_gebruiksdoel/name + '/GebruiksdoelSet/oppervlakte, functie_rel/' + typeringen/vbo_gebruiksdoel/name + ')'
+					, Ringen10min
+					, int32
+				);
+			}
+		}
+	}
+
+	
+	
+	
+}
+

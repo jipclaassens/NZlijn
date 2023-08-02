@@ -1,0 +1,158 @@
+Container Analyse_Cecile
+{
+	attribute<geography/rdc>   gemeente_geometry   (Brondata/regios/gemeenten/src_2016, poly) := Brondata/regios/gemeenten/src_2016/Geometry;
+	attribute<string>          gemeente_naam       (Brondata/regios/gemeenten/src_2016)       := Brondata/regios/gemeenten/src_2016/label;
+	attribute<geography/rdc>   transactie_geometry (Brondata/NVM/Subset_Amsterdam)            := Brondata/NVM/Subset_Amsterdam/Geometry;
+	
+	unit<uint32> transactie_uq := unique(transactie_geometry)
+	, DialogType = "map"
+	, DialogData = "geometry"
+	{
+		attribute<geography/rdc>  geometry := values;
+		attribute<float32>        xcoord := pointcol(geometry);
+		attribute<float32>        ycoord := pointrow(geometry);
+		
+		attribute<float32> Dist_Amsterdam                  := Distance2Amsterdam/dist;
+		attribute<float32> Dist_Amstelveen                 := Distance2Amstelveen/dist;
+		attribute<float32> Dist_Diemen                     := Distance2Diemen/dist;
+		attribute<float32> Dist_OuderAmstel                := Distance2OuderAmstel/dist;
+		attribute<float32> Dist_Landsmeer                  := Distance2Landsmeer/dist;
+		attribute<float32> Dist_Oostzaan                   := Distance2Oostzaan/dist;
+		attribute<float32> Dist_Zaanstad                   := Distance2Zaanstad/dist;
+		attribute<float32> Dist_Haarlemmermeer             := Distance2Haarlemmermeer/dist;
+		attribute<float32> Dist_HaarlemmerliedeSpaarnwoude := Distance2Haarlemmerliede/dist;
+		attribute<float32> Dist_Waterland                  := Distance2Waterland/dist;
+	}
+	
+	container Distance2Amsterdam       := Rekenschemas/CalculateDistance(Amsterdam/points/uq, transactie_uq);
+	container Distance2Amstelveen      := Rekenschemas/CalculateDistance(Amstelveen/points/uq, transactie_uq);
+	container Distance2Diemen          := Rekenschemas/CalculateDistance(Diemen/points/uq, transactie_uq);
+	container Distance2OuderAmstel     := Rekenschemas/CalculateDistance(OuderAmstel/points/uq, transactie_uq);
+	container Distance2Landsmeer       := Rekenschemas/CalculateDistance(Landsmeer/points/uq, transactie_uq);
+	container Distance2Oostzaan        := Rekenschemas/CalculateDistance(Oostzaan/points/uq, transactie_uq);
+	container Distance2Zaanstad        := Rekenschemas/CalculateDistance(Zaanstad/points/uq, transactie_uq);
+	container Distance2Haarlemmermeer  := Rekenschemas/CalculateDistance(Haarlemmermeer/points/uq, transactie_uq);
+	container Distance2Haarlemmerliede := Rekenschemas/CalculateDistance(HaarlemmerliedeSpaarnwoude/points/uq, transactie_uq);
+	container Distance2Waterland       := Rekenschemas/CalculateDistance(Waterland/points/uq, transactie_uq);
+	
+	unit<uint32> Amsterdam := subset(gemeente_naam == "Amsterdam")
+	{
+		attribute<geography/rdc>   geometry  (polygon) := gemeente_geometry[nr_OrgEntity];
+		unit<uint32> points := sequence2points(geometry)
+		{
+			attribute<geography/rdc>  geometry := point;
+			unit<uint32> uq := unique(geometry)
+			{
+				attribute<geography/rdc>  geometry := values;
+			}
+		}
+	}
+	unit<uint32> Amstelveen := subset(gemeente_naam == "Amstelveen")
+	{
+		attribute<geography/rdc>   geometry  (polygon) := gemeente_geometry[nr_OrgEntity];
+		unit<uint32> points := sequence2points(geometry)
+		{
+			attribute<geography/rdc>  geometry := point;
+			unit<uint32> uq := unique(geometry)
+			{
+				attribute<geography/rdc>  geometry := values;
+			}
+		}
+	}
+	unit<uint32> Diemen := subset(gemeente_naam == "Diemen")
+	{
+		attribute<geography/rdc>   geometry  (polygon) := gemeente_geometry[nr_OrgEntity];
+		unit<uint32> points := sequence2points(geometry)
+		{
+			attribute<geography/rdc>  geometry := point;
+			unit<uint32> uq := unique(geometry)
+			{
+				attribute<geography/rdc>  geometry := values;
+			}
+		}
+	}
+	unit<uint32> OuderAmstel := subset(gemeente_naam == "Ouder-Amstel")
+	{
+		attribute<geography/rdc>   geometry  (polygon) := gemeente_geometry[nr_OrgEntity];
+		unit<uint32> points := sequence2points(geometry)
+		{
+			attribute<geography/rdc>  geometry := point;
+			unit<uint32> uq := unique(geometry)
+			{
+				attribute<geography/rdc>  geometry := values;
+			}
+		}
+	}
+	unit<uint32> Landsmeer := subset(gemeente_naam == "Landsmeer")
+	{
+		attribute<geography/rdc>   geometry  (polygon) := gemeente_geometry[nr_OrgEntity];
+		unit<uint32> points := sequence2points(geometry)
+		{
+			attribute<geography/rdc>  geometry := point;
+			unit<uint32> uq := unique(geometry)
+			{
+				attribute<geography/rdc>  geometry := values;
+			}
+		}
+	}
+	unit<uint32> Oostzaan := subset(gemeente_naam == "Oostzaan")
+	{
+		attribute<geography/rdc>   geometry  (polygon) := gemeente_geometry[nr_OrgEntity];
+		unit<uint32> points := sequence2points(geometry)
+		{
+			attribute<geography/rdc>  geometry := point;
+			unit<uint32> uq := unique(geometry)
+			{
+				attribute<geography/rdc>  geometry := values;
+			}
+		}
+	}
+	unit<uint32> Zaanstad := subset(gemeente_naam == "Zaanstad")
+	{
+		attribute<geography/rdc>   geometry  (polygon) := gemeente_geometry[nr_OrgEntity];
+		unit<uint32> points := sequence2points(geometry)
+		{
+			attribute<geography/rdc>  geometry := point;
+			unit<uint32> uq := unique(geometry)
+			{
+				attribute<geography/rdc>  geometry := values;
+			}
+		}
+	}
+	unit<uint32> Haarlemmermeer := subset(gemeente_naam == "Haarlemmermeer")
+	{
+		attribute<geography/rdc>   geometry  (polygon) := gemeente_geometry[nr_OrgEntity];
+		unit<uint32> points := sequence2points(geometry)
+		{
+			attribute<geography/rdc>  geometry := point;
+			unit<uint32> uq := unique(geometry)
+			{
+				attribute<geography/rdc>  geometry := values;
+			}
+		}
+	}
+	unit<uint32> HaarlemmerliedeSpaarnwoude := subset(gemeente_naam == "Haarlemmerliede en Spaarnwoude")
+	{
+		attribute<geography/rdc>   geometry  (polygon) := gemeente_geometry[nr_OrgEntity];
+		unit<uint32> points := sequence2points(geometry)
+		{
+			attribute<geography/rdc>  geometry := point;
+			unit<uint32> uq := unique(geometry)
+			{
+				attribute<geography/rdc>  geometry := values;
+			}
+		}
+	}
+	unit<uint32> Waterland := subset(gemeente_naam == "Waterland")
+	{
+		attribute<geography/rdc>   geometry  (polygon) := gemeente_geometry[nr_OrgEntity];
+		unit<uint32> points := sequence2points(geometry)
+		{
+			attribute<geography/rdc>  geometry := point;
+			unit<uint32> uq := unique(geometry)
+			{
+				attribute<geography/rdc>  geometry := values;
+			}
+		}
+	}
+}

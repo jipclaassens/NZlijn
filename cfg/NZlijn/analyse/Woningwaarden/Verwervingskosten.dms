@@ -1,0 +1,77 @@
+container Verwervingskosten : FreeData = "False", using = "typeringen"
+{   
+	unit<uint32> Vbo  := /Brondata/BAG/Snapshots/Vbos/Y202001/vbo/GebruiksdoelSets/woon/GebruiksdoelSet;
+	
+	container Woningwaarde_Voor_Opening := BepaalWoningwaardeT('Voor');
+	container Woningwaarde_Na_Opening   := BepaalWoningwaardeT('Na');
+	
+	Template BepaalWoningwaardeT
+	{
+		parameter<string> VoorOfNa;
+		
+		container PerWP4PerWoning := 
+			for_each_nedv(
+				WP4/name
+				, replace(
+					'MakeDefined(
+							exp(
+								@C@/constant
+								
+								+ log(Vbo/Oppervlakte_4WP/@W@ < 1f ? 1f : Vbo/Oppervlakte_4WP/@W@)               * @C@/lnsize
+								+ @WS@_nrooms                                * @C@/nrooms
+								+ @WS@_nbadk                                 * @C@/nbadk
+								+ @WS@_d_maintgood                           * @C@/d_maintgood
+								+ @WS@_d_kk                                  * @C@/d_kk
+								+ @WS@_d_cv                                  * @C@/d_cv
+								+ @WS@_d_erfpacht                            * @C@/d_erfpacht
+								+ @WS@_d_isol_compl                          * @C@/d_isol_compl
+								+ @WS@_d_privpark                            * @C@/d_privpark
+								+ 1[EUR]                                     * @C@/y2019
+								+ value('+String(WP4/IsDetached    )+', EUR) * @C@/d_detached
+								+ value('+String(WP4/IsSemiDetached)+', EUR) * @C@/d_semidetached
+								
+								+ RegionalAvgCharacteristics/Overige_vars/uai_5000m_dcsq              * @C@/uai_new
+								+ (RegionalAvgCharacteristics/Overige_vars/Bereikbaarheid_Piek_'+VoorOfNa+' / 10000f)    * @C@/Bereikbaarheidpiekvoor
+							)[Eur_woning]
+						, 0[Eur_woning]
+					)',
+					'@W@', WP4/name,
+					'@C@', 'PrijsIndex/ReadCoefficients/'+WP2/name[WP4/WP2_rel]+'/Result',
+					'@WS@', 'RegionalAvgCharacteristics/result/'+WP4/name
+				  )
+				, NL_grid/domain
+				, EUR_woning
+			);
+		
+		attribute<EUR> PerVBO (vbo) :=
+			= 'max_elem('
+					'merge('
+						'Vbo/WP4_rel[uint16],'
+						'EUR_woning ,'+
+						AsItemList('PerWP4PerWoning/'+WP4/name+'[vbo/NL_grid_domain_rel]')+
+					')'
+					', 0[EUR_woning]'
+			') * 1[Woning]';
+		
+		attribute<EUR_ha> Totaal          (NL_grid/domain) := sum(PerVBO, vbo/NL_grid_domain_rel) / 1[ha], cdf = "Classified/Target_9K/ClassBreaks";
+		
+		container Classified := /Rekenschemas/Classify_9K_EurHa(Totaal, NL_grid/domain);
+	}
+	
+	attribute<Eur_ha> Verschil_VoorNa_src (NL_grid/domain) := Woningwaarde_Na_Opening/Totaal - Woningwaarde_Voor_Opening/Totaal;
+	attribute<Eur_ha> Verschil_VoorNa     (NL_grid/domain) := Verschil_VoorNa_src > -5000[Eur_ha] && Verschil_VoorNa_src < 5000[Eur_ha] ? (0/0)[Eur_ha] : Verschil_VoorNa_src, FreeData = "false";
+	attribute<Prijs_diff> Verschil_VoorNa_class  (NL_grid/domain)  := classify(Verschil_VoorNa, Prijs_diff/Classes);
+	
+	unit<int32> Prijs_diff : nrofrows = 10
+	{
+		attribute<float32>  Classes       : [       -5000000,      -1000000,        -500000,       -250000,          -50000,         50000,         250000,          500000,        1000000,       5000000], DialogType = "Classification";
+		attribute<uint32> BrushColor    : [   rgb(255,0,0),rgb(255,100,0), rgb(255,170,0),rgb(255,255,0),rgb(230,230,230),rgb(178,225,140),rgb(130,200,170),rgb(90,180,200),rgb(50,150,225),rgb(0,0,200)], DialogType = "BrushColor";
+		attribute<string> Label         : [    '-5m - -1m', '-1m - -500k','-500k - -250k','-250k - -50k',    '-50k - 50k',  '50k - 250k',  '250k - 500k',     '500k - 1m',      '1m - 5m',        '> 5m'], DialogType = "LabelText";
+		attribute<uint32> PenColor      := BrushColor, DialogType = "PenColor";
+		parameter<int16>  PenWidth      := 0s,  DialogType = "PenWidth";
+		attribute<uint32> SymbolColor   := BrushColor, DialogType = "SymbolColor";
+	}
+	//rgb(230,230,230)
+	
+	
+}

@@ -1,0 +1,70 @@
+////////////////////////////////////////////////////////////////////////////////////////
+//                                                                                    //
+//                                                                                    //
+//                       Configuratie voor project: Open Data Analyse                 //
+//                                                                                    //
+//                              Object Vision 2011                                    //
+//                                                                                    //
+////////////////////////////////////////////////////////////////////////////////////////
+//                                                                                    //
+//            Configuratiebestand met extra verbindingen in Nederland voor netwerk    //
+//                                                                                    //
+////////////////////////////////////////////////////////////////////////////////////////
+
+container ExtraVerbindingen
+{
+	unit<uint32> coordinates
+	:	NrOfRows   = 12
+	,	DialogType = "Map"
+	,	DialogData = "location"
+	,	source     = "handmatig gedigitaliseerd"
+	{
+		parameter<uint32> nrAttr  := 5;
+		unit<UInt32> Elements     := Range(uint32, 0, nrAttr*#.)
+		{
+			attribute<float32> Text:
+			[
+				//X       ,Y         ,seq, order, wegtype
+				//Pont Centraal-Buikslotermeer
+				121800.891,488197.551, 0,0,76,
+				122044.896,488364.530, 0,1,76,
+				
+				//Weg StrandZuid
+				120872.786,483813.421, 1,0,8,
+				120871.334,483793.964, 1,1,8,
+				//Pont Centraal-NDSM
+				121797.298,488192.329, 2,0,76,
+				121281.534,490464.477, 2,1,76,
+				//Pont Centraal-Buikslotermeer
+				122001.454,488061.355, 3,0,76,
+				122399.893,488312.267, 3,1,76,
+				//Pont KNSMeiland-Nieuwdammerham
+				124367.925,487850.019, 4,0,76,
+				123925.261,488644.803, 4,1,76,
+				//Pont Hembrug
+				116861.743,492750.516, 5,0,76,
+				116877.840,492396.385, 5,1,76
+			];
+		}
+		attribute<m>                      X          := Elements/Text[value(UInt32(ID(.))* nrAttr + 0, Elements)][m];
+		attribute<m>                      Y          := Elements/Text[value(UInt32(ID(.))* nrAttr + 1, Elements)][m];
+		attribute<link>                   sequence   := Elements/Text[value(UInt32(ID(.))* nrAttr + 2, Elements)][link];
+		attribute<uint32>                 order      := Elements/Text[value(UInt32(ID(.))* nrAttr + 3, Elements)][uint32];
+		attribute<typeringen/wegtype>     wegtype    := Elements/Text[value(UInt32(ID(.))* nrAttr + 4, Elements)][typeringen/wegtype];
+
+		attribute<geography/rdc>         location   := point(X,Y,geography/rdc);
+		parameter<uint32>                 nrPoly     := uint32(max(Elements/Text[value(UInt32(ID(.))* nrAttr + 2, Elements)])) + 1;
+	}
+	unit<uint32> link := range(uint32, 0,coordinates/nrPoly)
+	,	DialogType = "Map"
+	,	DialogData = "line"
+	{
+		attribute<geography/rdc>         line (arc, link) := points2sequence(coordinates/location, coordinates/sequence, coordinates/order);
+		attribute<typeringen/wegtype>     wegtype          := rjoin(id(.),coordinates/sequence, coordinates/wegtype);
+	}
+	unit<uint32> nodes := union_unit(link, link)
+	{
+		attribute<geography/rdc> UnionData := union_data(.,first_point(link/line), last_point(link/line));
+	}
+
+}

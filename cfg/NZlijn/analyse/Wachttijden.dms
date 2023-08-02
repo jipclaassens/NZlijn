@@ -1,0 +1,41 @@
+container Wachttijden : using = "eenheden"
+{     
+	unit<uint32> VBO  := /Brondata/BAG/Snapshots/VBOs/Y202001/Vbo/GebruiksdoelSets/WoON/GebruiksdoelSet;
+	unit<uint32> Pand := /Brondata/BAG/Snapshots/Panden/Y202001/pand;
+	
+	attribute<NL_grid/domain>  NL_grid_domain_rel (PC6) := PC6/centroid[Geography/NL_grid/domain];
+	
+	unit<uint32> PC6 := /Brondata/regios/Postcode_gebieden/Postcode6_areas/MRA
+	{
+		attribute<string> pc6                    := /Brondata/regios/Postcode_gebieden/Postcode6_areas/MRA/label;
+		attribute<uint32> count_vrijstaand       := sum(uint32(VBO/woonpand_rel == typeringen/type_woonpand/V/vrijstaand), VBO/pc6_mra_rel);
+		attribute<uint32> count_twee_onder_1_kap := sum(uint32(VBO/woonpand_rel == typeringen/type_woonpand/V/twee_onder_1_kap), VBO/pc6_mra_rel);
+		attribute<uint32> count_rijtjeswoning    := sum(uint32(VBO/woonpand_rel == typeringen/type_woonpand/V/rijtjeswoning), VBO/pc6_mra_rel);
+		attribute<uint32> count_appartement      := sum(uint32(VBO/woonpand_rel == typeringen/type_woonpand/V/appartement), VBO/pc6_mra_rel);
+		attribute<uint32> count_totaal           := count_vrijstaand + count_twee_onder_1_kap + count_rijtjeswoning + count_appartement;
+		
+		attribute<float32> mean_bouwjaar         := mean(Pand/bouwjaar_trunc[float32], Pand/pc6_mra_rel);
+		attribute<float32> median_bouwjaar       := rth_element(Pand/bouwjaar_trunc[float32],0.5f, Pand/pc6_mra_rel);
+		
+		attribute<float32> avg_oppervlakte_vrijstaand       := mean(VBO/woonpand_rel == typeringen/type_woonpand/V/vrijstaand ? VBO/oppervlakte_trunc[float32] : (0/0)[float32], VBO/pc6_mra_rel);
+		attribute<float32> avg_oppervlakte_twee_onder_1_kap := mean(VBO/woonpand_rel == typeringen/type_woonpand/V/twee_onder_1_kap ? VBO/oppervlakte_trunc[float32] : (0/0)[float32], VBO/pc6_mra_rel);
+		attribute<float32> avg_oppervlakte_rijtjeswoning    := mean(VBO/woonpand_rel == typeringen/type_woonpand/V/rijtjeswoning ? VBO/oppervlakte_trunc[float32] : (0/0)[float32], VBO/pc6_mra_rel);
+		attribute<float32> avg_oppervlakte_appartement      := mean(VBO/woonpand_rel == typeringen/type_woonpand/V/appartement ? VBO/oppervlakte_trunc[float32] : (0/0)[float32], VBO/pc6_mra_rel);
+		
+		attribute<float32> Reistijd_station_Centraal_in_sec     := NetwerkDist_perstation/Centraal/Netwerk/OrgToDest/MakeOD_Time/impedance_org;
+		attribute<float32> Reistijd_station_DePijp_in_sec       := NetwerkDist_perstation/DePijp/Netwerk/OrgToDest/MakeOD_Time/impedance_org;
+		attribute<float32> Reistijd_station_Europaplein_in_sec  := NetwerkDist_perstation/Europaplein/Netwerk/OrgToDest/MakeOD_Time/impedance_org;
+		attribute<float32> Reistijd_station_Noord_in_sec        := NetwerkDist_perstation/Noord/Netwerk/OrgToDest/MakeOD_Time/impedance_org;
+		attribute<float32> Reistijd_station_Noorderpark_in_sec  := NetwerkDist_perstation/Noorderpark/Netwerk/OrgToDest/MakeOD_Time/impedance_org;
+		attribute<float32> Reistijd_station_Rokin_in_sec        := NetwerkDist_perstation/Rokin/Netwerk/OrgToDest/MakeOD_Time/impedance_org;
+		attribute<float32> Reistijd_station_Vijzelgracht_in_sec := NetwerkDist_perstation/Vijzelgracht/Netwerk/OrgToDest/MakeOD_Time/impedance_org;
+		attribute<float32> Reistijd_station_Zuid_in_sec         := NetwerkDist_perstation/Zuid/Netwerk/OrgToDest/MakeOD_Time/impedance_org;
+	}
+
+	container NetwerkDist_perstation := 
+		for_each_ne(
+			typeringen/all_metro_stations/NZ_stations/name
+			, '/Analyse/NetwerkDist_Points_to_NZ/MaakNetwerkDist_templ(Brondata/Metrostations/Losse_stations/' +typeringen/all_metro_stations/NZ_stations/name+ '/Subset, PC6)'
+		);
+
+}

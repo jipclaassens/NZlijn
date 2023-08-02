@@ -1,0 +1,118 @@
+////////////////////////////////////////////////////////////////////////////////////////
+//                                                                                    //
+//                                                                                    //
+//                       Configuratie voor project: Open Data Analyse                 //
+//                                                                                    //
+//                              Object Vision 2011                                    //
+//                                                                                    //
+////////////////////////////////////////////////////////////////////////////////////////
+//                                                                                    //
+//       Configuratiebestand voor opbouw Netwerk, waarin de herkomst en               //
+//       bestemmings locaties gekoppeld worden aan een gesloten netwerk               //
+////////////////////////////////////////////////////////////////////////////////////////
+
+container OrgToDest: IsHidden = "True"
+{
+	unit<uint32> Locations := union_unit(orgDomain, destDomain)
+	,	DialogData  = "Values"
+	,	DialogType  = "Map"
+	{
+		attribute<geography/rdc> Values := union_data(.,orgLocations, destLocations),Label = "Unieke Locations origins en destinations";
+	}
+	unit<uint32> RoadsWithLocations := connect(MakeConnectedRoads/result/line, OrgToDest/Locations/Values)
+	,	DialogData = "UnionData"
+	,	DialogType = "Map"
+	{
+		attribute<geography/rdc>                  UnionData(arc);
+		attribute<typeringen/wegtype>              wegtype         := MakeDefined(MakeConnectedRoads/result/wegtype[nr_OrgEntity], value(69,typeringen/wegtype));
+	}
+	unit <uint32> LinkSet := arc2segm(RoadsWithLocations/UnionData)
+	,	DialogData = "segments"
+	,	DialogType = "Map"
+	{
+		attribute<geography/rdc>          point;
+		attribute<geography/rdc>          nextpoint;
+		attribute<RoadsWithLocations>      SequenceNr;
+		attribute<typeringen/wegtype>      wegtype         := RoadsWithLocations/wegtype[SequenceNr];
+		attribute<m>                       lengte          := arc_length(segments, m), DisableStorage = "True";
+		attribute<m_s>                     snelheid        := wegtype == 76b ? 1[m_s] : 1.4[m_s];
+		attribute<s>                       impedance_link  := lengte / snelheid;
+
+		unit<uint32> pointset := Union_Unit(LinkSet, LinkSet)
+		{
+			attribute<geography/rdc>   point   := Union_Data(pointset, LinkSet/point, LinkSet/nextpoint);
+			attribute<LinkSet>          ArcID   := value(ID(pointset) % nrofrows(LinkSet), LinkSet);
+			attribute<uint32>           VolgNr  := ID(pointset) / nrofrows(LinkSet);
+		}
+		attribute<geography/rdc> segments(arc) := points2sequence(pointset/point, pointset/ArcID, pointset/VolgNr);
+	}
+	
+	unit<uint32> NodeSet  := unique(linkset/pointset/point)
+	,	DialogData = "Values"
+	,	DialogType = "Map"
+	{
+		attribute<geography/rdc>  Values;
+		attribute<geography/NL_grid/domain>   NL_grid_domain_rel   := Values[geography/NL_grid/domain];
+		attribute<geography/NL_grid/domain_500m>   NL_grid_domain_500m_rel   := Values[geography/NL_grid/domain_500m];
+		attribute<uint32>          NrConnectedLinks  := pcount(F1) + pcount(F2);
+	}
+
+	attribute<NodeSet> F1(LinkSet):= rlookup(LinkSet/point,     NodeSet/Values);
+	attribute<NodeSet> F2(LinkSet):= rlookup(LinkSet/nextpoint, NodeSet/Values);
+
+	container ConnectingLinks 
+	// hiermee wordt voor ieder begin en eind node het aantal geconnecte links bepaald
+	// dit bepaalt of het een bocht (2 links), zijweg (3 links), kruising (4 links) of complexe kruising (meer dan 4 links) is
+	// afhankelijk van dit aantal wordt een aantal seconden opgeteld bij de totale impedance
+	{
+		// helft van de opgegeven waarden omdat er zowel bij begin als einde een factor wordt opgeteld
+		parameter<s>       Impedance2Links    := 0[s];
+		parameter<s>       Impedance3Links    := 0[s];
+		parameter<s>       Impedance4Links    := 5[s];
+		parameter<s>       Impedance_gt4Links := 6[s];
+
+		attribute<uint32>  Start(LinkSet)     := NodeSet/NrConnectedLinks[F1];
+		attribute<uint32>  End  (LinkSet)     := NodeSet/NrConnectedLinks[F2];
+	
+		attribute<s> impedance_Start (LinkSet):=
+			switch(
+				 case(Start <= 2, Impedance2Links)
+				,case(Start  = 3, Impedance3Links)
+				,case(Start  = 4, Impedance4Links)
+				,Impedance_gt4Links
+			);
+	
+		attribute<s> impedance_End (LinkSet):=
+			switch(
+				 case(End <= 2, Impedance2Links)
+				,case(End  = 3, Impedance3Links)
+				,case(End  = 4, Impedance4Links)
+				,Impedance_gt4Links
+			);
+	}
+	attribute<s> impedance (LinkSet) := linkset/impedance_link + ConnectingLinks/impedance_Start + ConnectingLinks/impedance_End;
+
+	attribute<NodeSet> nr_orgNode  (orgDomain)   := rlookup(orgLocations, NodeSet/Values);
+	attribute<NodeSet> nr_destNode (destDomain)  := rlookup(destLocations, NodeSet/Values);
+
+	unit<uint32> connected_nodes := connected_parts(OrgToDest/F1, OrgToDest/F2)
+	{
+		attribute<uint32> nr_nodes := sum(const(1, OrgToDest/NodeSet, uint32), partnr);
+	}
+	
+	container MakeOD_Time: FreeData = "False"
+	{
+		attribute<s>  impedance_OD (NodeSet) := 
+			dijkstra_s('bidirectional;startPoint(Node_rel);node:TraceBack'
+				, impedance
+				, F1
+				, F2
+				, nr_destNode
+			);
+		
+		attribute<float32>          impedance_org (orgDomain)                 := impedance_OD[nr_orgNode];
+		attribute<bool>             impedance_org_600s (orgDomain) := impedance_org <= 600f; //Ad hoc
+		attribute<s>          grid          (Geography/NL_grid/Domain)  := mean(impedance_OD, NodeSet/NL_grid_domain_rel)[s]; //, StorageName = "%LocalDataDir%/Output/Reistijd100kInw.tif";
+		attribute<s>          grid_500m          (Geography/NL_grid/Domain_500m)  := mean(impedance_OD, NodeSet/NL_grid_domain_500m_rel)[s]; //, StorageName = "%LocalDataDir%/Output/Reistijd100kInw.tif";
+	}
+}

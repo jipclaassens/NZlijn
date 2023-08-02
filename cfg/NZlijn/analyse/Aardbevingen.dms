@@ -1,0 +1,144 @@
+container Aardbevingen : FreeData = "False" 
+{
+	// unit<uint32> NVM := subset(Brondata/NVM/Subset_NoordNL/gemeente_rel == 14)
+	unit<uint32> NVM := subset(IsDefined(Brondata/NVM/Subset_NoordNL/gemeente_rel))
+	, DialogType = "map"
+	, DialogData = "geometry"
+	{
+		attribute<geography/rdc>  geometry        := Brondata/NVM/Subset_NoordNL/geometry[nr_OrgEntity];
+		attribute<uint32>         obsid           := Brondata/NVM/Subset_NoordNL/obsid[nr_OrgEntity];
+		attribute<string>         obsname         := 'T' + string(obsid);
+		
+		attribute<uint2>          d_apartment     := Brondata/NVM/Subset_NoordNL/d_apartment[nr_OrgEntity];
+		attribute<uint2>          d_terraced      := Brondata/NVM/Subset_NoordNL/d_terraced[nr_OrgEntity];
+		attribute<uint2>          d_semidetached  := Brondata/NVM/Subset_NoordNL/d_semidetached[nr_OrgEntity];
+		attribute<uint2>          d_detached      := Brondata/NVM/Subset_NoordNL/d_detached[nr_OrgEntity];
+		attribute<eur>            price           := Brondata/NVM/Subset_NoordNL/price[nr_OrgEntity];
+		attribute<m2>             size            := Brondata/NVM/Subset_NoordNL/size[nr_OrgEntity];
+		attribute<m2>             lotsize         := Brondata/NVM/Subset_NoordNL/lotsize[nr_OrgEntity];
+		attribute<jaar>           trans_year      := Brondata/NVM/Subset_NoordNL/trans_year[nr_OrgEntity];
+		attribute<maand>          trans_month     := Brondata/NVM/Subset_NoordNL/trans_month[nr_OrgEntity];
+		attribute<uint32>         trans_yearmonth := trans_year[uint32] * 100 + trans_month[uint32];
+		attribute<jaar>           bouwjaar        := Brondata/NVM/Subset_NoordNL/bouwjaar[nr_OrgEntity];
+		attribute<uint32>         nrooms          := Brondata/NVM/Subset_NoordNL/nrooms[nr_OrgEntity];
+		attribute<uint32>         nbadk           := Brondata/NVM/Subset_NoordNL/nbadk[nr_OrgEntity];
+		attribute<uint2>          d_maintgood     := Brondata/NVM/Subset_NoordNL/d_maintgood[nr_OrgEntity];
+		attribute<uint2>          d_CV            := Brondata/NVM/Subset_NoordNL/d_CV[nr_OrgEntity];
+		attribute<uint2>          d_privpark      := Brondata/NVM/Subset_NoordNL/d_privpark[nr_OrgEntity];
+		attribute<uint2>          d_kk            := Brondata/NVM/Subset_NoordNL/d_kk[nr_OrgEntity];
+		attribute<uint2>          d_erfpacht      := Brondata/NVM/Subset_NoordNL/d_erfpacht[nr_OrgEntity];
+		attribute<uint2>          d_isol_compl    := Brondata/NVM/Subset_NoordNL/d_isol_compl[nr_OrgEntity];
+		
+		attribute<string>         pc4             := Brondata/NVM/Subset_NoordNL/pc4[nr_OrgEntity];
+		attribute<uint32>         gemeente_rel    := point_in_polygon(geometry, /Brondata/regios/gemeenten/src_2016/Geometry);
+		attribute<string>         gemeente_name   := rjoin(gemeente_rel, id(Brondata/regios/gemeenten/src_2016), Brondata/regios/gemeenten/src_2016/GM_NAAM);
+		attribute<uint32>         buurt_rel       := point_in_polygon(geometry, /Brondata/regios/buurten/src_2016/Geometry);
+		attribute<string>         buurt_name      := rjoin(buurt_rel, id(Brondata/regios/buurten/src_2016), Brondata/regios/buurten/src_2016/BU_NAAM);
+		attribute<uint32>         wijk_rel        := point_in_polygon(geometry, /Brondata/regios/wijken/src_2016/Geometry);
+		attribute<string>         wijk_name       := rjoin(wijk_rel, id(Brondata/regios/wijken/src_2016), Brondata/regios/wijken/src_2016/WK_NAAM);	
+		
+		attribute<float32>        PGV_gt05        := sum(QuakesPerHouse/PGV > 0.5f && QuakesPerHouse/QuakeBeforeTrans ? QuakesPerHouse/PGV : 0f, Analyse/Aardbevingen/QuakesPerHouse/nr_1);
+		attribute<float32>        PGV             := sum(QuakesPerHouse/QuakeBeforeTrans ? QuakesPerHouse/PGV : 0f, Analyse/Aardbevingen/QuakesPerHouse/nr_1);
+		attribute<float32>        PGV_timeweighted:= sum(QuakesPerHouse/QuakeBeforeTrans ? QuakesPerHouse/PGV_timeweighted : 0f, Analyse/Aardbevingen/QuakesPerHouse/nr_1);
+	}
+	
+	unit<uint32> Aardbevingen
+	:	StorageName     = "%SourceDataDir%/Overig/Aardbevingen_tm2018_RD.shp"
+	,	StorageType     = "gdal.vect"
+	,	StorageReadOnly = "True"
+	,   DialogType      = "map"
+	,   DialogData      = "geometry"
+	,   SyncMode        = "none"
+	{
+		attribute<geography/rdc>    geometry;
+		attribute<string>           date_     ;
+		attribute<int32>            depth     ;
+		attribute<float64>          magnitude ;
+		attribute<string>           event     ;
+		attribute<uint32>           noord_nl_rel    := point_in_polygon(geometry, /Brondata/regios/provincies/src_2012/Noord_Nederland/Geometry);
+
+		unit<uint32> Noord_nederland := subset(IsDefined(noord_nl_rel))
+		,   DialogType      = "map"
+		,   DialogData      = "geometry"
+		,   SyncMode        = "none"
+		{
+			attribute<geography/rdc>    geometry  := ../geometry[nr_OrgEntity];
+			attribute<string>           name      := 'Q' + replace(date, '/', '');
+			attribute<string>           date      := ../date_[nr_OrgEntity];
+			attribute<int32>            depth     := ../depth[nr_OrgEntity];
+			attribute<float64>          magnitude := ../magnitude[nr_OrgEntity];
+			attribute<string>           event     := ../event[nr_OrgEntity];
+			
+			attribute<uint32>           quake_year      := substr(date, 0, 4)[uint32];
+			attribute<uint32>           quake_month     := substr(date, 5, 2)[uint32];
+			attribute<uint32>           quake_yearmonth := quake_year * 100 + quake_month;
+		}
+	}
+	
+	unit<uint32> QuakesPerHouse := combine(NVM, Aardbevingen/Noord_nederland), FreeData = "False"
+	{ 
+		attribute<string>         obsname          := NVM/obsname[nr_1];
+		attribute<geography/rdc>  geometry_house   := NVM/geometry[nr_1];
+		attribute<uint32>         trans_yearmonth  := NVM/trans_yearmonth[nr_1];
+		attribute<uint32>         trans_year       := value(NVM/trans_year[nr_1], uint32);
+		attribute<uint32>         trans_month      := value(NVM/trans_month[nr_1], uint32);
+		
+		attribute<string>         quakename        := Aardbevingen/Noord_nederland/name[nr_2];
+		attribute<geography/rdc>  geometry_quake   := Aardbevingen/Noord_nederland/geometry[nr_2];
+		attribute<float32>        magnitude        := (Aardbevingen/Noord_nederland/magnitude[nr_2])[float32];
+		attribute<int32>          depth            := Aardbevingen/Noord_nederland/depth[nr_2];
+		attribute<uint32>         quake_yearmonth  := Aardbevingen/Noord_nederland/quake_yearmonth[nr_2];
+		attribute<uint32>         quake_year       := Aardbevingen/Noord_nederland/quake_year[nr_2];
+		attribute<uint32>         quake_month      := Aardbevingen/Noord_nederland/quake_month[nr_2];
+		
+		attribute<string>         ObsNameQuakeName := obsname + '_' + quakename;
+		attribute<float32>        distance         := dist(geometry_quake, geometry_house) / 1000f;
+		attribute<bool>           QuakeBeforeTrans := quake_yearmonth < trans_yearmonth;
+		
+		attribute<int32>         YearsBeforeTrans := QuakeBeforeTrans ? trans_year[int32] - quake_year[int32] : 0i;
+		attribute<int32>         MontsBeforeTrans := QuakeBeforeTrans ? trans_month[int32] - quake_month[int32] : 0i;
+		
+		attribute<int32>         TimeBeforeTrans  := 12i * YearsBeforeTrans + MontsBeforeTrans;
+		
+		attribute<float32>       logx             := log(TimeBeforeTrans[float32]) / log(10f);
+		attribute<float32>       logx_edit        := logx == 0f ? 1.15f : logx + 1f;
+		attribute<float32>       div1bylog        := 1f / logx_edit;
+		
+		
+		attribute<float32>        R                := sqrt(sqr(distance) + sqr(exp(0.4233f * magnitude[float32] - 0.6083f)));
+		attribute<float32>        gR               := 	switch(
+															case(distance <= 6.32f                       , c4 * log(R))
+															, case(distance > 6.32f && distance <= 11.62f, c4 * log(6.32f) + c4a * log(R / 6.32f))
+															, case(distance > 11.62f                     , c4 * log(6.32f) + c4a * log(11.62f / 6.32f) + c4b * log(R / 11.62f))
+															, const(0f, .)
+														);
+		attribute<float32>        lnPGV            := c1 + c2 * magnitude + gR;
+		attribute<float32>        PGV              := exp(lnPGV);
+		attribute<float32>        PGV_timeweighted := div1bylog * PGV;
+		
+		parameter<float32>        c1               := -5.9357f;
+		parameter<float32>        c2               := 2.4036f;
+		parameter<float32>        c4               := -1.8819f;
+		parameter<float32>        c4a              := -1.2274f;
+		parameter<float32>        c4b              := -1.7343f;
+		
+		unit<uint32> QuakeBeforeTrans_selection := subset(QuakeBeforeTrans)
+		{
+			attribute<int32>         trans_yearmonth  := (../trans_yearmonth[nr_OrgEntity])[int32];
+			attribute<int32>         trans_year       := (../trans_year[nr_OrgEntity])[int32];
+			attribute<int32>         trans_month      := (../trans_month[nr_OrgEntity])[int32];
+			attribute<int32>         quake_yearmonth  := (../quake_yearmonth[nr_OrgEntity])[int32];
+			attribute<int32>         quake_year       := (../quake_year[nr_OrgEntity])[int32];
+			attribute<int32>         quake_month      := (../quake_month[nr_OrgEntity])[int32];
+			
+			attribute<int32>         YearsBeforeTrans := trans_year - quake_year;
+			attribute<int32>         MontsBeforeTrans := trans_month[int32] - quake_month[int32];
+			
+			attribute<int32>         TimeBeforeTrans  := 12i * YearsBeforeTrans + MontsBeforeTrans;
+			
+			attribute<float32>       logx             := log(TimeBeforeTrans[float32]) / log(10f);
+			attribute<float32>       logx_edit        := logx == 0f ? 1.15f : logx + 1f;
+			attribute<float32>       div1bylog        := 1f / logx_edit;
+		}
+	}
+}

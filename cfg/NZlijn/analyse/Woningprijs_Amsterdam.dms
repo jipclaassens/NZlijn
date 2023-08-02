@@ -1,0 +1,111 @@
+container Woningprijs_Amsterdam:  using = "eenheden"
+{
+	unit<uint32>   RegioUnit_buurt        := brondata/regios/Buurten/src_2016;
+	unit<uint32>   RegioUnit_wijk         := brondata/regios/wijken/src_2016;
+	// unit<uint32>   RegioUnit_gem          := BronData/regios/gemeenten/gem_2012/gem_uq;
+	// unit<uint32>   RegioUnit_nvm          := BronData/regios/nvm/src;
+	unit<uint32>   Vbo                    := Brondata/BAG/Snapshots/Vbos/Y201201/vbo/GebruiksdoelSets/Woon/GebruiksdoelSet;
+	// unit<uint8>    type_woonpand          := typeringen/type_woonpand_4;
+
+	container NVM
+	{
+		unit<uint32> src := Brondata/NVM/Subset_Amsterdam
+		, 	DialogType = "Map"
+		, 	DialogData = "geometry"
+		, 	FreeData = "False"
+		{
+			attribute<geography/rdc> geometry := Brondata/NVM/Subset_Amsterdam/geometry;
+			attribute<uint2> 		app 		:= d_apartment[uint2];
+			attribute<uint2> 		rij 		:= d_terraced[uint2];
+			attribute<uint2> 		semi		:= d_semidetached[uint2];
+			attribute<uint2> 		vrij		:= d_detached[uint2];
+			attribute<m2> 			size;
+			attribute<m2> 			lotsize;
+			attribute<jaar> 		trans_year;
+			attribute<jaar>			bouwjaar;	
+			attribute<eur>			price;
+			attribute<eur>			listprice;
+			attribute<eur> 			Diff_price_list 	:= price - listprice;
+			attribute<fractie>		Pr_price_list 	:= price / listprice;
+			attribute<string>		gemeente_code;
+		}
+	
+		unit<uint32> Analyse_2016 := SubSet(src/trans_year == 2016[jaar] 
+									&& src/diff_price_list >= -50000[eur] 
+									&& src/diff_price_list <= 50000[eur] 
+									&& IsDefined(src/price) 
+									&& src/listprice >= 25000[eur] 
+									&& src/gemeente_code == 'GM0363')
+		, 	DialogType = "Map"
+		, 	DialogData = "geometry"
+		, 	FreeData = "False"
+		{
+			attribute<geography/rdc> 	geometry	:= src/geometry[nr_OrgEntity];
+			attribute<uint2> 		app 		:= src/app[nr_OrgEntity];
+			attribute<uint2> 		rij 		:= src/rij[nr_OrgEntity];
+			attribute<uint2> 		semi		:= src/semi[nr_OrgEntity];
+			attribute<uint2> 		vrij		:= src/vrij[nr_OrgEntity];
+			// attribute<eur> 			realprice		:= src/realprice_value[nr_OrgEntity];
+			attribute<m2> 			size		:= src/size[nr_OrgEntity];
+			attribute<m2> 			lotsize		:= src/lotsize[nr_OrgEntity];
+			attribute<jaar> 		trans_year	:= src/trans_year[nr_OrgEntity];
+			attribute<jaar>			bouwjaar	:= src/bouwjaar[nr_OrgEntity];	
+			attribute<eur>			price		:= src/price[nr_OrgEntity];
+			attribute<eur>			listprice		:= src/listprice[nr_OrgEntity];
+			attribute<eur> 			Diff_price_list 	:= src/Diff_price_list[nr_OrgEntity];
+			attribute<fractie>		Pr_price_list	:= src/Pr_price_list[nr_OrgEntity];
+			attribute<string>		gemeente_code	:= src/gemeente_code[nr_OrgEntity];
+			
+			attribute<NL_grid/domain>   				NL_grid_domain_rel 	:= geometry[NL_grid/domain];
+			attribute<brondata/regios/postcode_gebieden/postcode4>	pc4_rel			:= point_in_polygon(geometry, brondata/regios/postcode_gebieden/postcode4/geometry);
+			attribute<brondata/regios/postcode_gebieden/postcode6>	pc6_rel			:= point_in_polygon(geometry, brondata/regios/postcode_gebieden/postcode6/geometry);
+
+			attribute<eur>			mean_price_pc4 (brondata/regios/postcode_gebieden/postcode4)	:= mean(price, pc4_rel);
+			attribute<eur>			mean_diff_grid (NL_grid/domain)					:= mean(diff_price_list, NL_grid_domain_rel);
+			attribute<eur>			mean_diff_pc4 (brondata/regios/postcode_gebieden/postcode4)	:= mean(diff_price_list, pc4_rel);
+			attribute<fractie>		mean_pr_diff_grid (NL_grid/domain)					:= mean(Pr_price_list, NL_grid_domain_rel);
+			attribute<fractie>		mean_pr_diff_pc4 (brondata/regios/postcode_gebieden/postcode4)	:= count_pr_diff_pc4 >= 10 ? mean(Pr_price_list, pc4_rel) : (0/0)[fractie];
+			attribute<uint32>		count_pr_diff_pc4 (brondata/regios/postcode_gebieden/postcode4)	:= count(Pr_price_list, pc4_rel);
+			attribute<fractie>		mean_pr_diff_pc6 (brondata/regios/postcode_gebieden/postcode6)	:= mean(Pr_price_list, pc6_rel);
+		}
+		
+		unit<uint32> Analyse_2017 := SubSet(src/trans_year == 2017[jaar] 
+									&& src/diff_price_list >= -50000[eur] 
+									&& src/diff_price_list <= 50000[eur] 
+									&& IsDefined(src/price) 
+									&& src/listprice >= 25000[eur] 
+									&& src/gemeente_code == 'GM0363')
+		, 	DialogType = "Map"
+		, 	DialogData = "geometry"
+		, 	FreeData = "False"
+		{
+			attribute<geography/rdc> 	geometry	:= src/geometry[nr_OrgEntity];
+			attribute<uint2> 		app 		:= src/app[nr_OrgEntity];
+			attribute<uint2> 		rij 		:= src/rij[nr_OrgEntity];
+			attribute<uint2> 		semi		:= src/semi[nr_OrgEntity];
+			attribute<uint2> 		vrij		:= src/vrij[nr_OrgEntity];
+			// attribute<eur> 			realprice		:= src/realprice_value[nr_OrgEntity];
+			attribute<m2> 			size		:= src/size[nr_OrgEntity];
+			attribute<m2> 			lotsize		:= src/lotsize[nr_OrgEntity];
+			attribute<jaar> 		trans_year	:= src/trans_year[nr_OrgEntity];
+			attribute<jaar>			bouwjaar	:= src/bouwjaar[nr_OrgEntity];	
+			attribute<eur>			price		:= src/price[nr_OrgEntity];
+			attribute<eur>			listprice		:= src/listprice[nr_OrgEntity];
+			attribute<eur> 			Diff_price_list 	:= src/Diff_price_list[nr_OrgEntity];
+			attribute<fractie>		Pr_price_list	:= src/Pr_price_list[nr_OrgEntity];
+			attribute<string>		gemeente_code	:= src/gemeente_code[nr_OrgEntity];
+			
+			attribute<NL_grid/domain>   				NL_grid_domain_rel 	:= geometry[NL_grid/domain];
+			attribute<brondata/regios/postcode_gebieden/postcode4>	pc4_rel			:= point_in_polygon(geometry, brondata/regios/postcode_gebieden/postcode4/geometry);
+			attribute<brondata/regios/postcode_gebieden/postcode6>	pc6_rel			:= point_in_polygon(geometry, brondata/regios/postcode_gebieden/postcode6/geometry);
+
+			attribute<eur>			mean_price_pc4 (brondata/regios/postcode_gebieden/postcode4)	:= mean(price, pc4_rel);
+			attribute<eur>			mean_diff_grid (NL_grid/domain)					:= mean(diff_price_list, NL_grid_domain_rel);
+			attribute<eur>			mean_diff_pc4 (brondata/regios/postcode_gebieden/postcode4)	:= mean(diff_price_list, pc4_rel);
+			attribute<fractie>		mean_pr_diff_grid (NL_grid/domain)					:= mean(Pr_price_list, NL_grid_domain_rel);
+			attribute<fractie>		mean_pr_diff_pc4 (brondata/regios/postcode_gebieden/postcode4)	:= count_pr_diff_pc4 >= 10 ? mean(Pr_price_list, pc4_rel) : (0/0)[fractie];
+			attribute<uint32>		count_pr_diff_pc4 (brondata/regios/postcode_gebieden/postcode4)	:= count(Pr_price_list, pc4_rel);
+			attribute<fractie>		mean_pr_diff_pc6 (brondata/regios/postcode_gebieden/postcode6)	:= mean(Pr_price_list, pc6_rel);
+		}
+	}
+}

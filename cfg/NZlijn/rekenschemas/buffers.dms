@@ -1,0 +1,101 @@
+container Buffers:	Using = "Eenheden;Typeringen"
+{
+	unit<uint32> PandPad      := Brondata/BAG/Snapshots/Panden/Y201901/pand;
+	unit<uint32> VboWoonPad   := Brondata/BAG/Snapshots/Vbos/Y201901/vbo/GebruiksdoelSets/woon/GebruiksdoelSet;
+
+	Template Maak_Buffers 
+	{
+		// 
+		parameter<string> NZL_station;
+		unit<uint32> ingang;
+		//
+		container stralen  := 
+			for_each_ne(
+				typeringen/buffers/name2
+				, 'Verwerk_straal(' + string(typeringen/buffers/values) + ', ingang)' 
+			);
+	}
+	
+	Template Verwerk_straal
+	{
+		//
+		parameter<uint32> straal;
+		unit<uint32> ingang;
+		//
+		
+		unit<uint32> punten:= Combine(ingang, geography/cirkel)
+		{
+			attribute<FPoint> xy   :=
+				Point(
+					  ingang/x[nr_1] + float32(straal) * Float32(geography/cirkel/x[nr_2])
+					, ingang/y[nr_1] + float32(straal) * Float32(geography/cirkel/y[nr_2])
+					, geography/rdc
+				);
+		}			
+		attribute<geography/rdc> buffer (ingang, polygon) := points2sequence(punten/xy, punten/nr_1, #geography/cirkel - punten/nr_2 - 1);
+		parameter<geography/rdc> buffer_diss (polygon) := union_polygon(buffer[geography/rdc_mm])[geography/rdc];
+	}
+
+	Template  Verwerk_straal_count_vbo
+	{
+		// 
+		parameter<string> NZL_station;
+		//
+		container stralen  := 
+			for_each_ne(
+				typeringen/buffers/name2
+				, 'Clip_bebouwbaar(' + string(typeringen/buffers/values) + ', NZL_station)' 
+			)
+			{
+				container buff_0m
+				{
+					parameter<ha> area := 0[ha];
+					parameter<nrwoningen> count_vbo_param := 0[nrwoningen];
+				}
+			}			
+	}
+	
+	Template Clip_bebouwbaar
+	{
+		// 
+		parameter<uint32> straal;
+		parameter<string> NZL_station;
+		//
+		unit<uint32>                intersect             := ='overlay_polygon(Analyse/Landuse/bebouwbaar/Geometry[geography/rdc_mm], Brondata/NoordZuidlijn/buffers/' +string(NZL_station)+ '/stralen/buff_' +string(straal)+ 'm/buffer_diss[geography/rdc_mm])';			
+		parameter<geography/rdc>    clip_diss (polygon)   := union_polygon(intersect/geometry)[geography/rdc];
+		parameter<ha>               area                  := area(clip_diss, m2)[ha];
+		
+		attribute<bool>             vbo_rel (VboWoonPad)  := point_in_polygon(VboWoonPad/Geometry, clip_diss);
+		attribute<uint32>           count_vbo (bool)      := pcount(vbo_rel);
+		parameter<nrwoningen>       count_vbo_param       := value(count_vbo[true], nrwoningen);
+	}
+	
+	Template  Verwerk_straal_ringen
+	{
+		// 
+		parameter<string> NZL_station;
+		//
+		container stralen  := 
+			for_each_ne(
+				typeringen/buffers/name
+				, 'Bereken_ringen(' + string(typeringen/buffers/values) + ',' +string(typeringen/buffers/values_prev)+ ', NZL_station)' 
+			);
+	}
+	
+	Template Bereken_ringen
+	{
+		// 
+		parameter<uint32> straal;
+		parameter<uint32> straal_prev;			
+		parameter<string> NZL_station;
+		//
+		parameter<ha>     area            := ='iif(' +string(straal)+ '== 200 
+												, Analyse/buffers/Stations/' +string(NZL_station)+ '/stralen/buff_' +string(straal)+ 'm/area
+												, Analyse/buffers/Stations/' +string(NZL_station)+ '/stralen/buff_' +string(straal)+ 'm/area - Analyse/buffers/Stations/' +string(NZL_station)+ '/stralen/buff_' +string(straal_prev)+ 'm/area)';
+		parameter<nrwoningen> vbos        := ='iif(' +string(straal)+ '== 200 
+												, Analyse/buffers/Stations/' +string(NZL_station)+ '/stralen/buff_' +string(straal)+ 'm/count_vbo_param
+												, Analyse/buffers/Stations/' +string(NZL_station)+ '/stralen/buff_' +string(straal)+ 'm/count_vbo_param - Analyse/buffers/Stations/' +string(NZL_station)+ '/stralen/buff_' +string(straal_prev)+ 'm/count_vbo_param)';
+		parameter<nrwonha> density        := vbos[float32] / area;
+	}
+
+}

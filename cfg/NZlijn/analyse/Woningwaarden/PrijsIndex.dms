@@ -1,0 +1,47 @@
+container PrijsIndex
+{
+	unit<uint8>  HouseCharacteristics_src := Typeringen/HouseCharacteristics_src;
+	unit<uint8> WP2 := Typeringen/WP2;
+	
+	container ReadCoefficients := 
+		for_each_ne(
+			WP2/name
+			, 'T('+string(id(WP2))+'[WP2])'
+		);
+	
+	Template T
+	{
+		//
+		parameter<WP2> id;
+		//
+		
+		unit<uint32> Domain
+		:  StorageName = "= '%SourceDataDir%/NVM/Estimates_Bereikbaarheid_'+WP2/name[id]+'_Apr2020.csv'"
+		,  StorageType = "gdal.vect"
+		,  StorageReadOnly = "True" 
+		,  FreeData = "false"
+		{
+			attribute<string> parm;
+			attribute<string> name := replace(parm, '2019.trans_year', 'y2019', '_cons', 'constant','8.building_type', 'd_detached', '9.building_type', 'd_semidetached');
+		}
+		
+		container MakeResult := 
+			for_each_nedva(
+				HouseCharacteristics_src/name
+				, 'rjoin(rlookup('+quote(HouseCharacteristics_src/name)+', Domain/name), id(Domain), Domain/p)[float32] <= 0.05f
+					? rjoin(rlookup('+quote(HouseCharacteristics_src/name)+', Domain/name), id(Domain), Domain/estimate)[float32]
+					: 0f'
+				, void
+				, float32
+				, '%LocalDataDir%/NZlijn/Estimates_Bereikbaarheid_'+WP2/name[id]+'_Apr2020/'+HouseCharacteristics_src/name+'.fss'
+			);
+		
+		container Result := 
+			for_each_ndva(
+				HouseCharacteristics_src/name
+				, void
+				, float32
+				, '%LocalDataDir%/NZlijn/Estimates_Bereikbaarheid_'+WP2/name[id]+'_Apr2020/'+HouseCharacteristics_src/name+'.fss'
+			), StorageReadOnly = "true";
+	}
+}

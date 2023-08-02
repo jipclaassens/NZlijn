@@ -1,0 +1,74 @@
+container DiD_Prijzen := 
+	for_each_nedv(
+		typeringen/all_metro_stations/NZ_stations/var_name
+		, 'Analyse/NetwerkDist_Points_to_NZ/NetwerkDist_perstation/'+string(typeringen/all_metro_stations/NZ_stations/name)+'/Netwerk/OrgToDest/MakeOD_Time/grid[NL_grid_domain_rel]'
+		, Brondata/NVM/Points
+		, s
+	), using = "eenheden", FreeData = "False"
+{
+	unit<uint32>              NVM_AMS                                        := Brondata/NVM/Points;
+
+	attribute<geography/rdc>  geometry                             (NVM_AMS) := NVM_AMS/geometry, DisableStorage = "true";
+	attribute<float32>        x                                    (NVM_AMS) := pointcol(geometry);
+	attribute<float32>        y                                    (NVM_AMS) := pointrow(geometry);
+	attribute<uint32>         obsid                                (NVM_AMS) := NVM_AMS/obsid;
+	
+	attribute<uint2>          d_apartment                          (NVM_AMS) := NVM_AMS/d_apartment;
+	attribute<uint2>          d_terraced                           (NVM_AMS) := NVM_AMS/d_terraced;
+	attribute<uint2>          d_semidetached                       (NVM_AMS) := NVM_AMS/d_semidetached;
+	attribute<uint2>          d_detached                           (NVM_AMS) := NVM_AMS/d_detached;
+	attribute<eur>            price                                (NVM_AMS) := NVM_AMS/price;
+	attribute<m2>             size                                 (NVM_AMS) := NVM_AMS/size;
+	attribute<m2>             lotsize                              (NVM_AMS) := NVM_AMS/lotsize;
+	attribute<jaar>           trans_year                           (NVM_AMS) := NVM_AMS/trans_year;
+	attribute<jaar>           trans_month                          (NVM_AMS) := NVM_AMS/trans_month;
+	attribute<jaar>           bouwjaar                             (NVM_AMS) := NVM_AMS/bouwjaar;
+	attribute<jaar>           bouwjaar_augm                        (NVM_AMS) := NVM_AMS/bouwjaar_augm;
+	attribute<uint32>         nrooms                               (NVM_AMS) := NVM_AMS/nrooms;
+	attribute<uint32>         nbathrooms                           (NVM_AMS) := NVM_AMS/nbathrooms;
+	attribute<uint2>          d_maintgood                          (NVM_AMS) := NVM_AMS/d_maintgood;
+	attribute<uint2>          d_centralheating                     (NVM_AMS) := NVM_AMS/d_centralheating;
+	attribute<uint2>          d_privpark                           (NVM_AMS) := NVM_AMS/d_privpark;
+	attribute<uint2>          d_kk                                 (NVM_AMS) := NVM_AMS/d_kk;
+	attribute<uint2>          d_erfpacht                           (NVM_AMS) := NVM_AMS/d_erfpacht;
+	attribute<uint2>          d_isol_compl                         (NVM_AMS) := NVM_AMS/d_isol_compl;
+	attribute<uint2>          d_garden                             (NVM_AMS) := NVM_AMS/d_garden;
+	attribute<uint2>          d_listed                             (NVM_AMS) := NVM_AMS/d_listed;
+	
+	attribute<string>         gemeente_name                        (NVM_AMS) := NVM_AMS/gem_21_naam;
+	attribute<uint32>         buurt_rel                            (NVM_AMS) := NVM_AMS/buurt_rel;
+	attribute<uint32>         pc6_rel                              (NVM_AMS) := NVM_AMS/pc6_rel;
+	
+	attribute<uint2>          HasEverHadAWoning                    (NVM_AMS) := /Analyse/HasWoning/HasWoning[NL_grid_domain_rel][uint2];
+	attribute<int32>          diff_Spits_abs                       (NVM_AMS) := /Brondata/Bereikbaarheid/diff_Spits_abs[NL_grid_domain_rel];
+
+	attribute<NL_grid/domain>       NL_grid_domain_rel                  (NVM_AMS) := geometry[Geography/NL_grid/domain], DisableStorage = "true";
+	attribute<NL_grid/domain_500m>  NL_grid_domain_500m_rel             (NVM_AMS) := geometry[Geography/NL_grid/domain_500m], DisableStorage = "true";
+	
+	parameter<string> ta_ca_areas := 'Set_TA12_CA_24_50000banen';
+	
+	attribute<uint2>          noord_ta                  (NVM_AMS) := ='/Analyse/TreatmentControlAreas/'+ta_ca_areas+'/noord_ta[NL_grid_domain_rel][uint2]';
+	attribute<uint2>          noord_ca                  (NVM_AMS) := ='/Analyse/TreatmentControlAreas/'+ta_ca_areas+'/noord_ca[NL_grid_domain_rel][uint2]';
+
+	attribute<uint2>          noorderpark_ta            (NVM_AMS) := ='/Analyse/TreatmentControlAreas/'+ta_ca_areas+'/noorderpark_ta[NL_grid_domain_rel][uint2]';
+	attribute<uint2>          noorderpark_ca            (NVM_AMS) := ='/Analyse/TreatmentControlAreas/'+ta_ca_areas+'/noorderpark_ca[NL_grid_domain_rel][uint2]';
+
+	attribute<uint2>          centraal_ta               (NVM_AMS) := ='/Analyse/TreatmentControlAreas/'+ta_ca_areas+'/centraal_ta[NL_grid_domain_rel][uint2]';
+	attribute<uint2>          centraal_ca               (NVM_AMS) := ='/Analyse/TreatmentControlAreas/'+ta_ca_areas+'/centraal_ca[NL_grid_domain_rel][uint2]';
+
+	attribute<uint2>          rokin_ta                  (NVM_AMS) := ='/Analyse/TreatmentControlAreas/'+ta_ca_areas+'/rokin_ta[NL_grid_domain_rel][uint2]';
+	attribute<uint2>          rokin_ca                  (NVM_AMS) := ='/Analyse/TreatmentControlAreas/'+ta_ca_areas+'/rokin_ca[NL_grid_domain_rel][uint2]';
+
+	attribute<uint2>          vijzelgracht_ta           (NVM_AMS) := ='/Analyse/TreatmentControlAreas/'+ta_ca_areas+'/vijzelgracht_ta[NL_grid_domain_rel][uint2]';
+	attribute<uint2>          vijzelgracht_ca           (NVM_AMS) := ='/Analyse/TreatmentControlAreas/'+ta_ca_areas+'/vijzelgracht_ca[NL_grid_domain_rel][uint2]';
+
+	attribute<uint2>          depijp_ta                 (NVM_AMS) := ='/Analyse/TreatmentControlAreas/'+ta_ca_areas+'/depijp_ta[NL_grid_domain_rel][uint2]';
+	attribute<uint2>          depijp_ca                 (NVM_AMS) := ='/Analyse/TreatmentControlAreas/'+ta_ca_areas+'/depijp_ca[NL_grid_domain_rel][uint2]';
+
+	attribute<uint2>          europaplein_ta            (NVM_AMS) := ='/Analyse/TreatmentControlAreas/'+ta_ca_areas+'/europaplein_ta[NL_grid_domain_rel][uint2]';
+	attribute<uint2>          europaplein_ca            (NVM_AMS) := ='/Analyse/TreatmentControlAreas/'+ta_ca_areas+'/europaplein_ca[NL_grid_domain_rel][uint2]';
+
+	attribute<uint2>          zuid_ta                   (NVM_AMS) := ='/Analyse/TreatmentControlAreas/'+ta_ca_areas+'/zuid_ta[NL_grid_domain_rel][uint2]';
+	attribute<uint2>          zuid_ca                   (NVM_AMS) := ='/Analyse/TreatmentControlAreas/'+ta_ca_areas+'/zuid_ca[NL_grid_domain_rel][uint2]';
+
+}

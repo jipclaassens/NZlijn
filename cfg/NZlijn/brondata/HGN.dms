@@ -1,0 +1,22 @@
+container HGN : using = "typeringen;geography"
+{
+	attribute<typeringen/hgn_ek> LU_1900_src (NL_grid/domain_50m)
+	:	StorageName     = "%SourceDataDir%/HGN/hgn1900_50m.tif"
+	,	StorageType     = "gdal.grid"
+	,	StorageReadOnly = "True"
+	,	FreeData = "False";
+	attribute<typeringen/hgnclasses1900>    hgn1900_rel (NL_grid/domain_50m)    := rlookup(LU_1900_src, typeringen/hgnclasses1900/hgn), FreeData = "False";
+	attribute<typeringen/gg_10K>            gg1900_rel (NL_grid/domain_50m)     := rjoin(hgn1900_rel, typeringen/hgnclasses1900/id, typeringen/hgnclasses1900/gg_10K_rel), FreeData = "False";
+
+	container LU_1900 :=
+		for_each_nedv(
+			  typeringen/gg_10K/Name
+			, '(count(gg1900_rel[uint32] ==' +string(id(typeringen/gg_10K))+ '[uint32] ? '+string(id(typeringen/gg_10K))+'[uint32] : (0/0), NL_grid/domain_50m/grid_100m_rel)[float32] / 4f) * 1[ha]'
+			, NL_grid/domain
+			, Ha
+		)
+	, FreeData = "False";
+
+
+
+}

@@ -1,0 +1,124 @@
+container RegionalAvgCharacteristics // opschonen
+{  
+	unit<uint8>  HouseCharacteristics := typeringen/HouseCharacteristics;
+	unit<uint32> HousetypeHouseChar   := typeringen/HouseTypeHouseChar;
+	unit<uint8>  WP4                  := typeringen/WP4;
+	unit<uint32> vbo                  := Brondata/BAG/Snapshots/Vbos/Y202001/vbo/GebruiksdoelSets/woon/GebruiksdoelSet;
+	unit<uint32> Pand                 := Brondata/BAG/Snapshots/Panden/Y202001/pand;
+
+	container MakeAvgValueTable := 
+		for_each_nedv(
+			HouseCharacteristics/name,
+			replace(
+				'union_data('
+					'WP4,'+
+					AsItemList(
+						replace(
+							'mean(Brondata/NVM/per_WP4/@TW4@/type/@VT@[float32])',
+							'@TW4@', WP4/name
+						)
+					)+
+				')',
+				'@VT@', HouseCharacteristics/name
+			),
+			WP4, float32
+		), StorageName = "%LocalDataDir%/NZlijn/NVM_karakteristieken.fss";
+		
+	container AvgValueTable: StorageName = "%LocalDataDir%/NZlijn/NVM_karakteristieken.fss", StorageReadOnly = "True" //BR 181128: is Gemiddelde per WP4 voor heel NL
+	{
+		attribute<float32> size             (WP4);
+		// attribute<float32> lotsize          (WP4);
+		attribute<float32> nrooms           (WP4);
+		attribute<float32> nbadk            (WP4);
+		attribute<float32> d_maintgood      (WP4);
+		attribute<float32> d_kk             (WP4); 
+		attribute<float32> d_cv             (WP4);
+		attribute<float32> d_erfpacht       (WP4);
+		attribute<float32> d_isol_compl     (WP4);
+		attribute<float32> d_privpark       (WP4);
+		// attribute<float32> d_highrise       (WP4);
+		
+		attribute<float32> d_maintgoodNewHouses      (WP4) := const(1f,WP4);
+		attribute<float32> d_centralheatingNewHouses (WP4) := const(1f,WP4);
+		attribute<float32> d_isol_complNewHouses     (WP4) := const(1f,WP4);
+		attribute<float32> d_privparkNewHouses       (WP4) := id(WP4) = WP4/V/twee_onder_1_kap || id(WP4) = WP4/V/vrijstaand ? 1f :	d_privpark;
+	}
+	
+	unit<uint32> Buurt := Brondata/Regios/Buurten/src_2019
+	{
+		attribute<.> per_grid (NL_grid/domain)  := poly2grid(geometry, NL_grid/domain);
+	}
+	
+	unit<uint32> Wijk := Brondata/Regios/Wijken/src_2019
+	{
+		attribute<.> per_grid (NL_grid/domain)  := poly2grid(geometry, NL_grid/domain);
+	}
+	
+	unit<uint32> Gemeente := Brondata/Regios/Gemeenten/src_2019
+	{
+		attribute<.> per_grid (NL_grid/domain)  := poly2grid(geometry, NL_grid/domain);
+	}
+	
+	parameter<String> GenerateRegionalAvgCharacteristics := 'Ready',
+		ExplicitSuppliers = "=Aslist('MakeRegionalAvgCharacteristics/'+HousetypeHouseChar/name+'/grid',';')";
+
+	container MakeRegionalAvgCharacteristics := 
+		for_each_ne(
+			HousetypeHouseChar/name
+			, 'Write2FSS_RegionalAvgCharacteristics(' +quote(HousetypeHouseChar/name)+ ',' +quote(HousetypeHouseChar/WP)+ ',' +quote(HousetypeHouseChar/HouseChar)+ ')'
+		);
+		
+	container ReadRegionalAvgCharacteristics := 
+		for_each_ndva(
+			HousetypeHouseChar/name
+			, NL_grid/domain
+			, float32
+			, '%LocalDataDir%/NZlijn/Vastgoed/NVM_regiokarakteristieken_' +HousetypeHouseChar/name+ '.fss'
+		), StorageReadOnly = "True";
+		
+	container Result: =
+		for_each_nedv(
+			  HousetypeHouseChar/name
+			, 'ReadRegionalAvgCharacteristics/'+HousetypeHouseChar/name
+			, NL_grid/domain
+			, float32
+		);
+	
+	Template Write2FSS_RegionalAvgCharacteristics
+	{
+		//
+		parameter<string> HousetypeHouseChar;
+		parameter<string> WP;
+		parameter<string> HouseChar;
+		//
+		
+		attribute<float32> Per_buurt (Buurt) := = 
+			'count(Brondata/NVM/per_WP4/' +WP+ '/type/' +HouseChar+ '[float32], Brondata/NVM/per_WP4/' +WP+ '/type/buurt_rel) >= 4 
+				? mean(Brondata/NVM/per_WP4/' +WP+ '/type/' +HouseChar+ '[float32], Brondata/NVM/per_WP4/' +WP+ '/type/buurt_rel)[float32]
+				: (0/0)[Float32]';
+			
+		attribute<float32> Per_wijk (Wijk) := =
+			'count(Brondata/NVM/per_WP4/' +WP+ '/type/' +HouseChar+ '[float32], Brondata/NVM/per_WP4/' +WP+ '/type/wijk_rel) >= 4 
+				? mean(Brondata/NVM/per_WP4/' +WP+ '/type/' +HouseChar+ '[float32], Brondata/NVM/per_WP4/' +WP+ '/type/wijk_rel)[float32]
+				: (0/0)[Float32]';
+			
+		attribute<float32> Per_gemeente (Gemeente) := =
+			'count(Brondata/NVM/per_WP4/' +WP+ '/type/' +HouseChar+ '[float32], Brondata/NVM/per_WP4/' +WP+ '/type/gemeente_rel) >= 4 
+				? mean(Brondata/NVM/per_WP4/' +WP+ '/type/' +HouseChar+ '[float32], Brondata/NVM/per_WP4/' +WP+ '/type/gemeente_rel)[float32]
+				: (0/0)[Float32]';
+			
+		attribute<float32> grid (NL_grid/domain) := = 'MakeDefined(max_elem(Per_buurt[Buurt/per_grid], Per_wijk[Wijk/per_grid], Per_gemeente[Gemeente/per_grid]),0f)'
+		, StorageName = "='%LocalDataDir%/NZlijn/Vastgoed/NVM_regiokarakteristieken_' +HousetypeHouseChar+ '.fss'";
+	}
+	
+	container Overige_vars
+	{
+		attribute<float32> UAI_5000m_dcsq (NL_grid/domain)
+		:	StorageName     = "%SourceDataDir%/LUMOS/Omgeving/Bereikbaarheid/UAI_5000m_dcsq.tif"
+		,	StorageType     = "gdal.grid"
+		,	StorageReadOnly = "True";
+		
+		attribute<float32> Bereikbaarheid_Piek_Voor (NL_grid/domain) := /Analyse/Bereikbaarheid/PiekVoor[float32];
+		attribute<float32> Bereikbaarheid_Piek_Na   (NL_grid/domain) := /Analyse/Bereikbaarheid/PiekNa[float32];
+	}
+}

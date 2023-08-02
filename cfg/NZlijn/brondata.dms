@@ -1,0 +1,1479 @@
+container Brondata : using = "eenheden;geography;typeringen"
+{  
+	container WatsonHolmes
+	{
+		parameter<string> ta_ca_areas := 'Set_TA12_CA_24_50000banen';
+
+		unit<uint32> BuyToLet
+		: StorageName = "%SourceDataDir%/Overig/BuyToLet Noord- Zuid Holland en Utrecht.csv"
+		, StorageType = "gdal.vect"
+		, StorageReadOnly = "true"
+		{
+			attribute<float32>        Latitude_degrees           := float32(substr(replace(laitude, '.', ''), 0, 2) + '.' + substr(replace(laitude, '.', ''), 2));
+			attribute<float32>        Longitude_degrees          := float32(substr(replace(longitude, '.', ''), 0, 1) + '.' + substr(replace(longitude, '.', ''), 1));
+			
+			attribute<float32>        x                          := pointcol(LatLongWgs842RD(point(Longitude_degrees, Latitude_degrees, wgs84_base), rdc));
+			attribute<float32>        y                          := pointrow(LatLongWgs842RD(point(Longitude_degrees, Latitude_degrees, wgs84_base), rdc));
+			
+			attribute<uint2>          noord_ta                   := ='/Analyse/TreatmentControlAreas/'+ta_ca_areas+'/noord_ta[point(x, y, rdc)[Geography/NL_grid/domain]][uint2]';
+			attribute<uint2>          noord_ca                   := ='/Analyse/TreatmentControlAreas/'+ta_ca_areas+'/noord_ca[point(x, y, rdc)[Geography/NL_grid/domain]][uint2]';
+
+			attribute<uint2>          noorderpark_ta             := ='/Analyse/TreatmentControlAreas/'+ta_ca_areas+'/noorderpark_ta[point(x, y, rdc)[Geography/NL_grid/domain]][uint2]';
+			attribute<uint2>          noorderpark_ca             := ='/Analyse/TreatmentControlAreas/'+ta_ca_areas+'/noorderpark_ca[point(x, y, rdc)[Geography/NL_grid/domain]][uint2]';
+
+			attribute<uint2>          centraal_ta                := ='/Analyse/TreatmentControlAreas/'+ta_ca_areas+'/centraal_ta[point(x, y, rdc)[Geography/NL_grid/domain]][uint2]';
+			attribute<uint2>          centraal_ca                := ='/Analyse/TreatmentControlAreas/'+ta_ca_areas+'/centraal_ca[point(x, y, rdc)[Geography/NL_grid/domain]][uint2]';
+
+			attribute<uint2>          rokin_ta                   := ='/Analyse/TreatmentControlAreas/'+ta_ca_areas+'/rokin_ta[point(x, y, rdc)[Geography/NL_grid/domain]][uint2]';
+			attribute<uint2>          rokin_ca                   := ='/Analyse/TreatmentControlAreas/'+ta_ca_areas+'/rokin_ca[point(x, y, rdc)[Geography/NL_grid/domain]][uint2]';
+
+			attribute<uint2>          vijzelgracht_ta            := ='/Analyse/TreatmentControlAreas/'+ta_ca_areas+'/vijzelgracht_ta[point(x, y, rdc)[Geography/NL_grid/domain]][uint2]';
+			attribute<uint2>          vijzelgracht_ca            := ='/Analyse/TreatmentControlAreas/'+ta_ca_areas+'/vijzelgracht_ca[point(x, y, rdc)[Geography/NL_grid/domain]][uint2]';
+
+			attribute<uint2>          depijp_ta                  := ='/Analyse/TreatmentControlAreas/'+ta_ca_areas+'/depijp_ta[point(x, y, rdc)[Geography/NL_grid/domain]][uint2]';
+			attribute<uint2>          depijp_ca                  := ='/Analyse/TreatmentControlAreas/'+ta_ca_areas+'/depijp_ca[point(x, y, rdc)[Geography/NL_grid/domain]][uint2]';
+
+			attribute<uint2>          europaplein_ta             := ='/Analyse/TreatmentControlAreas/'+ta_ca_areas+'/europaplein_ta[point(x, y, rdc)[Geography/NL_grid/domain]][uint2]';
+			attribute<uint2>          europaplein_ca             := ='/Analyse/TreatmentControlAreas/'+ta_ca_areas+'/europaplein_ca[point(x, y, rdc)[Geography/NL_grid/domain]][uint2]';
+
+			attribute<uint2>          zuid_ta                    := ='/Analyse/TreatmentControlAreas/'+ta_ca_areas+'/zuid_ta[point(x, y, rdc)[Geography/NL_grid/domain]][uint2]';
+			attribute<uint2>          zuid_ca                    := ='/Analyse/TreatmentControlAreas/'+ta_ca_areas+'/zuid_ca[point(x, y, rdc)[Geography/NL_grid/domain]][uint2]';
+		}
+		
+		unit<uint32> Huurtransacties
+		: StorageName = "%SourceDataDir%/Overig/Huurtransacties Noord- Zuid Holland en Utrecht 12-22.csv" 
+		, StorageType = "gdal.vect"
+		, StorageReadOnly = "true"
+		{
+			attribute<string>         latitude_full              := latitude == '' ? latitude_n : latitude;
+			attribute<string>         longitude_full             := longitude == '' ? longitude_n : longitude;
+		
+			attribute<float32>        Latitude_degrees           := float32(substr(replace(latitude_full, '.', ''), 0, 2) + '.' + substr(replace(latitude_full, '.', ''), 2));
+			attribute<float32>        Longitude_degrees          := float32(substr(replace(longitude_full, '.', ''), 0, 1) + '.' + substr(replace(longitude_full, '.', ''), 1));
+			
+			attribute<float32>        x                          := pointcol(LatLongWgs842RD(point(Longitude_degrees, Latitude_degrees, wgs84_base), rdc));
+			attribute<float32>        y                          := pointrow(LatLongWgs842RD(point(Longitude_degrees, Latitude_degrees, wgs84_base), rdc));
+			
+			attribute<uint2>          noord_ta                   := ='/Analyse/TreatmentControlAreas/'+ta_ca_areas+'/noord_ta[point(x, y, rdc)[Geography/NL_grid/domain]][uint2]';
+			attribute<uint2>          noord_ca                   := ='/Analyse/TreatmentControlAreas/'+ta_ca_areas+'/noord_ca[point(x, y, rdc)[Geography/NL_grid/domain]][uint2]';
+
+			attribute<uint2>          noorderpark_ta             := ='/Analyse/TreatmentControlAreas/'+ta_ca_areas+'/noorderpark_ta[point(x, y, rdc)[Geography/NL_grid/domain]][uint2]';
+			attribute<uint2>          noorderpark_ca             := ='/Analyse/TreatmentControlAreas/'+ta_ca_areas+'/noorderpark_ca[point(x, y, rdc)[Geography/NL_grid/domain]][uint2]';
+
+			attribute<uint2>          centraal_ta                := ='/Analyse/TreatmentControlAreas/'+ta_ca_areas+'/centraal_ta[point(x, y, rdc)[Geography/NL_grid/domain]][uint2]';
+			attribute<uint2>          centraal_ca                := ='/Analyse/TreatmentControlAreas/'+ta_ca_areas+'/centraal_ca[point(x, y, rdc)[Geography/NL_grid/domain]][uint2]';
+
+			attribute<uint2>          rokin_ta                   := ='/Analyse/TreatmentControlAreas/'+ta_ca_areas+'/rokin_ta[point(x, y, rdc)[Geography/NL_grid/domain]][uint2]';
+			attribute<uint2>          rokin_ca                   := ='/Analyse/TreatmentControlAreas/'+ta_ca_areas+'/rokin_ca[point(x, y, rdc)[Geography/NL_grid/domain]][uint2]';
+
+			attribute<uint2>          vijzelgracht_ta            := ='/Analyse/TreatmentControlAreas/'+ta_ca_areas+'/vijzelgracht_ta[point(x, y, rdc)[Geography/NL_grid/domain]][uint2]';
+			attribute<uint2>          vijzelgracht_ca            := ='/Analyse/TreatmentControlAreas/'+ta_ca_areas+'/vijzelgracht_ca[point(x, y, rdc)[Geography/NL_grid/domain]][uint2]';
+
+			attribute<uint2>          depijp_ta                  := ='/Analyse/TreatmentControlAreas/'+ta_ca_areas+'/depijp_ta[point(x, y, rdc)[Geography/NL_grid/domain]][uint2]';
+			attribute<uint2>          depijp_ca                  := ='/Analyse/TreatmentControlAreas/'+ta_ca_areas+'/depijp_ca[point(x, y, rdc)[Geography/NL_grid/domain]][uint2]';
+
+			attribute<uint2>          europaplein_ta             := ='/Analyse/TreatmentControlAreas/'+ta_ca_areas+'/europaplein_ta[point(x, y, rdc)[Geography/NL_grid/domain]][uint2]';
+			attribute<uint2>          europaplein_ca             := ='/Analyse/TreatmentControlAreas/'+ta_ca_areas+'/europaplein_ca[point(x, y, rdc)[Geography/NL_grid/domain]][uint2]';
+
+			attribute<uint2>          zuid_ta                    := ='/Analyse/TreatmentControlAreas/'+ta_ca_areas+'/zuid_ta[point(x, y, rdc)[Geography/NL_grid/domain]][uint2]';
+			attribute<uint2>          zuid_ca                    := ='/Analyse/TreatmentControlAreas/'+ta_ca_areas+'/zuid_ca[point(x, y, rdc)[Geography/NL_grid/domain]][uint2]';
+		}
+	
+		unit<uint32> Huurontwikkeling
+		: StorageName = "%SourceDataDir%/Overig/VU Amsterdam - 2022 - Huurontwikkeling (Noord-Holland Zuid-Holland  Utrecht).csv"
+		, StorageType = "gdal.vect"
+		, StorageReadOnly = "true"
+		{
+			// attribute<rdc>            geometry                   := point(x, y, rdc);
+			
+			attribute<float32>        x                          := pointcol(LatLongWgs842RD(point(float32(Longitude), float32(Latitude), wgs84_base), rdc));
+			attribute<float32>        y                          := pointrow(LatLongWgs842RD(point(float32(Longitude), float32(Latitude), wgs84_base), rdc));
+			
+			attribute<uint2>          noord_ta                   := ='/Analyse/TreatmentControlAreas/'+ta_ca_areas+'/noord_ta[point(x, y, rdc)[Geography/NL_grid/domain]][uint2]';
+			attribute<uint2>          noord_ca                   := ='/Analyse/TreatmentControlAreas/'+ta_ca_areas+'/noord_ca[point(x, y, rdc)[Geography/NL_grid/domain]][uint2]';
+
+			attribute<uint2>          noorderpark_ta             := ='/Analyse/TreatmentControlAreas/'+ta_ca_areas+'/noorderpark_ta[point(x, y, rdc)[Geography/NL_grid/domain]][uint2]';
+			attribute<uint2>          noorderpark_ca             := ='/Analyse/TreatmentControlAreas/'+ta_ca_areas+'/noorderpark_ca[point(x, y, rdc)[Geography/NL_grid/domain]][uint2]';
+
+			attribute<uint2>          centraal_ta                := ='/Analyse/TreatmentControlAreas/'+ta_ca_areas+'/centraal_ta[point(x, y, rdc)[Geography/NL_grid/domain]][uint2]';
+			attribute<uint2>          centraal_ca                := ='/Analyse/TreatmentControlAreas/'+ta_ca_areas+'/centraal_ca[point(x, y, rdc)[Geography/NL_grid/domain]][uint2]';
+
+			attribute<uint2>          rokin_ta                   := ='/Analyse/TreatmentControlAreas/'+ta_ca_areas+'/rokin_ta[point(x, y, rdc)[Geography/NL_grid/domain]][uint2]';
+			attribute<uint2>          rokin_ca                   := ='/Analyse/TreatmentControlAreas/'+ta_ca_areas+'/rokin_ca[point(x, y, rdc)[Geography/NL_grid/domain]][uint2]';
+
+			attribute<uint2>          vijzelgracht_ta            := ='/Analyse/TreatmentControlAreas/'+ta_ca_areas+'/vijzelgracht_ta[point(x, y, rdc)[Geography/NL_grid/domain]][uint2]';
+			attribute<uint2>          vijzelgracht_ca            := ='/Analyse/TreatmentControlAreas/'+ta_ca_areas+'/vijzelgracht_ca[point(x, y, rdc)[Geography/NL_grid/domain]][uint2]';
+
+			attribute<uint2>          depijp_ta                  := ='/Analyse/TreatmentControlAreas/'+ta_ca_areas+'/depijp_ta[point(x, y, rdc)[Geography/NL_grid/domain]][uint2]';
+			attribute<uint2>          depijp_ca                  := ='/Analyse/TreatmentControlAreas/'+ta_ca_areas+'/depijp_ca[point(x, y, rdc)[Geography/NL_grid/domain]][uint2]';
+
+			attribute<uint2>          europaplein_ta             := ='/Analyse/TreatmentControlAreas/'+ta_ca_areas+'/europaplein_ta[point(x, y, rdc)[Geography/NL_grid/domain]][uint2]';
+			attribute<uint2>          europaplein_ca             := ='/Analyse/TreatmentControlAreas/'+ta_ca_areas+'/europaplein_ca[point(x, y, rdc)[Geography/NL_grid/domain]][uint2]';
+
+			attribute<uint2>          zuid_ta                    := ='/Analyse/TreatmentControlAreas/'+ta_ca_areas+'/zuid_ta[point(x, y, rdc)[Geography/NL_grid/domain]][uint2]';
+			attribute<uint2>          zuid_ca                    := ='/Analyse/TreatmentControlAreas/'+ta_ca_areas+'/zuid_ca[point(x, y, rdc)[Geography/NL_grid/domain]][uint2]';
+		}
+		
+		
+	
+	}
+
+
+	container Bereikbaarheid
+	{
+		attribute<int32>   diff_Spits_abs_8043  (NL_grid/domain) : StorageName = "%SourceDataDir%/Overig/NZlijn_bereikbaarheid/diff_Spits_abs_8043.tif", StorageReadOnly = "true", StorageType = "gdal.grid";
+		attribute<int32>   diff_Spits_abs       (NL_grid/domain) : StorageName = "%SourceDataDir%/Overig/NZlijn_bereikbaarheid/diff_Spits_abs.tif", StorageReadOnly = "true", StorageType = "gdal.grid";
+		attribute<float32> diff_Spits_perc      (NL_grid/domain) : StorageName = "%SourceDataDir%/Overig/NZlijn_bereikbaarheid/diff_Spits_perc.tif", StorageReadOnly = "true", StorageType = "gdal.grid";
+	}
+
+	#include <ARRA.dms>
+	#include <bag.dms>
+	
+	container BBG
+	{
+		unit<uint32> src
+		:  StorageName = "%SourceDataDir%/CBS/BestandBodemGebruik/BBG_1996_2015.fss"
+		,  DialogType = "Map"
+		,  DialogData = "geometry_rd"
+		,  StorageReadOnly = "True"
+		,  FreeData = "False"
+		{
+			attribute<rdc>           geometry_rd (polygon);
+			attribute<rdc_mm>        geometry_mm (polygon)   := geometry_rd[rdc_mm];
+			attribute<m2>                       area     := area(geometry_rd, m2);
+			 
+			attribute<typeringen/gg_src >           bbg2012;
+			attribute<typeringen/gg_src >           bbg2015;
+			attribute<typeringen/gg_src >           gg2000_src_rel;
+			attribute<typeringen/gg_src >           gg2012_src_rel;
+			attribute<typeringen/gg_src >           gg2015_src_rel;
+			
+			unit<uint32> Selectie :=    overlay_polygon(geometry_mm, selectie_polygoon/polygon_mm)
+			{
+				attribute<uint8>            bbg2012              := rjoin(Selectie/first_rel, id(src), src/bbg2012);
+				attribute<uint8>            bbg2015              := rjoin(Selectie/first_rel, id(src), src/bbg2015);
+				attribute<rdc>    geometry_f (polygon) := geometry[rdc];
+			}
+		}
+		
+		
+		unit<uint32> BBG_Amsterdam  : // = subset(IsDefined(src/selectie/geometry_f)),
+		   StorageName = "%LocalDataDir%/NZlijn/BBG12_Amsterdam.fss"
+		,  DialogType = "Map"
+		,  DialogData = "geometry"	
+		,  StorageReadOnly = "True"
+		{
+			attribute<geography/rdc>       geometry (polygon) ;//:= src/selectie/geometry_f[nr_OrgEntity];
+			attribute<typeringen/gg_src>   bbg2015           ;// := src/selectie/bbg2015[nr_OrgEntity];
+		}		
+	}
+	
+	container BGT
+	{
+		unit<uint32> begroeidterreindeel
+		:	StorageName     = "%SourceDataDir%/BGT/20180327/shp/poly/begroeidterreindeel.shp"
+		,	StorageType     = "gdal.vect"
+		,	StorageReadOnly = "True"
+		{
+			attribute<geography/rdc> 	geometry (polygon);	
+		}
+		unit<uint32> wegdeel
+		:	StorageName     = "%SourceDataDir%/BGT/20180327/shp/poly/wegdeel.shp"
+		,	StorageType     = "gdal.vect"
+		,	StorageReadOnly = "True"
+		{
+			attribute<geography/rdc> 	geometry (polygon);	
+		}
+	}
+	
+	container CBS_vierkanten
+	{
+		unit<uint32> V2014 
+		:	StorageName     = "%SourceDataDir%/CBS/CBSVierkanten/CBSvierkant100m201410.shp"
+		,	StorageType     = "gdal.vect"
+		,	StorageReadOnly = "True"
+		, 	FreeData = "False"
+		{
+			attribute<geography/rdc> geometry (polygon);
+			attribute<nrwonha>          woningen2000            := WON2000[nrwonha];
+			attribute<nrwonha>          woningen2001            := WON2001[nrwonha];
+			attribute<nrwonha>          woningen2002            := WON2002[nrwonha];
+			attribute<nrwonha>          woningen2003            := WON2003[nrwonha];
+			attribute<nrwonha>          woningen2004            := WON2004[nrwonha];
+			attribute<nrwonha>          woningen2005            := WON2005[nrwonha];
+			attribute<nrwonha>          woningen2006            := WON2006[nrwonha];
+			attribute<nrwonha>          woningen2007            := WON2007[nrwonha];
+			attribute<nrwonha>          woningen2008            := WON2008[nrwonha];
+			attribute<nrwonha>          woningen2009            := WON2009[nrwonha];
+			attribute<nrwonha>          woningen2010            := WON2010[nrwonha];
+			attribute<nrwonha>          woningen2011            := WON2011[nrwonha];
+			attribute<nrwonha>          woningen2012            := WON2012[nrwonha];
+			attribute<V2014>         grid   (NL_grid/domain) := poly2grid(geometry, NL_grid/domain);
+			
+			attribute<float32>          woningen2000_ed         := woningen2000 != float32(-99998) ? woningen2000 : float32(0), FreeData = "False";
+			attribute<float32>          woningen2001_ed         := woningen2001 != float32(-99998) ? woningen2001 : float32(0), FreeData = "False";
+			attribute<float32>          woningen2002_ed         := woningen2002 != float32(-99998) ? woningen2002 : float32(0), FreeData = "False";
+			attribute<float32>          woningen2003_ed         := woningen2003 != float32(-99998) ? woningen2003 : float32(0), FreeData = "False";
+			attribute<float32>          woningen2004_ed         := woningen2004 != float32(-99998) ? woningen2004 : float32(0), FreeData = "False";
+			attribute<float32>          woningen2005_ed         := woningen2005 != float32(-99998) ? woningen2005 : float32(0), FreeData = "False";
+			attribute<float32>          woningen2006_ed         := woningen2006 != float32(-99998) ? woningen2006 : float32(0), FreeData = "False";
+			attribute<float32>          woningen2007_ed         := woningen2007 != float32(-99998) ? woningen2007 : float32(0), FreeData = "False";
+			attribute<float32>          woningen2008_ed         := woningen2008 != float32(-99998) ? woningen2008 : float32(0), FreeData = "False";
+			attribute<float32>          woningen2009_ed         := woningen2009 != float32(-99998) ? woningen2009 : float32(0), FreeData = "False";
+			attribute<float32>          woningen2010_ed         := woningen2010 != float32(-99998) ? woningen2010 : float32(0), FreeData = "False";
+			attribute<float32>          woningen2011_ed         := woningen2011 != float32(-99998) ? woningen2011 : float32(0), FreeData = "False";
+			attribute<float32>          woningen2012_ed         := woningen2012 != float32(-99998) ? woningen2012 : float32(0), FreeData = "False";
+			
+			attribute<V2014> Vierkant_rel (NL_grid/domain) := point_in_polygon(NL_grid/domain/point_rd, Geometry);
+			
+			unit<uint32> points := Subset(isDefined(Vierkant_rel))
+			,	DialogData = "geometry"
+			,	DialogType = "map"
+			{
+				attribute<geography/rdc> 	geometry     := NL_grid/domain/point_rd[nr_OrgEntity];	
+				attribute<uint32>           id           := NL_grid/domain/identificatie[nr_OrgEntity];
+				attribute<float32>          woningen2000  := float32(NL_grid/domain/woningen2000[nr_OrgEntity]);
+				attribute<float32>          woningen2001  := float32(NL_grid/domain/woningen2001[nr_OrgEntity]);
+				attribute<float32>          woningen2002  := float32(NL_grid/domain/woningen2002[nr_OrgEntity]);
+				attribute<float32>          woningen2003  := float32(NL_grid/domain/woningen2003[nr_OrgEntity]);
+				attribute<float32>          woningen2004  := float32(NL_grid/domain/woningen2004[nr_OrgEntity]);
+				attribute<float32>          woningen2005  := float32(NL_grid/domain/woningen2005[nr_OrgEntity]);
+				attribute<float32>          woningen2006  := float32(NL_grid/domain/woningen2006[nr_OrgEntity]);
+				attribute<float32>          woningen2007  := float32(NL_grid/domain/woningen2007[nr_OrgEntity]);
+				attribute<float32>          woningen2008  := float32(NL_grid/domain/woningen2008[nr_OrgEntity]);
+				attribute<float32>          woningen2009  := float32(NL_grid/domain/woningen2009[nr_OrgEntity]);
+				attribute<float32>          woningen2010  := float32(NL_grid/domain/woningen2010[nr_OrgEntity]);
+				attribute<float32>          woningen2011  := float32(NL_grid/domain/woningen2011[nr_OrgEntity]);
+				attribute<float32>          woningen2012  := float32(NL_grid/domain/woningen2012[nr_OrgEntity]);
+			}
+		}
+		
+		unit<uint32> V2015 
+		:	StorageName     = "%SourceDataDir%/CBS/CBSVierkanten/CBSvierkant100m_2015_v1.shp"
+		,	StorageType     = "gdal.vect"
+		,	StorageReadOnly = "True"
+		, 	FreeData = "False"
+		{
+			attribute<geography/rdc> geometry (polygon);
+			attribute<int32>            woning;
+			attribute<nrwonha>          woningen2015            := WONING[nrwonha];
+			attribute<.>         grid   (NL_grid/domain) := poly2grid(geometry, NL_grid/domain);
+		}
+		
+		unit<uint32> V2016 
+		:	StorageName     = "%SourceDataDir%/CBS/CBSVierkanten/CBSvierkant100m_2016_v1.shp"
+		,	StorageType     = "gdal.vect"
+		,	StorageReadOnly = "True"
+		, 	FreeData = "False"
+		{
+			attribute<geography/rdc> geometry (polygon);
+			attribute<nrwonha>          woningen2016            := WONING[nrwonha];
+			attribute<int32>          inwoners2016                        := INWONER;
+			attribute<.>         grid   (NL_grid/domain) := poly2grid(geometry, NL_grid/domain);
+		}
+		
+		unit<uint32> V2017 
+		:	StorageName     = "%SourceDataDir%/CBS/CBSVierkanten/CBSvierkant100m_2017_v1.shp"
+		,	StorageType     = "gdal.vect"
+		,	StorageReadOnly = "True"
+		, 	FreeData = "False"
+		{
+			attribute<geography/rdc>  geometry (poly);
+			attribute<nrwonha>        woningen2017                        := WONING[nrwonha];
+			attribute<int32>          inwoners2017                        := INWONER;
+			attribute<.>          grid         (NL_grid/domain)       := poly2grid(geometry, NL_grid/domain);
+			attribute<.>          grid_1000m   (NL_grid/domain_1000m) := poly2grid(geometry, NL_grid/domain_1000m);
+			
+			attribute<.>          Vierkant_1000m_rel (NL_grid/domain_1000m) := point_in_polygon(NL_grid/domain_1000m/point_rd, Geometry);
+		}
+		
+		attribute<int32>              inwoners2016_src (NL_grid/domain) := V2016/inwoners2016[V2016/grid];
+		attribute<float32>            inwoners2016     (NL_grid/domain) := inwoners2016_src[float32] != float32(-99997) ? inwoners2016_src[float32] : float32(0), FreeData = "False", StorageName = "%SourceDataDir%/ARRA/inwoners2016.tif";
+		
+		attribute<int32>              inwoners2017_src (NL_grid/domain) := V2017/inwoners2017[V2017/grid];
+		attribute<float32>            inwoners2017     (NL_grid/domain) := inwoners2017_src[float32] != float32(-99997) ? inwoners2017_src[float32] : float32(0), FreeData = "False", StorageName = "%SourceDataDir%/ARRA/inwoners2017.tif";
+		attribute<float32>            inwoners2017_1k  (NL_grid/domain_1000m) := sum(inwoners2017, NL_grid/domain/grid_1000m_rel);
+		
+		attribute<eenheden/nrwonha>              woningen2000_src (NL_grid/domain) := V2014/woningen2000[V2014/grid];
+		attribute<eenheden/nrwonha>              woningen2001_src (NL_grid/domain) := V2014/woningen2001[V2014/grid];
+		attribute<eenheden/nrwonha>              woningen2002_src (NL_grid/domain) := V2014/woningen2002[V2014/grid];
+		attribute<eenheden/nrwonha>              woningen2003_src (NL_grid/domain) := V2014/woningen2003[V2014/grid];
+		attribute<eenheden/nrwonha>              woningen2004_src (NL_grid/domain) := V2014/woningen2004[V2014/grid];
+		attribute<eenheden/nrwonha>              woningen2005_src (NL_grid/domain) := V2014/woningen2005[V2014/grid];
+		attribute<eenheden/nrwonha>              woningen2006_src (NL_grid/domain) := V2014/woningen2006[V2014/grid];
+		attribute<eenheden/nrwonha>              woningen2007_src (NL_grid/domain) := V2014/woningen2007[V2014/grid];
+		attribute<eenheden/nrwonha>              woningen2008_src (NL_grid/domain) := V2014/woningen2008[V2014/grid];
+		attribute<eenheden/nrwonha>              woningen2009_src (NL_grid/domain) := V2014/woningen2009[V2014/grid];
+		attribute<eenheden/nrwonha>              woningen2010_src (NL_grid/domain) := V2014/woningen2010[V2014/grid];
+		attribute<eenheden/nrwonha>              woningen2011_src (NL_grid/domain) := V2014/woningen2011[V2014/grid];
+		attribute<eenheden/nrwonha>              woningen2012_src (NL_grid/domain) := V2014/woningen2012[V2014/grid];
+		
+		attribute<eenheden/nrwonha>              woningen2015_src (NL_grid/domain) := V2015/woningen2015[V2015/grid];
+		attribute<eenheden/nrwonha>              woningen2016_src (NL_grid/domain) := V2016/woningen2016[V2016/grid];
+		attribute<eenheden/nrwonha>              woningen2017_src (NL_grid/domain) := V2017/woningen2017[V2017/grid];
+		
+		attribute<eenheden/nrwonha>              woningen2000 (NL_grid/domain)     := woningen2000_src != float32(-99998) ? woningen2000_src : float32(0), FreeData = "False";
+		attribute<eenheden/nrwonha>              woningen2001 (NL_grid/domain)     := woningen2001_src != float32(-99998) ? woningen2001_src : float32(0), FreeData = "False";
+		attribute<eenheden/nrwonha>              woningen2002 (NL_grid/domain)     := woningen2002_src != float32(-99998) ? woningen2002_src : float32(0), FreeData = "False";
+		attribute<eenheden/nrwonha>              woningen2003 (NL_grid/domain)     := woningen2003_src != float32(-99998) ? woningen2003_src : float32(0), FreeData = "False";
+		attribute<eenheden/nrwonha>              woningen2004 (NL_grid/domain)     := woningen2004_src != float32(-99998) ? woningen2004_src : float32(0), FreeData = "False";
+		attribute<eenheden/nrwonha>              woningen2005 (NL_grid/domain)     := woningen2005_src != float32(-99998) ? woningen2005_src : float32(0), FreeData = "False";
+		attribute<eenheden/nrwonha>              woningen2006 (NL_grid/domain)     := woningen2006_src != float32(-99998) ? woningen2006_src : float32(0), FreeData = "False";
+		attribute<eenheden/nrwonha>              woningen2007 (NL_grid/domain)     := woningen2007_src != float32(-99998) ? woningen2007_src : float32(0), FreeData = "False";
+		attribute<eenheden/nrwonha>              woningen2008 (NL_grid/domain)     := woningen2008_src != float32(-99998) ? woningen2008_src : float32(0), FreeData = "False";
+		attribute<eenheden/nrwonha>              woningen2009 (NL_grid/domain)     := woningen2009_src != float32(-99998) ? woningen2009_src : float32(0), FreeData = "False";
+		attribute<eenheden/nrwonha>              woningen2010 (NL_grid/domain)     := woningen2010_src != float32(-99998) ? woningen2010_src : float32(0), FreeData = "False";
+		attribute<eenheden/nrwonha>              woningen2011 (NL_grid/domain)     := woningen2011_src != float32(-99998) ? woningen2011_src : float32(0), FreeData = "False";
+		attribute<eenheden/nrwonha>              woningen2012 (NL_grid/domain)     := woningen2012_src != float32(-99998) ? woningen2012_src : float32(0), FreeData = "False";
+		
+		attribute<eenheden/nrwonha>              woningen2015 (NL_grid/domain)     := woningen2015_src != float32(-99998) && woningen2015_src != float32(-99997) ? woningen2015_src : float32(0), FreeData = "False";
+		attribute<eenheden/nrwonha>              woningen2016 (NL_grid/domain)     := woningen2016_src != float32(-99998) && woningen2016_src != float32(-99997) ? woningen2016_src : float32(0), FreeData = "False";
+		attribute<eenheden/nrwonha>              woningen2017 (NL_grid/domain)     := woningen2017_src != float32(-99998) && woningen2017_src != float32(-99997) ? woningen2017_src : float32(0), FreeData = "False";
+		attribute<eenheden/nrwonha>              woningen2017_omit (NL_grid/domain)     := woningen2017_src != float32(-99998) && woningen2017_src != float32(-99997) ? 1[float32] : float32(0), FreeData = "False";
+		
+		container BBG_2012_2000
+		{
+			attribute<uint32> uitleg (NL_grid/domain)
+			:	StorageName     = "%SourceDataDir%/CBS/Uitleg_2000_2012.tif"
+			, 	Descr			= "CBS Vierkanten 2012 - 2000 en verder in ArcGIS aangepast: waarden >= 10, group >= 5"
+			,	StorageType     = "gdal.grid"
+			,	StorageReadOnly = "True";
+			attribute<bool> uitleg_bool (NL_grid/domain) := uitleg > 0;
+			attribute<float32> uitleg_float (NL_grid/domain) := uitleg[float32] > 0[float32] ? 1[float32] : 0[float32];
+			attribute<NL_grid/domain> ID (NL_grid/domain):= NL_grid/domain/id;
+		}
+	}
+	
+	#include <HGN.dms>
+	
+	container Metrostations
+	{
+		unit<uint32> NZL_stations_src
+		:	StorageName = "%ProjDir%/Data/Station_locaties.shp"
+		,	StorageType = "gdal.vect"
+		,	StorageReadOnly = "True"
+		,	DialogData = "geometry"
+		,	DialogType = "map"
+		{
+			attribute<geography/rdc> 	geometry;	
+			attribute<float32>          x                               := PointCol(geometry);
+			attribute<float32>          y                               := PointRow(geometry);
+			attribute<NL_grid/domain>   NL_grid_domain_rel		        := geometry[NL_grid/domain];
+			
+			attribute<string>           Station_naam                    := Metrostati;
+			attribute<string>           name                            := replace(Station_naam, ' ', '_', 'Centraal_Station', 'Station_Centraal');
+			attribute<string>           name_short                      := substr(name, 8,strlen(name));
+			attribute<uint8>            station_rel                     := rlookup(name, typeringen/metro_stations/name);
+			attribute<bool>             bestaand                        := typeringen/metro_stations/bestaand[station_rel];
+			
+			unit<uint32>   NZL_stations_bestaand := Subset(NZL_stations_src/bestaand)
+			{
+				attribute<geography/rdc>   geometry    := NZL_stations_src/geometry[nr_OrgEntity];
+				attribute<string>           name        := NZL_stations_src/name[nr_OrgEntity];
+			}
+		}
+		
+		unit<uint32> Lijn50 := subset(Tram_metro_stations_2017/metro/Islijn50)
+		,	DialogData = "geometry"
+		,	DialogType = "map"
+		{
+			attribute<geography/rdc>    geometry                := Tram_metro_stations_2017/metro/geometry[nr_OrgEntity];
+			attribute<string>           name                    := Tram_metro_stations_2017/metro/name[nr_OrgEntity];
+		}
+		unit<uint32> Lijn51 := subset(Tram_metro_stations_2017/metro/Islijn51)
+		,	DialogData = "geometry"
+		,	DialogType = "map"
+		{
+			attribute<geography/rdc>    geometry                := Tram_metro_stations_2017/metro/geometry[nr_OrgEntity];
+			attribute<string>           name                    := Tram_metro_stations_2017/metro/name[nr_OrgEntity];
+		}
+		
+		unit<uint32> Lijn52 := subset(IsDefined(NZL_stations_src/name))
+		,	DialogData = "geometry"
+		,	DialogType = "map"
+		{
+			attribute<geography/rdc>    geometry                 := NZL_stations_src/geometry[nr_OrgEntity];
+			attribute<string>           name                     := NZL_stations_src/name_short[nr_OrgEntity];
+			// attribute<string>           name                     : ['Zuid','Centraal','Europaplein','Noorderpark','Noord','Rokin','Vijzelgracht','DePijp'];
+		}
+		
+		unit<uint32> Lijn53 := subset(Tram_metro_stations_2017/metro/Islijn53)
+		,	DialogData = "geometry"
+		,	DialogType = "map"
+		{
+			attribute<geography/rdc>    geometry                := Tram_metro_stations_2017/metro/geometry[nr_OrgEntity];
+			attribute<string>           name                    := Tram_metro_stations_2017/metro/name[nr_OrgEntity];
+		}
+		unit<uint32> Lijn54 := subset(Tram_metro_stations_2017/metro/Islijn54)
+		,	DialogData = "geometry"
+		,	DialogType = "map"
+		{
+			attribute<geography/rdc>    geometry                := Tram_metro_stations_2017/metro/geometry[nr_OrgEntity];
+			attribute<string>           name                    := Tram_metro_stations_2017/metro/name[nr_OrgEntity];
+		}
+		
+		unit<uint32> All_stations := union_unit(Lijn50, Lijn51, Lijn52, Lijn53, Lijn54)
+		,	DialogData = "geometry"
+		,	DialogType = "map"
+		{
+			attribute<geography/rdc>    geometry  := union_data(., Lijn50/geometry, Lijn51/geometry, Lijn52/geometry, Lijn53/geometry, Lijn54/geometry);
+			attribute<string>           name      := union_data(., Lijn50/name, Lijn51/name, Lijn52/name, Lijn53/name, Lijn54/name);
+			attribute<uint32>           lijn      := union_data(., const(50, Lijn50), const(51, Lijn51), const(52, Lijn52), const(53, Lijn53), const(54, Lijn54));
+			
+			unit<uint32> uq := unique(name)
+			,	DialogData = "geometry"
+			,	DialogType = "map"
+			{
+				attribute<geography/rdc>    geometry  := rjoin(values, ../name, ../geometry);
+				attribute<string>           name      := rjoin(values, ../name, ../name);
+				attribute<uint32>           lijn      := rjoin(values, ../name, ../lijn);
+			}
+		}
+		
+		container Losse_stations := 
+			for_each_ne(
+				typeringen/all_metro_stations/name
+				, 'Rekenschemas/Maak_losse_stations('+quote(typeringen/all_metro_stations/name)+','+quote(typeringen/all_metro_stations/name_org)+',sg_points)'
+			);
+		
+		unit<uint32> Tram_metro_stations_2017
+		:  StorageName = "%ProjDir%/Data/TRAMMETRO_PUNTEN_2017.csv"
+		,  StorageType = "gdal.vect"
+		,	StorageReadOnly = "True"
+		, SyncMode = "None"
+		{
+			attribute<string>           LNG;
+			attribute<string>           LAT;
+			attribute<string>           modaliteit;
+			attribute<string>           lijn;
+			attribute<float32>          x                               := replace(LNG, ',', '.' )[float32];
+			attribute<float32>          y                               := replace(LAT, ',', '.' )[float32];
+			attribute<geography/rdc>   point                           := point(x, y, geography/rdc);
+			attribute<geography/rdc>   geometry_rdc                    := LatLongWgs842RD(point, geography/rdc);
+			attribute<string>           LNG_LAT                        := LNG + '_' + LAT;
+			
+			unit<uint32> metro  := Subset(./modaliteit == 'Metro')
+			, SyncMode = "None"
+			,	DialogData = "geometry"
+			,	DialogType = "map"
+			{
+				attribute<geography/rdc>   geometry                    := ../geometry_rdc[nr_OrgEntity];
+				attribute<string>          id := string(id(.));
+				attribute<string>          modaliteit                  := ../modaliteit[nr_OrgEntity];
+				attribute<string>          lijn                        := ../lijn[nr_OrgEntity];
+				attribute<string>          LNG_LAT                     := ../LNG_LAT[nr_OrgEntity];
+				
+				attribute<bool>            IsLijn50                    := IsDefined(strpos(Lijn, '50'));
+				attribute<bool>            IsLijn51                    := IsDefined(strpos(Lijn, '51'));
+				attribute<bool>            IsLijn52                    := IsDefined(strpos(Lijn, '52'));
+				attribute<bool>            IsLijn53                    := IsDefined(strpos(Lijn, '53'));
+				attribute<bool>            IsLijn54                    := IsDefined(strpos(Lijn, '54'));
+				
+				attribute<string>          label                       : ['Sacharovlaan','Westwijk','Poortwachter','Spinnerij','Zuid','AJ Ernststraat','Uilenstede','Kronenburg','Zonnestein','Onderuit','Oranjebaan','Amstelveen Centrum','Oudekerkerlaan','Lelylaan','Isolatorweg','Gein','Overamstel','Reigersbos','Sloterdijk','JanVanGalenstraat','DeVlugtlaan','HenkSneevlietweg','Heemstedestraat','Postjesweg','Amstelveenseweg','RAI','Strandvliet','BijlmerArena','Bullewijk','Holendrecht','Duivendrecht','DeBoelelaanVU','Sportlaan','Van Boshuizenstraat','Spaklerweg','Centraal','Waterlooplein','Weesperplein','Wibautstraat','Nieuwmarkt','Amstel','Van Der Madeweg','Verrijn Stuartweg','Ganzenhoef','Kraaiennest','Gaasperplas','Venserpolder','Meent','Marne','Gondel','Brink','Diemen Zuid'], DialogType = "LabelText";
+				attribute<string>          name                        := replace(Label, ' ', '');
+			}
+			
+			unit<uint32> tram  := Subset(./modaliteit == 'Tram')
+			{
+				attribute<geography/rdc>   geometry                    := ../geometry_rdc[nr_OrgEntity];
+				
+
+			}
+		}
+		
+		unit<uint32> Tram_metro_stations_2019
+		: StorageName = "%ProjDir%/Data/TRAMMETRO_PUNTEN_2019.csv"
+		, StorageType = "gdal.vect"
+		, StorageReadOnly = "True"
+		, SyncMode = "None"
+		{
+			attribute<string>           LNG;
+			attribute<string>           LAT;
+			attribute<string>           modaliteit;
+			attribute<string>           lijn;
+			attribute<float32>          x                              := replace(LNG, ',', '.' )[float32];
+			attribute<float32>          y                              := replace(LAT, ',', '.' )[float32];
+			attribute<geography/rdc>   point                           := point(x, y, geography/rdc);
+			attribute<geography/rdc>   geometry_rdc                    := LatLongWgs842RD(point, geography/rdc);
+			
+			unit<uint32> metro  := Subset(./modaliteit == 'Metro')
+			, SyncMode = "None"
+			,	DialogData = "geometry"
+			,	DialogType = "map"
+			{
+				attribute<geography/rdc>   geometry     := ../geometry_rdc[nr_OrgEntity];
+				attribute<string>          lijn         := ../lijn[nr_OrgEntity];
+				attribute<bool>            IsLijn52     := IsDefined(strpos(Lijn, '52'));
+				
+				container Distance2nvm          := Rekenschemas/CalculateDistance(., NVM/Subset_Amsterdam);
+				container Distance2sgpoints     := Rekenschemas/CalculateDistance(., geography/sg_points);
+				
+				unit<uint32> nz := subset(IsLijn52)
+				{
+					attribute<geography/rdc>   geometry     := ../geometry[nr_OrgEntity];
+					
+					container Distance2nvm          := Rekenschemas/CalculateDistance(., NVM/Subset_Amsterdam);
+					container Distance2sgpoints     := Rekenschemas/CalculateDistance(., geography/sg_points);
+				}
+			}
+			
+			unit<uint32> tram  := Subset(./modaliteit == 'Tram')
+			{
+				attribute<geography/rdc>   geometry                    := ../geometry_rdc[nr_OrgEntity];
+				container Tram_Distance2nvm          := Rekenschemas/CalculateDistance(Tram, NVM/Subset_Amsterdam);
+				container Tram_Distance2sgpoints     := Rekenschemas/CalculateDistance(Tram, geography/sg_points);
+			}
+		}
+	}
+	
+	container NVM: using = "eenheden"
+	{
+		parameter<string> nvm_filedate       := '20220406';
+		parameter<string> csv_filename       := '%SourceDataDir%/NVM/NVM_cleaned_'+nvm_filedate+'.csv';
+		parameter<string> fss_filename       := '%LocalDataDir%/NVM/nvm_'+nvm_filedate;
+		
+		container TableChopper
+		{
+			unit<uint32>      domain         := range(uint32, 0, count_rows), freedata = "false";
+			parameter<string> fieldseparator := ';';
+			
+			parameter<string> filedata_src
+			:  StorageType   = "str"
+			,  StorageName = "=csv_filename"
+			,  StorageReadOnly = "true";
+			parameter<string> filedata := replace(filedata_src, ',', '', '\''','', '', ''); 
+			parameter<uint32> count_rows              := strcount(filedata, '\n') - 1; //   4136157  
+			parameter<string> headerline              := readLines(filedata, void, 0);
+			
+			unit<uint32> field := Range(uint32, 0, strcount(headerline, fieldseparator) + 1)
+			{
+				attribute<string> name := ReadArray(headerline , field, string, 0);
+			}
+				
+			attribute<string> bodylines (domain) := readLines(filedata, domain, headerline/ReadPos);
+
+			container data := 
+				for_each_nedv(
+					field/name
+					,'ReadElems(
+						BodyLines
+						,string
+						,'+ MakeDefined(field/name[id(field)-1] + '/ReadPos','const(0, domain)')+' 
+						,16
+					)'
+					,domain
+					,string
+				);
+			parameter<string> Generate_FSS     := 'Ready', ExplicitSuppliers = "MakeFSS";
+			parameter<string> Generate_GPKG     := 'Ready', ExplicitSuppliers = "MakeGPKG";
+		}
+		
+			
+		container NVM_Data := 
+			for_each_nedv(
+				TableChopper/Field/name
+				, 'TableChopper/Data/' +TableChopper/Field/name
+				, TableChopper/domain
+				, string
+			), StorageName = "=fss_filename+'.gpkg'", StorageType = "gdalwrite.vect";
+			
+		container ReadGPKG 
+		: StorageName     = "=fss_filename+'.gpkg'"
+		, StorageType     = "gdal.vect"
+		, StorageReadOnly = "True"
+		, SyncMode        = "AllTables"
+		{
+			unit<uint32> MakeGPKG
+			{
+				attribute<uint32>        obsid_value           := obsid[uint32];
+				attribute<float32>       xco                   := xcoord[float32];
+				attribute<float32>       yco                   := ycoord[float32];
+				attribute<rdc>           geometry              := point(xco, yco, rdc);
+				attribute<uint2>         d_apartment_value     := d_apartment[uint2];
+				attribute<uint2>         d_terraced_value      := d_terraced[uint2];
+				attribute<uint2>         d_semidetached_value  := d_semidetached[uint2];
+				attribute<uint2>         d_detached_value      := d_detached[uint2];
+				
+				attribute<uint2>         d_garden_value        := d_garden[uint2];
+				attribute<uint2>         d_listed_value        := d_listed[uint2];
+				
+				attribute<eur>           price_value           := price[eur];
+				attribute<m2>            size_value            := size[m2];
+				attribute<m2>            lotsize_value         := lotsize[m2];
+				attribute<jaar>          trans_year_value      := value(trans_year, int16)[jaar];
+				attribute<int16>         trans_month_value     := value(trans_month, int16);
+				attribute<jaar>          bouwjaar_value        := bouwjaar[jaar];
+				
+				attribute<jaar>          bouwjaar_augm         := IsDefined(bouwjaar_value)
+																			? bouwjaar_value
+																			: bouwjaar_nvm;
+				
+				attribute<bool>          constrmissing_value   := constrmissing[bool];
+				attribute<bool>          constrltr1905_value   := constrlt1905[bool];
+				attribute<bool>          constr19061930_value  := constr19061930[bool];
+				attribute<bool>          constr19311944_value  := constr19311944[bool];
+				attribute<bool>          constr19451959_value  := constr19451959[bool];
+				attribute<bool>          constr19601970_value  := constr19601970[bool];
+				attribute<bool>          constr19711980_value  := constr19711980[bool];
+				attribute<bool>          constr19811990_value  := constr19811990[bool];
+				attribute<bool>          constr19912000_value  := constr19912000[bool];
+				attribute<bool>          constrgt2000_value    := constrgt2000[bool];
+				
+				attribute<jaar>          bouwjaar_nvm          := 	switch(
+																			case(constrltr1905_value, 1900[jaar])
+																			, case(constr19061930_value, 1918[jaar])
+																			, case(constr19311944_value, 1937[jaar])
+																			, case(constr19451959_value, 1952[jaar])
+																			, case(constr19601970_value, 1965[jaar])
+																			, case(constr19711980_value, 1975[jaar])
+																			, case(constr19811990_value, 1981[jaar])
+																			, case(constr19912000_value, 1991[jaar])
+																			, case(constrgt2000_value, 2001[jaar])
+																			, case(constrmissing_value, (0/0)[jaar])
+																			, (0/0)[jaar]
+																		);
+				
+				attribute<uint32>        nrooms_value          := nrooms[uint32];
+				attribute<uint32>        nbathrooms_value      := nbathrooms[uint32];
+				attribute<uint2>         d_maintgood_value     := d_maintgood[uint2];
+				attribute<uint2>         d_CV_value            := d_centralheating[uint2];
+				attribute<uint2>         d_privpark_value      := d_privpark[uint2];
+				attribute<uint2>         d_kk_value            := d_kk[uint2];
+				attribute<uint2>         d_erfpacht_value      := d_erfpacht[uint2];
+				attribute<uint2>         d_isol_compl_value    := d_isol_compl[uint2];
+				
+				attribute<uint32>        ams_rel               := point_in_polygon(geometry, selectie_polygoon/polygon);
+				attribute<string>        gem_21_naam           := rjoin(gemeente_code_21, Brondata/Regios/Gemeenten/src_2021/GM_CODE, /Brondata/Regios/Gemeenten/src_2021/GM_NAAM);
+			}
+		}
+
+		unit<uint32> points := Subset(IsDefined(ReadGPKG/MakeGPKG/ams_rel))
+		{
+			unit<uint32> ReadGPKG := NVM/ReadGPKG/MakeGPKG;
+			attribute<rdc>              geometry         := ReadGPKG/geometry[nr_OrgEntity];
+			attribute<uint32>           obsid            := ReadGPKG/obsid_value[nr_OrgEntity];
+			
+			attribute<uint2>            d_apartment      := ReadGPKG/d_apartment_value[nr_OrgEntity];
+			attribute<uint2>            d_terraced       := ReadGPKG/d_terraced_value[nr_OrgEntity];
+			attribute<uint2>            d_semidetached   := ReadGPKG/d_semidetached_value[nr_OrgEntity];
+			attribute<uint2>            d_detached       := ReadGPKG/d_detached_value[nr_OrgEntity];
+			
+			attribute<uint2>            d_eengezins      := NOT(d_apartment[bool])[uint2];
+			attribute<uint2>            d_meergezins     := d_apartment;
+			
+			attribute<eur>              price            := ReadGPKG/price_value[nr_OrgEntity];
+			attribute<m2>               size             := ReadGPKG/size_value[nr_OrgEntity];
+			attribute<m2>               lotsize_src      := ReadGPKG/lotsize_value[nr_OrgEntity];
+			attribute<m2>               lotsize          := (lotsize_src == 9999[m2] || lotsize_src == 99999[m2]) ? (0/0)[m2] : lotsize_src;
+			
+			attribute<jaar>             trans_year       := ReadGPKG/trans_year_value[nr_OrgEntity];
+			attribute<int16>            trans_month      := ReadGPKG/trans_month_value[nr_OrgEntity];
+			attribute<jaar>             bouwjaar         := ReadGPKG/bouwjaar_value[nr_OrgEntity];
+			attribute<jaar>             bouwjaar_augm    := ReadGPKG/bouwjaar_augm[nr_OrgEntity];
+			attribute<uint32>           nrooms           := ReadGPKG/nrooms_value[nr_OrgEntity];
+			attribute<uint32>           nbathrooms       := MakeDefined(ReadGPKG/nbathrooms_value[nr_OrgEntity], 1);
+			attribute<uint2>            d_maintgood      := ReadGPKG/d_maintgood_value[nr_OrgEntity];
+			attribute<uint2>            d_centralheating := ReadGPKG/d_CV_value[nr_OrgEntity];
+			attribute<uint2>            d_privpark       := ReadGPKG/d_privpark_value[nr_OrgEntity];
+			attribute<uint2>            d_kk             := ReadGPKG/d_kk_value[nr_OrgEntity];
+			attribute<uint2>            d_erfpacht       := ReadGPKG/d_erfpacht_value[nr_OrgEntity];
+			attribute<uint2>            d_isol_compl     := ReadGPKG/d_isol_compl_value[nr_OrgEntity];
+			attribute<uint2>            d_garden         := ReadGPKG/d_garden_value[nr_OrgEntity];
+			attribute<uint2>            d_listed         := ReadGPKG/d_listed_value[nr_OrgEntity];
+			attribute<uint32>           ams_rel          := ReadGPKG/ams_rel[nr_OrgEntity];
+			
+			attribute<string>           gem_21_naam      := ReadGPKG/gem_21_naam[nr_OrgEntity];
+			attribute<uint32>           buurt_rel        := point_in_polygon(geometry, /Brondata/Regios/buurten/src_2021/Geometry);
+			attribute<uint32>           pc6_rel          := point_in_polygon(geometry, /Brondata/Regios/Postcode_gebieden/Postcode6_areas/Geometry);
+			
+			// attribute<rdc_100m>         rdc_100m_rel     := geometry[rdc_100m];
+			// attribute<uint16>           pand_hoogte_2020 := SourceData/Vastgoed/BAG/PerJaar/Y2020/Panden/pand_hoogte/hoogte[point_in_polygon(geometry, SourceData/Vastgoed/BAG/PerJaar/Y2020/Panden/pand_hoogte/Geometry)];
+			// attribute<uint2>            d_highrise       := (pand_hoogte_2020 >= 1500[uint16])[uint2];
+
+			// attribute<float32>          Reistijd_stations_2019         := SourceData/Omgeving/Per_AllocDomain/tt_Trainstation_2006_min[rdc_100m_rel];
+			// attribute<float32>          Reistijd_stations_2006         := SourceData/Omgeving/Per_AllocDomain/tt_Trainstation_2006_min[rdc_100m_rel];
+			// attribute<uint2>            GroenNabij_2015                := SourceData/Omgeving/Per_AllocDomain/bbg2015_groen_100mbuff[rdc_100m_rel][uint2];
+			// attribute<float32>          Reistijd_500k_inw_2020_NL      := SourceData/Omgeving/Per_AllocDomain/tt_500kinhab_min_2020[rdc_100m_rel];
+			// attribute<float32>          UAI_2021                       := SourceData/Omgeving/Per_AllocDomain/UAI_2021[rdc_100m_rel];
+		}
+	}
+	
+	container Regios
+	{
+		container nederland
+		{
+			unit<uint32> src 
+				:	StorageName     = "%SourceDataDir%/CBS/Nederland.shp"
+				,	StorageType     = "gdal.vect"
+				,	StorageReadOnly = "True"
+				{
+					attribute<geography/rdc> geometry (polygon) ;
+					attribute<.>             grid   (NL_grid/domain) := poly2grid(geometry, NL_grid/domain);
+					attribute<bool>          IsNederland (NL_grid/domain) := IsDefined(grid);
+					attribute<uint8>         IsNederland_8 (NL_grid/domain) := IsNederland ? 1[uint8] : (0/0)[uint8];
+				}
+		}
+
+		container provincies
+		{
+			unit<uint32> src_2012 
+			:	StorageName     = "%SourceDataDir%/CBS/2012/CBS_Provincie_2012.shp"
+			,	StorageType     = "gdal.vect"
+			,	StorageReadOnly = "True"
+			{
+				attribute<geography/rdc>    geometry  (polygon) ;
+				attribute<string>           label                      := statnaam ;
+				
+				unit<uint32> Noord_Nederland := subset(label == 'Groningen' || label == 'Friesland' || label == 'Drenthe')
+				{
+					attribute<geography/rdc>    geometry  (polygon) := ../geometry[nr_OrgEntity];
+					attribute<string>           label               := ../label[nr_OrgEntity];
+				}
+			}
+		}
+
+		container buurten
+		{
+			unit<uint32> src_2012
+			:	StorageName     = "%SourceDataDir%/CBS/2012/buurt_2012.shp"
+			,	StorageType     = "gdal.vect"
+			,	StorageReadOnly = "True"
+			// ,	SyncMode        = "None"
+			,   DialogType      = "map"
+			,   DialogData      = "geometry"
+			{
+				attribute<geography/rdc>   		geometry  	(polygon);
+				attribute<geography/rdc_mm>   		geometry_mm  	(polygon) := geometry[geography/rdc_mm];
+				attribute<string>           		label                      			:= BU_NAAM ;
+				attribute<.>        		grid      	(NL_grid/domain) 	:= poly2grid(geometry, NL_grid/domain);
+
+				attribute<geography/rdc>                  buurt_centroid (src_2012) 		:= centroid_or_mid(geometry);
+				attribute<regios/gemeenten/gem_2012/gem_uq>   buurt_gem_rel		:= point_in_polygon(buurt_centroid, regios/gemeenten/gem_2012/gem_uq/geometry);
+				attribute<uint32>				id := id(.);
+				attribute<string>                  BU_NAAM;
+				attribute<string>                  GM_NAAM;
+				
+				unit<uint32> Regio_Amsterdam :=    overlay_polygon(geometry_mm, selectie_polygoon/polygon_mm)
+				,   DialogType      = "map"
+				,   DialogData      = "geometry_f"
+				{
+					attribute<string>            BU_NAAM              := rjoin(Regio_Amsterdam/first_rel, src_2012/id, src_2012/BU_NAAM);
+					attribute<geography/rdc>    geometry_f (polygon) := geometry[geography/rdc];
+				}
+			}
+			
+			unit<uint32> src_2015
+			:	StorageName     = "%SourceDataDir%/CBS/2015/buurt_2015.shp"
+			,	StorageType     = "gdal.vect"
+			,	StorageReadOnly = "True"
+			{
+				attribute<geography/rdc>   	geometry  (polygon);
+				attribute<string>           	label                     		:= BU_NAAM ;
+				attribute<.>        	grid      (NL_grid/domain) 	:= poly2grid(geometry, NL_grid/domain);
+			}
+			
+			unit<uint32> src_2016
+			:	StorageName     = "%SourceDataDir%/CBS/2016/buurt_2016.shp"
+			,	StorageType     = "gdal.vect"
+			,	StorageReadOnly = "True"
+			{
+				attribute<geography/rdc>   	geometry  (polygon);
+				attribute<string>           	label                     		:= BU_NAAM ;
+				attribute<.>        	grid      (NL_grid/domain) 	:= poly2grid(geometry, NL_grid/domain);
+				// attribute<uint32>           	woz                        		:= rjoin(BU_CODE, woz_buurt/woz_2016/CODERING, uint32(woz_buurt/woz_2016/GEMIDDELDE_WONINGWAARDE));
+			}
+			
+			unit<uint32> src_2017
+			:	StorageName     = "%SourceDataDir%/CBS/2017/buurt_2017.shp"
+			,	StorageType     = "gdal.vect"
+			,	StorageReadOnly = "True"
+			{
+				attribute<geography/rdc>   	geometry  (polygon);
+				attribute<string>           	label                     		:= BU_NAAM ;
+				attribute<.>        	grid      (NL_grid/domain) 	:= poly2grid(geometry, NL_grid/domain);
+			}
+			
+			unit<uint32> src_2018
+			:	StorageName     = "%SourceDataDir%/CBS/2018/buurt_2018.shp"
+			,	StorageType     = "gdal.vect"
+			,	StorageReadOnly = "True"
+			{
+				attribute<geography/rdc>   	geometry  (polygon);
+				attribute<string>           	label                     		:= BU_NAAM ;
+				attribute<.>        	grid      (NL_grid/domain) 	:= poly2grid(geometry, NL_grid/domain);
+			}
+			
+			unit<uint32> src_2019
+			:	StorageName     = "%SourceDataDir%/CBS/2019/buurt_2019_v1.shp"
+			,	StorageType     = "gdal.vect"
+			,	StorageReadOnly = "True"
+			{
+				attribute<geography/rdc>   	geometry  (polygon);
+				attribute<string>           	label                     		:= BU_NAAM ;
+				attribute<.>        	grid      (NL_grid/domain) 	:= poly2grid(geometry, NL_grid/domain);
+			}
+
+			unit<uint32> src_2021
+			:	StorageName     = "%SourceDataDir%/CBS/2021/buurt_2021_v1.shp"
+			,	StorageType     = "gdal.vect"
+			,	StorageReadOnly = "True"
+			{
+				attribute<geography/rdc>   	geometry  (polygon);
+				attribute<string>           	label                     		:= BU_NAAM ;
+				attribute<.>        	grid      (NL_grid/domain) 	:= poly2grid(geometry, NL_grid/domain);
+			}
+
+		}
+		
+		container wijken
+		{
+			unit<uint32> src_2012 
+			:	StorageName     = "%SourceDataDir%/CBS/2012/wijk_2012.shp"
+			,	StorageType     = "gdal.vect"
+			,	StorageReadOnly = "True"
+			{
+				attribute<geography/rdc>    geometry  (polygon) ;
+				attribute<geography/rdc_mm> geometry_mm  	(polygon) := geometry[geography/rdc_mm];
+				attribute<string>           label                      := WK_NAAM ;
+				attribute<.>         grid      (NL_grid/domain) := poly2grid(geometry, NL_grid/domain);
+				
+				attribute<string>                  WK_NAAM;
+				attribute<string>                  GM_NAAM;
+				
+				unit<uint32> Regio_Amsterdam :=    overlay_polygon(geometry_mm, selectie_polygoon/polygon_mm)
+				,   DialogType      = "map"
+				,   DialogData      = "geometry_f"
+				{
+					attribute<string>            WK_NAAM              := rjoin(Regio_Amsterdam/first_rel, src_2012/id, src_2012/WK_NAAM);
+					attribute<geography/rdc>    geometry_f (polygon) := geometry[geography/rdc];
+				}
+			}
+			
+			unit<uint32> src_2016 
+			:	StorageName     = "%SourceDataDir%/CBS/2016/wijk_2016.shp"
+			,	StorageType     = "gdal.vect"
+			,	StorageReadOnly = "True"
+			{
+				attribute<geography/rdc>   geometry  (polygon) ;
+				attribute<string>           label                      := WK_NAAM ;
+				attribute<.>         grid      (NL_grid/domain) := poly2grid(geometry, NL_grid/domain);
+				attribute<uint32>           woz                        := rjoin(WK_CODE, woz_buurt/woz_2016/CODERING, uint32(woz_buurt/woz_2016/GEMIDDELDE_WONINGWAARDE));
+			}
+			
+			unit<uint32> src_2019
+			:	StorageName     = "%SourceDataDir%/CBS/2019/wijk_2019_v1.shp"
+			,	StorageType     = "gdal.vect"
+			,	StorageReadOnly = "True"
+			{
+				attribute<geography/rdc>   	geometry  (polygon);
+				attribute<string>           label                      := WK_NAAM ;
+				attribute<.>                grid      (NL_grid/domain) := poly2grid(geometry, NL_grid/domain);
+			}
+			
+			unit<uint32> src_2021
+			:	StorageName     = "%SourceDataDir%/CBS/2021/wijk_2021_v1.shp"
+			,	StorageType     = "gdal.vect"
+			,	StorageReadOnly = "True"
+			{
+				attribute<geography/rdc>   	geometry  (polygon);
+				attribute<string>           label                      := WK_NAAM ;
+				attribute<.>                grid      (NL_grid/domain) := poly2grid(geometry, NL_grid/domain);
+			}
+		}
+		
+		container gemeenten
+		{
+			unit<uint32> src_2012 
+			:	StorageName     = "%SourceDataDir%/CBS/2012/gem_2012.shp"
+			,	StorageType     = "gdal.vect"
+			,	StorageReadOnly = "True"
+			{
+				attribute<geography/rdc>    geometry  (polygon) ;
+				attribute<geography/rdc_mm> geometry_mm  	(polygon) := geometry[geography/rdc_mm];
+				attribute<string>           label                      := GM_NAAM ;
+				attribute<src_2012>         grid      (NL_grid/domain) := poly2grid(geometry, NL_grid/domain);
+				attribute<string>           GM_NAAM;
+				
+				unit<uint32> Selectie := overlay_polygon(geometry_mm, selectie_polygoon/polygon_mm)
+				,   DialogType      = "map"
+				,   DialogData      = "geometry"
+				{
+					attribute<uint32>            first_rel;
+					attribute<uint32>            second_rel;
+					attribute<string>            GM_NAAM              := rjoin(first_rel, id(src_2012), src_2012/GM_NAAM);
+					attribute<geography/rdc>     geometry (polygon)   := rjoin(first_rel, id(src_2012), src_2012/geometry);
+					attribute<string>            GM_CODE              := rjoin(first_rel, id(src_2012), src_2012/GM_CODE);
+				}
+				
+				unit<uint32> Regio_Amsterdam := subset(selectie/GM_NAAM != '' && selectie/GM_NAAM != 'Amsterdam')
+				,  DialogType = "Map"
+				,  DialogData = "geometry"	
+				,  StorageReadOnly = "True"
+				{
+					attribute<geography/rdc>        geometry (polygon) := selectie/geometry[nr_OrgEntity];
+					attribute<string>               GM_NAAM            := selectie/GM_NAAM[nr_OrgEntity];
+					attribute<string>               GM_CODE            := selectie/GM_CODE[nr_OrgEntity];
+					attribute<uint32>               CODE               := right(GM_CODE, 3)[uint32];
+					
+					attribute<Regio_Amsterdam>      NL_grid_domain_rel  (NL_grid/domain)    := poly2grid(geometry, NL_grid/domain);
+					attribute<uint32>               code_grid           (NL_grid/domain)    := code[NL_grid_domain_rel];
+					attribute<uint32>               point_rel           (sg_points)         := point_in_polygon(sg_points/Geometry, geometry);
+				}
+				
+				unit<uint32> AgglAmsterdam := subset(selectie/GM_NAAM == 'Amsterdam' 
+														|| selectie/GM_NAAM == 'Amstelveen'
+														|| selectie/GM_NAAM == 'Diemen'
+														|| selectie/GM_NAAM == 'Ouder-Amstel'
+													)
+				,  DialogType = "Map"
+				,  DialogData = "geometry"	
+				,  StorageReadOnly = "True"
+				{
+					attribute<geography/rdc>        geometry (polygon) := selectie/geometry[nr_OrgEntity];
+					attribute<string>               GM_NAAM            := selectie/GM_NAAM[nr_OrgEntity];
+					attribute<string>               GM_CODE            := selectie/GM_CODE[nr_OrgEntity];
+					attribute<uint32>               CODE               := right(GM_CODE, 3)[uint32];
+					
+					attribute<Regio_Amsterdam>      NL_grid_domain_rel  (NL_grid/domain)       := poly2grid(geometry, NL_grid/domain);
+					attribute<uint32>               code_grid  (NL_grid/domain)                := code[NL_grid_domain_rel];
+					attribute<uint32>               code_const  (NL_grid/domain)               := IsDefined(code_grid) ? 1 : (0/0);
+					
+					attribute<uint32>               point_rel   (sg_points)   := point_in_polygon(sg_points/Geometry, geometry);
+				}
+			}
+			
+			unit<uint32> src_2016 
+			:	StorageName     = "%SourceDataDir%/CBS/2016/gem_2016.shp"
+			,	StorageType     = "gdal.vect"
+			,	StorageReadOnly = "True"
+			{
+				attribute<geography/rdc>    geometry  (polygon) ;
+				attribute<string>           label                      := GM_NAAM ;
+				attribute<src_2016>         grid      (NL_grid/domain) := poly2grid(geometry, NL_grid/domain);
+				
+				unit<uint32> Amsterdam := subset(label == "Amsterdam")
+				{
+					attribute<geography/rdc>   geometry  (polygon) := ../geometry[nr_OrgEntity];
+					attribute<string>           label              := ../GM_NAAM[nr_OrgEntity] ;
+					
+					unit<uint32> points := sequence2points(geometry)
+					{
+						attribute<geography/rdc>  point;
+						attribute<geography/rdc>  geometry := point;
+						attribute<uint32>          SequenceNr;
+						attribute<uint32>          Ordinal;
+						
+						unit<uint32> uq := unique(geometry)
+						{
+							attribute<geography/rdc> values;
+							attribute<geography/rdc>  geometry := values;
+						}
+					}
+				}
+				
+				unit<uint32> AgglAmsterdam := subset(label == "Amsterdam" || label = "Zaanstad" || label = "Amstelveen" || label = "Diemen" || label = "Oostzaan" || label = "Landsmeer" || label = "Wormerland")
+				,	StorageName = "%LocalDataDir%/Gemeenten_Aggl_Amsterdam.fss" 
+				{
+					attribute<geography/rdc>   geometry  (polygon) := ../geometry[nr_OrgEntity];
+					attribute<string>           label              := ../GM_NAAM[nr_OrgEntity] ;
+					attribute<string>           code              := ../GM_CODE[nr_OrgEntity] ;
+				}
+			}
+			
+			unit<uint32> src_2019
+			:	StorageName     = "%SourceDataDir%/CBS/2019/gemeente_2019_v1.shp"
+			,	StorageType     = "gdal.vect"
+			,	StorageReadOnly = "True"
+			{
+				attribute<geography/rdc>   	geometry  (polygon);
+				attribute<string>           label                      := GM_NAAM ;
+				attribute<.>                grid      (NL_grid/domain) := poly2grid(geometry, NL_grid/domain);
+			}
+			
+			unit<uint32> src_2021
+			:	StorageName     = "%SourceDataDir%/CBS/2021/gemeente_2021_v1.shp"
+			,	StorageType     = "gdal.vect"
+			,	StorageReadOnly = "True"
+			{
+				attribute<geography/rdc>   	geometry  (polygon);
+				attribute<string>           label                      := GM_NAAM ;
+				attribute<.>                grid      (NL_grid/domain) := poly2grid(geometry, NL_grid/domain);
+				attribute<uint32>           code                       := uint32(right(GM_CODE, 4));
+			}
+		}
+		
+		container Postcode_gebieden
+		{
+			unit<uint32> Postcode4
+			:	StorageName     = "%SourceDataDir%/CBS/pc6_tm2019_shp/pc4_xy_tm2020.fss"
+			,	StorageReadOnly = "True"
+			,	DialogType      = "map"
+			,	DialogData      = "geometry"
+			{
+				attribute<rdc>                  geometry;
+				attribute<string>               PC4;
+				attribute<string>               name := label;
+				attribute<string>               label : DialogType = "LabelText";
+			}
+			
+			unit<uint32> Postcode4_areas
+			:	StorageName     = "%SourceDataDir%/CBS/pc6_tm2019_shp/pc4_xy_tm2020_areas.fss"
+			,	StorageReadOnly = "True"
+			,	DialogType      = "map"
+			,	DialogData      = "geometry"
+			{
+				attribute<rdc>                        geometry (poly);
+				attribute<string>                     PC4;
+				attribute<string>                     label                   : DialogType = "LabelText";
+				attribute<rdc>                        pc4_centroid            := centroid_or_mid(geometry);
+				attribute<string>                     name                    := label;
+			}
+		/*
+			unit<uint32> Postcode4 
+			:	StorageName     = "%SourceDataDir%/CBS/PC4_shape.shp"
+			,	StorageType     = "gdal.vect"
+			,	StorageReadOnly = "True"
+			{
+				attribute<geography/rdc>   	geometry  (polygon) ;
+				attribute<string>           		label                      	:= string(PC4) ;
+				attribute<Postcode4>         	grid      (NL_grid/domain) 	:= poly2grid(geometry, NL_grid/domain);
+				attribute<geography/rdc>      pc4_centroid (Postcode4) 		:= centroid_or_mid(geometry);
+				// attribute<string>				GM_CODE							:= rjoin(pc4_gem_rel, BronData/regios/gemeenten/gem_2012/gem_uq/id, BronData/regios/gemeenten/gem_2012/gem_uq/GM_CODE);
+				attribute<uint32>					id	:= id(.);
+				attribute<string>				name := label;
+				// attribute<regios/gemeenten/gem_2012/gem_uq>  pc4_gem_rel		:= point_in_polygon(pc4_centroid, regios/gemeenten/gem_2012/gem_uq/geometry);
+			}
+		*/
+			unit<uint32> Postcode6 
+			:	StorageName     = "%SourceDataDir%/CBS/PC6_shape.shp"
+			,	StorageType     = "gdal.vect"
+			,	StorageReadOnly = "True"
+			{
+				attribute<geography/rdc>   	geometry  (polygon) ;
+				attribute<string>           		label                      	:= POSTCODE ;
+				attribute<Postcode6>         	grid      (NL_grid/domain) 	:= poly2grid(geometry, NL_grid/domain);
+			}
+			unit<uint32> Postcode6_areas 
+			:	StorageName     = "%SourceDataDir%/CBS/pc6_tm2019_shp/pc6_xy_tm2020_areas.fss"
+			,	StorageReadOnly = "True"
+			{
+				attribute<geography/rdc>       geometry  (poly);
+				attribute<geography/rdc>       centroid;
+				attribute<string>               label;
+				attribute<uint32>               Amsterdam_rel;
+				
+				attribute<.>                    grid      (NL_grid/domain) 	:= poly2grid(geometry, NL_grid/domain);
+				
+				unit<uint32> MRA := subset(IsDefined(Amsterdam_rel))
+				{
+					attribute<geography/rdc>       geometry  (poly) := ../geometry[nr_OrgEntity];
+					attribute<geography/rdc>       centroid         := ../centroid[nr_OrgEntity];
+					attribute<Buurten/src_2021>    buurt_rel        := point_in_polygon(centroid, Buurten/src_2021/geometry);
+					attribute<string>              label            := ../label[nr_OrgEntity], DialogType = "LabelText";
+				}
+			}
+			
+			
+		}
+		
+		unit<uint32> Stadsdelen
+		:  StorageName = "%ProjDir%/Data/borders/stadsdelen_2010.shp"
+		,  StorageType = "gdal.vect"
+		,	StorageReadOnly = "True"
+		{
+			attribute<geography/rdc> 	geometry (polygon);	
+			attribute<stadsdelen>       NL_grid_domain_rel  (NL_grid/domain)         := poly2grid(geometry, NL_grid/domain);
+			attribute<string>           Stadsdeeln;
+			attribute<uint8>            sdnummer;
+			attribute<uint32>            Stadsdeelnummer                                 := sdnummer[uint32];
+			attribute<uint32>           point_rel   (sg_points)   := point_in_polygon(sg_points/Geometry, geometry);
+		}
+		
+		unit<uint32> Stadsdelen_Bewoond
+		:  StorageName = "%ProjDir%/Data/borders/stadsdelen_bewoond_2009.shp"
+		,  StorageType = "gdal.vect"
+		,	StorageReadOnly = "True"
+		{
+			attribute<geography/rdc> 	geometry (polygon);	
+			// attribute<NL_grid/domain>   NL_grid_domain_rel		        := geometry[NL_grid/domain];
+		}
+		
+		unit<uint32> grootstedelijke_agglomeratie 
+		:	StorageName     = "%SourceDataDir%/CBS/2012/CBS_grootstedelijke_agglomeratie_2012.shp"
+		,	StorageType     = "gdal.vect"
+		,	StorageReadOnly = "True"
+		{
+			attribute<geography/rdc>   geometry  (polygon) ;
+			attribute<string>           label                      := statnaam ;
+			attribute<grootstedelijke_agglomeratie>         grid      (NL_grid/domain) := poly2grid(geometry, NL_grid/domain);
+			
+			unit<uint32> MRA := subset(Label == 'Amsterdam')
+			{
+				attribute<geography/rdc>   geometry  (poly) := ../geometry[nr_OrgEntity];
+			}
+		}
+	
+	}
+	
+	container Spatial_data
+	{
+		container Reisafstand
+		{
+			attribute<uint32> Reistijd_1k_Beroepsbevolking (NL_grid/domain)
+			:	StorageName     = "%LocalDataDir%/Output/Reistijd1kBeroepsbevolking.tif"
+			,	StorageType     = "gdal.grid"
+			,	StorageReadOnly = "True";
+		}
+	
+		container OSM
+		{	
+			unit<uint32> wegen 
+			:	StorageName     = "%SourceDataDir%/OSM/20200117/netherlands-latest-free.shp/gis_osm_roads_free_1.shp"
+			,	StorageType     = "gdal.vect"
+			,	StorageReadOnly = "True"
+			,	DialogType = "Map"
+			,	DialogData = "geometry_rd"	
+			, syncmode = "none"			
+			{
+				attribute<fpoint> 	         geometry (arc);	
+				attribute<geography/rdc>    geometry_rd (arc)   := LatLongWgs842RD(geometry, fpoint)[geography/rdc];
+				attribute<string>            fclass;
+				attribute<uint32>            id                  := id(.);
+			
+				unit<uint32>                 arcpoints           := Sequence2points(geometry_rd), syncmode = "none"
+				{
+					attribute<selectie_polygoon>            arcpoints_sg_rel    := point_in_polygon(arcpoints/point, selectie_polygoon/Polygon);
+					attribute<bool>                         point_in_sel        := IsDefined(arcpoints_sg_rel);
+				}
+				
+				attribute<bool>                             road_in_sel         := any(arcpoints/point_in_sel, arcpoints/sequencenr);
+			}
+
+			container Railwaystations_2010_Distance2sgpoints := Rekenschemas/CalculateDistance(Railwaystations_2010/unique, geography/sg_points);
+			container Railwaystations_2010_Distance2nvm      := Rekenschemas/CalculateDistance(Railwaystations_2010/unique, NVM/Subset_Amsterdam);
+			container Railwaystations_2015_Distance2sgpoints := Rekenschemas/CalculateDistance(Railwaystations_2015/unique, geography/sg_points);
+			container Railwaystations_2015_Distance2nvm      := Rekenschemas/CalculateDistance(Railwaystations_2015/unique, NVM/Subset_Amsterdam);
+			
+			unit<uint32> Railwaystations_2010 
+			:	StorageName     = "%SourceDataDir%/OSM/railwaystations_nl_2010.shp"
+			,	StorageType     = "gdal.vect"
+			,	StorageReadOnly = "True"
+			,	DialogType = "Map"
+			,	DialogData = "geometry"	
+			{
+				attribute<geography/rdc>     geometry;
+				attribute<string>            geometry_string := string(geometry);
+				attribute<string>            name;
+				
+				unit<uint32> unique := unique(geometry_string)
+				{
+					attribute<uint32>           unique_rel            := rlookup(values, ../geometry_string);
+					attribute<geography/rdc>    geometry              := ../geometry[unique_rel];
+					attribute<string>           values;
+				}
+			}
+			
+			unit<uint32> Railwaystations_2015 
+			:	StorageName     = "%SourceDataDir%/OSM/railwaystations_nl_2015.shp"
+			,	StorageType     = "gdal.vect"
+			,	StorageReadOnly = "True"
+			,	DialogType = "Map"
+			,	DialogData = "geometry_rd"	
+			{
+				attribute<geography/rdc>    geometry;
+				attribute<string>            geometry_string := string(geometry);
+				attribute<string>            name;
+				
+				unit<uint32> unique := unique(geometry_string)
+				{
+					attribute<uint32>           unique_rel            := rlookup(values, ../geometry_string);
+					attribute<geography/rdc>   geometry              := ../geometry[unique_rel];
+					attribute<string>           values;
+				}
+			}
+			
+			unit<uint32> Railways_2015 
+			:	StorageName     = "%SourceDataDir%/OSM/railways_nl_2015.shp"
+			,	StorageType     = "gdal.vect"
+			,	StorageReadOnly = "True"
+			,	DialogType = "Map"
+			,	DialogData = "geometry_rd"	
+			{
+				attribute<geography/rdc>    geometry (arc);
+				
+				container                    point_rel_info_sgpoints                           := connect_info(geometry, sg_points/geometry);
+				attribute<m> 		         Dist2sgpoints (sg_points)                         := point_rel_info_sgpoints/dist[m];
+				
+				container                    point_rel_info_nvm                                := connect_info(geometry, NVM/Subset_Amsterdam/geometry);
+				attribute<m> 		         Dist2nvm (NVM/Subset_Amsterdam)                   := point_rel_info_nvm/dist[m];
+			}
+			
+			unit<uint32> Wegen_Amsterdam_Creator := subset(wegen/road_in_sel)
+			,   StorageName = "%LocalDataDir%/NZlijn/Wegen_Amsterdam.new.fss"
+			,	DialogType = "Map"
+			,	DialogData = "geometry"	
+			{
+				attribute<geography/rdc>              geometry (arc) := wegen/geometry_rd[nr_OrgEntity];
+				attribute<string>                      fclass         := wegen/fclass[nr_OrgEntity];
+			}
+			
+			unit<uint32> Wegen_Amsterdam
+			:	StorageName = "%LocalDataDir%/NZlijn/Wegen_Amsterdam.fss"
+			,	DialogType = "Map"
+			,	DialogData = "geometry"	
+			,	StorageReadOnly = "True"
+			{
+				attribute<geography/rdc>              geometry (arc);
+				attribute<string>                      fclass;
+				
+				attribute<m>                           lengte               := arc_length(geometry, m);
+				attribute<string>                      type                 := fclass;
+
+				attribute<typeringen/wegtype>          wegtype              := rlookup(type, typeringen/wegtype/name);   
+				attribute<typeringen/wegtypegroep>     wegtypegroep         := typeringen/wegtype/wegtypegroepnr[wegtype];
+
+				attribute<bool>                        isPartOfCarNetwork   := typeringen/wegtype/IsPartOfCarNetwork[wegtype];
+				attribute<bool>                        isPartOfTruckNetwork := typeringen/wegtype/isPartOfTruckNetwork[wegtype];
+
+				attribute<bool>                        isPartOfBikeNetwork  := typeringen/wegtype/IsPartOfBikeNetwork[wegtype];
+				attribute<bool>                        isPartOfPedestrianNetwork:= typeringen/wegtype/IsPartOfPedestrianNetwork[wegtype];
+
+				attribute<bool>                        isMotorWay           := (type = 'motorway' || type = 'motorway_link');
+				attribute<bool>                        isMotorWayLink       :=  type = 'motorway_link';
+				attribute<bool>                        isMajor              := type = 'primary_link' || type = 'secondary_link' || type = 'secondary' || type = 'primary';
+				attribute<bool>                        isStreet             := !isMotorWay && !isMajor;
+				
+				unit<uint32> Motorways := subset(isMotorWay)
+				,	StorageName = "%LocalDataDir%/NZlijn/Motorway_Amsterdam.fss"
+				{
+					attribute<geography/rdc>     geometry (arc)                    := ../geometry[nr_OrgEntity];
+					container                    point_rel_info_sgpoints           := connect_info(geometry, sg_points/geometry);
+					attribute<m> 		         Dist2sgpoints (sg_points)         := point_rel_info_sgpoints/dist[m];
+					container                    point_rel_info_nvm                := connect_info(geometry, NVM/Subset_Amsterdam/geometry);
+					attribute<m> 		         Dist2nvm (NVM/Subset_Amsterdam)   := point_rel_info_nvm/dist[m];
+				}
+				unit<uint32> MotorwayLinks := subset(isMotorWayLink)
+				{
+					attribute<geography/rdc>     geometry (arc)                    := ../geometry[nr_OrgEntity];
+					container                    point_rel_info_sgpoints           := connect_info(geometry, sg_points/geometry);
+					attribute<m> 		         Dist2sgpoints (sg_points)         := point_rel_info_sgpoints/dist[m];
+					container                    point_rel_info_nvm                := connect_info(geometry, NVM/Subset_Amsterdam/geometry);
+					attribute<m> 		         Dist2nvm (NVM/Subset_Amsterdam)   := point_rel_info_nvm/dist[m];
+				}
+			}		
+			
+			#include <NetworkPreperation.dms>
+		}
+	
+		container NWB
+		{
+			unit<uint32> wegen_GWT 
+			:	StorageName     = "%SourceDataDir%/NWB/Wegvakken_GWT_diss.shp"
+			,	StorageType     = "gdal.vect"
+			,	StorageReadOnly = "True"
+			{
+				attribute<geography/rdc> 	geometry (arc);	
+				
+				container                   point_rel_info                           := connect_info(geometry, sg_points/geometry);
+				attribute<m> 		        DistTo (sg_points)                       := point_rel_info/dist[m];
+			}
+			
+			unit<uint32> wegen_P 
+			:	StorageName     = "%SourceDataDir%/NWB/Wegvakken_P_diss.shp"
+			,	StorageType     = "gdal.vect"
+			,	StorageReadOnly = "True"
+			{
+				attribute<geography/rdc> 	geometry (arc);	
+				
+				container                   point_rel_info                           := connect_info(geometry, sg_points/geometry);
+				attribute<m> 		        DistTo (sg_points)                       := point_rel_info/dist[m];
+			}
+			
+			unit<uint32> wegen_R 
+			:	StorageName     = "%SourceDataDir%/NWB/Wegvakken_R_diss.shp"
+			,	StorageType     = "gdal.vect"
+			,	StorageReadOnly = "True"
+			{
+				attribute<geography/rdc> 	geometry (arc);	
+				
+				container                   point_rel_info                           := connect_info(geometry, sg_points/geometry);
+				attribute<m> 		        DistTo (sg_points)                       := point_rel_info/dist[m];
+			}	
+			
+			unit<uint32> wegen_R_op_afritten := union_unit(wegen_R_oprit, wegen_R_afrit)
+			{
+				attribute<geography/rdc>   geometry (arc)                           := union_data(., wegen_R_oprit/geometry, wegen_R_afrit/geometry);
+			
+				container                   point_rel_info                           := connect_info(geometry, sg_points/geometry);
+				attribute<m> 		        DistTo (sg_points)                       := point_rel_info/dist[m];
+			}
+			
+			
+			unit<uint32> wegen_R_oprit 
+			:	StorageName     = "%SourceDataDir%/NWB/Wegvakken_R_Oprit_diss.shp"
+			,	StorageType     = "gdal.vect"
+			,	StorageReadOnly = "True"
+			{
+				attribute<geography/rdc> 	geometry (arc);	
+				
+				container                   point_rel_info                           := connect_info(geometry, sg_points/geometry);
+				attribute<m> 		        DistTo (sg_points)                       := point_rel_info/dist[m];
+			}	
+			
+			unit<uint32> wegen_R_afrit 
+			:	StorageName     = "%SourceDataDir%/NWB/Wegvakken_R_afrit_diss.shp"
+			,	StorageType     = "gdal.vect"
+			,	StorageReadOnly = "True"
+			{
+				attribute<geography/rdc> 	geometry (arc);	
+				
+				container                   point_rel_info                           := connect_info(geometry, sg_points/geometry);
+				attribute<m> 		        DistTo (sg_points)                       := point_rel_info/dist[m];
+			}	
+			
+			unit<uint32> Spoorwegen 
+			:	StorageName     = "%SourceDataDir%/NWB/Spoorvakken.shp"
+			,	StorageType     = "gdal.vect"
+			,	StorageReadOnly = "True"
+			{
+				attribute<geography/rdc> 	geometry (arc);	
+				
+				container                   point_rel_info                           := connect_info(geometry, sg_points/geometry);
+				attribute<m> 		        DistTo (sg_points)                       := point_rel_info/dist[m];
+			}	
+			
+			unit<uint32> Treinstations 
+			:	StorageName     = "%SourceDataDir%/NWB/Treinstations.shp"
+			,	StorageType     = "gdal.vect"
+			,	StorageReadOnly = "True"
+			,	SyncMode = "none"
+			{
+				attribute<geography/rdc> 	geometry;	
+				attribute<string>           naam;
+				
+				
+				unit<uint32> unique := unique(naam)
+				{
+					attribute<uint32>           unique_rel            := rlookup(values, treinstations/naam);
+					attribute<geography/rdc>   geometry              := Treinstations/geometry[unique_rel];
+					
+					attribute<Treinstations>    point_rel (sg_points)       := connect(geometry, sg_points/geometry);		
+
+					attribute<float32>          x_sg (sg_points)            := PointCol(geometry)[point_rel];
+					attribute<float32>          y_sg (sg_points)            := PointRow(geometry)[point_rel];
+				
+					attribute<float32>          delta_x (sg_points)         := abs(x_sg - sg_points/x)^2f;
+					attribute<float32>          delta_y (sg_points)         := abs(y_sg - sg_points/y)^2f;
+					 
+					attribute<m>                dist (sg_points)            := sqrt(delta_x + delta_y)[m];
+					 
+				}
+			}
+		}
+		
+		container Dani
+		{
+			attribute<uint32> UAI (NL_grid/domain)
+			:	StorageName     = "%SourceDataDir%/SpatialData/UrbanAttractivity_100.tif"
+			,	StorageType     = "gdal.grid"
+			,	StorageReadOnly = "True";
+			
+			attribute<float32> Dist_100k_inh (NL_grid/domain)
+			:	StorageName     = "%SourceDataDir%/SpatialData/Dist_100000inh.asc"
+			,	StorageType     = "gdal.grid"
+			,	StorageReadOnly = "True";
+			attribute<float32> Dist_100k_inh_value (NL_grid/domain) := Dist_100k_inh == 999[float32] ? (0/0)[float32] : Dist_100k_inh * 1000[float32];
+			
+			attribute<float32> Dist_100k_job (NL_grid/domain)
+			:	StorageName     = "%SourceDataDir%/SpatialData/Dist_100000jobs.tif"
+			,	StorageType     = "gdal.grid"
+			,	StorageReadOnly = "True";
+			attribute<float32> Dist_100k_job_value (NL_grid/domain) := Dist_100k_job == -9999[float32] ? (0/0)[float32] : Dist_100k_job;
+			
+			attribute<float32> Dist_NSstation (NL_grid/domain)
+			:	StorageName     = "%SourceDataDir%/SpatialData/Dist_NSstation2001.asc"
+			,	StorageType     = "gdal.grid"
+			,	StorageReadOnly = "True";
+			attribute<float32> Dist_NSstation_value (NL_grid/domain) := Dist_NSstation == 999[float32] ? (0/0)[float32] : Dist_NSstation * 1000[float32];
+			
+			attribute<uint32> Natura2000 (NL_grid/domain)
+			:	StorageName     = "%SourceDataDir%/SpatialData/natura2000_0908.tif"
+			,	StorageType     = "gdal.grid"
+			,	StorageReadOnly = "True";
+			
+			attribute<float32> Reistijd_minuten_station_2006 (NL_grid/domain)
+			:	StorageName     = "%SourceDataDir%/SpatialData/reistijd_minuten_station_2006.tif"
+			,	StorageType     = "gdal.grid"
+			,	StorageReadOnly = "True";
+			attribute<float32> Reistijd_station_value (NL_grid/domain) := Reistijd_minuten_station_2006 == 0[float32] ? (0/0)[float32] : Reistijd_minuten_station_2006;
+			
+			attribute<uint32> VinexPlans (NL_grid/domain)
+			:	StorageName     = "%SourceDataDir%/SpatialData/VinexPlans.tif"
+			,	StorageType     = "gdal.grid"
+			,	StorageReadOnly = "True";
+		}
+		
+		unit<uint32> Rijksmonumenten
+		:  StorageName = "%SourceDataDir%/Overheid/Rijksmonumenten_20180322.shp"
+		,  StorageType = "gdal.vect"
+		,	StorageReadOnly = "True"
+		,	SyncMode = "None"
+		,	DialogType = "map"
+		,	DialogData = "geometry" 
+		{
+			attribute<geography/rdc>   geometry;
+			attribute<string>           typechobj;
+			
+			
+			unit<uint32> uq_type := unique(typechobj)
+			{
+				attribute<uint32> id := id(.);
+				parameter<uint32> tel := count(id);
+			}
+			
+			unit<uint32> huis := subset(rijksmonumenten/typechobj == 'Bouwkunst; woonhuis')
+			{
+				attribute<geography/rdc>   geometry                    := rijksmonumenten/geometry[nr_OrgEntity];
+				attribute<NL_grid/domain>   NL_grid_domain_rel          := geometry[NL_grid/domain];
+				attribute<uint32>           count_ha (NL_grid/domain)   := count(geometry, NL_grid_domain_rel);  
+			}
+		}
+	}
+	
+	container Spoor
+	{
+		unit<uint32> Spooras
+		:	StorageName     = "%SourceDataDir%/NWB/20180327/NWB_Spooras.shp"
+		,	StorageType     = "gdal.vect"
+		,	StorageReadOnly = "True"
+		{
+			attribute<geography/rdc> 	geometry (arc);	
+			attribute<string> subcode;
+			unit<uint32> uq_subcode := unique(subcode);
+			unit<uint32> subcodes := subset(subcode == 'f')
+			{
+				attribute<geography/rdc> geometry (arc) := spooras/geometry[nr_OrgEntity];
+			}
+		}
+		unit<uint32> Wissel
+		:	StorageName     = "%SourceDataDir%/NWB/20180327/NWB_Spoorwissel.shp"
+		,	StorageType     = "gdal.vect"
+		,	StorageReadOnly = "True"
+		{
+			attribute<geography/rdc> 	geometry (arc);	
+		}
+		unit<uint32> Kruising
+		:	StorageName     = "%SourceDataDir%/NWB/20180327/NWB_Spoorkruising.shp"
+		,	StorageType     = "gdal.vect"
+		,	StorageReadOnly = "True"
+		{
+			attribute<geography/rdc> 	geometry (arc);	
+		}
+		unit<uint32> Spoor_union := union_unit(Spooras, Wissel, Kruising)
+		{
+			attribute<geography/rdc>    geometry (arc) := union_data(., Spooras/geometry, Wissel/geometry, Kruising/geometry);
+			// attribute<string>            name           := union_data(., NZL_stations_src/name, Station_JvG/name);
+		}
+	}
+	
+}

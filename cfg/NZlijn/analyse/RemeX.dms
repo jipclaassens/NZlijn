@@ -1,0 +1,21 @@
+Container RemeX
+{
+	unit<uint32> src
+	: StorageName     = "%SourceDataDir%/Overig/RemeX_geocoded.csv"
+	, StorageType     = "gdal.vect"
+	, StorageReadOnly = "True"
+	, DialogType = "map"
+	, DialogData = "geometry"
+	{
+		attribute<string>        x ;
+		attribute<string>        y ;
+		attribute<string>        achternaam;
+		attribute<geography/rdc> geometry        := point(x[float32], y[float32], geography/rdc), FreeData = "False";
+		
+	}
+
+
+
+
+
+}

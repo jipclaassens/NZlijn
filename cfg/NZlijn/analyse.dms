@@ -1,0 +1,607 @@
+container Analyse: Using = "Eenheden;geography"
+{
+	// unit<uint32> BBGA         := Brondata/BBG/BBG_amsterdam;
+	// unit<uint32> PandPad      := Brondata/BAG/Snapshots/Panden/Y201901/pand;
+	// unit<uint32> VboWoonPad   := Brondata/BAG/Snapshots/Vbos/Y201901/vbo/GebruiksdoelSets/woon/GebruiksdoelSet;
+
+	container HasWoning 
+	{
+		attribute<bool> HasWoning (NL_grid/domain) := ='OR('+AsItemList('Brondata/BAG/Snapshots/Vbos/'+/typeringen/jaren1222/name+'01/vbo/GebruiksdoelSets/woon/GebruiksdoelSet/count_ha > 0[nrwonha]')+')', FreeData = "false";
+	}
+
+	// #include <FunctieVerandering.dms>
+	// #include <Wachttijden.dms>
+	// #include <Woningwaarden.dms>
+	// #include <bereikbaarheid.dms>
+	// #include <avg_m2_per_grid.dms>
+	#include <uai.dms>
+	
+	// #include <kwartaal_change.dms>
+	// #include <landuse.dms>
+	
+	// container Buffers
+	// {
+		// container Stations := 
+			// for_each_ne(
+				// typeringen/metro_stations/name
+				// , 'Rekenschemas/Buffers/Verwerk_straal_count_vbo(' +quote(typeringen/metro_stations/name)+ ')'
+			// );
+	
+		// container area_per_ring := 
+			// for_each_ne(
+				// typeringen/metro_stations/name
+				// , 'Rekenschemas/Buffers/Verwerk_straal_ringen(' +quote(typeringen/metro_stations/name)+ ')'
+			// );
+	// }
+	
+	container TreatmentControlAreas : FreeData = "false"
+	{	
+		unit<uint8> Areas : nrofrows = 2
+		{
+			attribute<string> name : ['ta', 'ca'];
+			attribute<string> label := name;
+		}
+		unit<uint8> StationsXareas := combine_uint8(typeringen/metro_stations, Areas)
+		{
+			attribute<string> name    := station + '_' + area;
+			attribute<string> station := typeringen/metro_stations/name_compact[nr_1];
+			attribute<string> area    := Areas/name[nr_2];
+			attribute<string> label := name;
+			container V := for_each_nedv(name, String(ID(.))+'[..]', void, .);
+		}
+		unit<uint32>       PC6                          := /Brondata/BAG/Snapshots/Adressen/Y202201/adres/PC6_AMS;
+		parameter<int32>   Threshold_ToenameAantalBanen := 50000i; //banen
+		parameter<float32> treatment_size               := 12f;    //minuten
+		parameter<float32> control_size                 := 24f;    //minuten
+		parameter<float32> outercontrol_size            := 36f;    //minuten
+		
+		attribute<bool>   closer2noord_then_noorderpark       (NL_grid/domain) := Analyse/NetwerkDist_Points_to_NZ/NetwerkDist_perstation/Noorderpark/Netwerk/OrgToDest/MakeOD_Time/grid     > Analyse/NetwerkDist_Points_to_NZ/NetwerkDist_perstation/Noord/Netwerk/OrgToDest/MakeOD_Time/grid;
+		attribute<bool>   closer2noorderpark_then_centraal    (NL_grid/domain) := Analyse/NetwerkDist_Points_to_NZ/NetwerkDist_perstation/StationCentraal/Netwerk/OrgToDest/MakeOD_Time/grid > Analyse/NetwerkDist_Points_to_NZ/NetwerkDist_perstation/Noorderpark/Netwerk/OrgToDest/MakeOD_Time/grid;
+		attribute<bool>   closer2centraal_then_rokin          (NL_grid/domain) := Analyse/NetwerkDist_Points_to_NZ/NetwerkDist_perstation/Rokin/Netwerk/OrgToDest/MakeOD_Time/grid           > Analyse/NetwerkDist_Points_to_NZ/NetwerkDist_perstation/StationCentraal/Netwerk/OrgToDest/MakeOD_Time/grid;
+		attribute<bool>   closer2rokin_then_vijzel            (NL_grid/domain) := Analyse/NetwerkDist_Points_to_NZ/NetwerkDist_perstation/Vijzelgracht/Netwerk/OrgToDest/MakeOD_Time/grid    > Analyse/NetwerkDist_Points_to_NZ/NetwerkDist_perstation/Rokin/Netwerk/OrgToDest/MakeOD_Time/grid;
+		attribute<bool>   closer2vijzel_then_depijp           (NL_grid/domain) := Analyse/NetwerkDist_Points_to_NZ/NetwerkDist_perstation/DePijp/Netwerk/OrgToDest/MakeOD_Time/grid          > Analyse/NetwerkDist_Points_to_NZ/NetwerkDist_perstation/Vijzelgracht/Netwerk/OrgToDest/MakeOD_Time/grid;
+		attribute<bool>   closer2depijp_then_europaplein      (NL_grid/domain) := Analyse/NetwerkDist_Points_to_NZ/NetwerkDist_perstation/Europaplein/Netwerk/OrgToDest/MakeOD_Time/grid     > Analyse/NetwerkDist_Points_to_NZ/NetwerkDist_perstation/DePijp/Netwerk/OrgToDest/MakeOD_Time/grid;
+		attribute<bool>   closer2europaplein_then_zuid        (NL_grid/domain) := Analyse/NetwerkDist_Points_to_NZ/NetwerkDist_perstation/StationZuid/Netwerk/OrgToDest/MakeOD_Time/grid     > Analyse/NetwerkDist_Points_to_NZ/NetwerkDist_perstation/Europaplein/Netwerk/OrgToDest/MakeOD_Time/grid;
+		
+		attribute<bool>   AccessibilityChangeAboveThreshold   (NL_grid/domain) := /Brondata/Bereikbaarheid/diff_Spits_abs_8043 >= Threshold_ToenameAantalBanen;
+		
+		container Set_TA12_CA_24_50000banen: FreeData = "false"
+		{
+			attribute<StationsXareas> Visualisation (NL_grid/domain) := ='switch(
+																			'+AsList('case('+StationsXareas/name+', StationsXareas/v/'+StationsXareas/name+')',',')+'
+																			, 0b/0b
+																		)';
+		
+			attribute<bool>   Noord_ta        (NL_grid/domain) := Disticts/TA_N_district/select;
+			attribute<bool>   Noord_ca        (NL_grid/domain) := Disticts/CA_N_district/select;
+			
+			attribute<bool>   Noorderpark_ta  (NL_grid/domain) := Disticts/TA_NP_district/select;
+			attribute<bool>   Noorderpark_ca  (NL_grid/domain) := Disticts/CA_NP_district/select;
+			
+			attribute<bool>   Centraal_ta     (NL_grid/domain) := Disticts/TA_C_district/select;
+			attribute<bool>   Centraal_ca     (NL_grid/domain) := Disticts/CA_C_district/select;
+			
+			attribute<bool>   Rokin_ta        (NL_grid/domain) := Disticts/TA_R_district/select;
+			attribute<bool>   Rokin_ca        (NL_grid/domain) := Disticts/CA_R_district/select;
+			
+			attribute<bool>   Vijzelgracht_ta (NL_grid/domain) := Disticts/TA_V_district/select;
+			attribute<bool>   Vijzelgracht_ca (NL_grid/domain) := Disticts/CA_V_district/select;
+					
+			attribute<bool>   DePijp_ta       (NL_grid/domain) := Disticts/TA_P_district/select;
+			attribute<bool>   DePijp_ca       (NL_grid/domain) := Disticts/CA_P_district/select;
+					
+			attribute<bool>   Europaplein_ta  (NL_grid/domain) := Disticts/TA_E_district/select;
+			attribute<bool>   Europaplein_ca  (NL_grid/domain) := Disticts/CA_E_district/select;
+					
+			attribute<bool>   Zuid_ta         (NL_grid/domain) := Disticts/TA_Z_district/select;
+			attribute<bool>   Zuid_ca         (NL_grid/domain) := Disticts/CA_Z_district/select;
+			
+
+			container Disticts
+			{
+				unit<uint32> TA_N_district    := district(Pre_Districts/TreatmentArea_Noord)
+				{
+					attribute<bool> select (NL_grid/domain) := districts != 0 && districts != 3;
+				}
+				unit<uint32> TA_NP_district    := district(Pre_Districts/TreatmentArea_Noorderpark)
+				{
+					attribute<bool> select (NL_grid/domain) := districts == 1;
+				}
+				unit<uint32> TA_C_district := district(Pre_Districts/TreatmentArea_Centraal)
+				{
+					attribute<bool> select (NL_grid/domain) := districts == 2;
+				}
+				unit<uint32> TA_R_district := district(Pre_Districts/TreatmentArea_Rokin)
+				{
+					attribute<bool> select (NL_grid/domain) := districts == 1;
+				}
+				unit<uint32> TA_V_district := district(Pre_Districts/TreatmentArea_Vijzelgracht)
+				{
+					attribute<bool> select (NL_grid/domain) := districts == 1;
+				}
+				unit<uint32> TA_P_district := district(Pre_Districts/TreatmentArea_DePijp)
+				{
+					attribute<bool> select (NL_grid/domain) := districts == 1 || districts == 2;
+				}
+				unit<uint32> TA_E_district := district(Pre_Districts/TreatmentArea_Europaplein)
+				{
+					attribute<bool> select (NL_grid/domain) := districts == 1;
+				}
+				unit<uint32> TA_Z_district := district(Pre_Districts/TreatmentArea_Zuid)
+				{
+					attribute<bool> select (NL_grid/domain) := districts >= 2;
+				}
+			
+				unit<uint32> CA_N_district    := district(Pre_Districts/ControlArea_Noord)
+				{
+					attribute<bool> select (NL_grid/domain) := districts != 0 && districts != 3;
+				}
+				unit<uint32> CA_NP_district    := district(Pre_Districts/ControlArea_Noorderpark)
+				{
+					attribute<bool> select (NL_grid/domain) := districts == 1;
+				}
+				unit<uint32> CA_C_district := district(Pre_Districts/ControlArea_Centraal)
+				{
+					attribute<bool> select (NL_grid/domain) := districts != 0 && districts != 3;
+				}
+				unit<uint32> CA_R_district := district(Pre_Districts/ControlArea_Rokin)
+				{
+					attribute<bool> select (NL_grid/domain) := districts == 1 || districts == 3;
+				}
+				unit<uint32> CA_V_district := district(Pre_Districts/ControlArea_Vijzelgracht)
+				{
+					attribute<bool> select (NL_grid/domain) := districts >= 1;
+				}
+				unit<uint32> CA_P_district := district(Pre_Districts/ControlArea_DePijp)
+				{
+					attribute<bool> select (NL_grid/domain) := districts >= 1;
+				}
+				unit<uint32> CA_E_district := district(Pre_Districts/ControlArea_Europaplein)
+				{
+					attribute<bool> select (NL_grid/domain) := districts >= 1;
+				}
+				unit<uint32> CA_Z_district := district(Pre_Districts/ControlArea_Zuid)
+				{
+					attribute<bool> select (NL_grid/domain) := districts != 0 && districts != 3 && districts != 4 && districts != 5 && districts != 6 && districts != 7;
+				}
+			}
+			
+			
+			
+			container Per_PC6 :=
+				for_each_nedv(
+					StationsXareas/name
+					, '../'+StationsXareas/name+'[NL_grid_domain_rel][uint2]'
+					, PC6
+					, uint2
+				)
+			{
+				attribute<string>         PC6_name           (PC6) := PC6/PC6;
+				attribute<uint32>         Buurt_rel          (PC6) := PC6/buurt_rel;
+				attribute<float32>        Count_App          (PC6) := Brondata/BAG/Snapshots/Vbos/Y202201/vbo/GebruiksdoelSets/woon/GebruiksdoelSet/app_perPC6;
+				attribute<float32>        Fractie_App        (PC6) := Brondata/BAG/Snapshots/Vbos/Y202201/vbo/GebruiksdoelSets/woon/GebruiksdoelSet/pr_app_perPC6;
+				attribute<float32>        Avg_opp_App        (PC6) := Brondata/BAG/Snapshots/Vbos/Y202201/vbo/GebruiksdoelSets/woon/GebruiksdoelSet/avg_opp_app_perPC6;
+				attribute<int16>          Median_Bouwjaar_App(PC6) := Brondata/BAG/Snapshots/Panden/Y202201/pand/median_bouwjaar_app_perPC6;
+				attribute<NL_grid/domain> NL_grid_domain_rel (PC6) := PC6/geometry[NL_grid/domain];
+			
+			}
+			
+			
+		}
+		
+		container Set_TA6_CA_12_50000banen
+		{
+			attribute<bool>   TreatmentArea_Noord        (NL_grid/domain) := Disticts/TA_N_district/select;
+			attribute<bool>   ControlArea_Noord          (NL_grid/domain) := Disticts/CA_N_district/select;
+			
+			attribute<bool>   TreatmentArea_Noorderpark  (NL_grid/domain) := Disticts/TA_NP_district/select;
+			attribute<bool>   ControlArea_Noorderpark    (NL_grid/domain) := Disticts/CA_NP_district/select;
+			
+			attribute<bool>   TreatmentArea_Centraal     (NL_grid/domain) := Disticts/TA_C_district/select;
+			attribute<bool>   ControlArea_Centraal       (NL_grid/domain) := Disticts/CA_C_district/select;
+			
+			attribute<bool>   TreatmentArea_Rokin        (NL_grid/domain) := Disticts/TA_R_district/select;
+			attribute<bool>   ControlArea_Rokin          (NL_grid/domain) := Disticts/CA_R_district/select;
+			
+			attribute<bool>   TreatmentArea_Vijzelgracht (NL_grid/domain) := Disticts/TA_V_district/select;
+			attribute<bool>   ControlArea_Vijzelgracht   (NL_grid/domain) := Disticts/CA_V_district/select;
+					
+			attribute<bool>   TreatmentArea_DePijp       (NL_grid/domain) := Disticts/TA_P_district/select;
+			attribute<bool>   ControlArea_DePijp         (NL_grid/domain) := Disticts/CA_P_district/select;
+					
+			attribute<bool>   TreatmentArea_Europaplein  (NL_grid/domain) := Disticts/TA_E_district/select;
+			attribute<bool>   ControlArea_Europaplein    (NL_grid/domain) := Disticts/CA_E_district/select;
+					
+			attribute<bool>   TreatmentArea_Zuid         (NL_grid/domain) := Disticts/TA_Z_district/select;
+			attribute<bool>   ControlArea_Zuid           (NL_grid/domain) := Disticts/CA_Z_district/select;
+			
+
+			container Disticts
+			{
+				unit<uint32> TA_N_district    := district(Pre_Districts/TreatmentArea_Noord)
+				{
+					attribute<bool> select (NL_grid/domain) := districts != 0 && districts != 3;
+				}
+				unit<uint32> TA_NP_district    := district(Pre_Districts/TreatmentArea_Noorderpark)
+				{
+					attribute<bool> select (NL_grid/domain) := districts == 1;
+				}
+				unit<uint32> TA_C_district := district(Pre_Districts/TreatmentArea_Centraal)
+				{
+					attribute<bool> select (NL_grid/domain) := districts == 2;
+				}
+				unit<uint32> TA_R_district := district(Pre_Districts/TreatmentArea_Rokin)
+				{
+					attribute<bool> select (NL_grid/domain) := districts == 1 || districts == 2;
+				}
+				unit<uint32> TA_V_district := district(Pre_Districts/TreatmentArea_Vijzelgracht)
+				{
+					attribute<bool> select (NL_grid/domain) := districts == 1;
+				}
+				unit<uint32> TA_P_district := district(Pre_Districts/TreatmentArea_DePijp)
+				{
+					attribute<bool> select (NL_grid/domain) := districts == 1 || districts == 3;
+				}
+				unit<uint32> TA_E_district := district(Pre_Districts/TreatmentArea_Europaplein)
+				{
+					attribute<bool> select (NL_grid/domain) := districts == 1;
+				}
+				unit<uint32> TA_Z_district := district(Pre_Districts/TreatmentArea_Zuid)
+				{
+					attribute<bool> select (NL_grid/domain) := districts >= 2;
+				}
+			
+				unit<uint32> CA_N_district    := district(Pre_Districts/ControlArea_Noord)
+				{
+					attribute<bool> select (NL_grid/domain) := districts != 0;
+				}
+				unit<uint32> CA_NP_district    := district(Pre_Districts/ControlArea_Noorderpark)
+				{
+					attribute<bool> select (NL_grid/domain) := districts == 1;
+				}
+				unit<uint32> CA_C_district := district(Pre_Districts/ControlArea_Centraal)
+				{
+					attribute<bool> select (NL_grid/domain) := districts != 0 && districts != 3;
+				}
+				unit<uint32> CA_R_district := district(Pre_Districts/ControlArea_Rokin)
+				{
+					attribute<bool> select (NL_grid/domain) := districts == 1;
+				}
+				unit<uint32> CA_V_district := district(Pre_Districts/ControlArea_Vijzelgracht)
+				{
+					attribute<bool> select (NL_grid/domain) := districts == 1;
+				}
+				unit<uint32> CA_P_district := district(Pre_Districts/ControlArea_DePijp)
+				{
+					attribute<bool> select (NL_grid/domain) := districts == 1 || districts == 3;
+				}
+				unit<uint32> CA_E_district := district(Pre_Districts/ControlArea_Europaplein)
+				{
+					attribute<bool> select (NL_grid/domain) := districts == 1;
+				}
+				unit<uint32> CA_Z_district := district(Pre_Districts/ControlArea_Zuid)
+				{
+					attribute<bool> select (NL_grid/domain) := districts != 0 && districts != 3 && districts != 4 && districts != 5 && districts != 6 && districts != 7;
+				}
+			}
+		}
+		
+		container Pre_Districts
+		{
+			attribute<bool>   TreatmentArea_Noord        (NL_grid/domain) := AccessibilityChangeAboveThreshold  && TreatmentArea_src/Noord                                              && closer2noord_then_noorderpark;
+			attribute<bool>   ControlArea_Noord          (NL_grid/domain) := (!AccessibilityChangeAboveThreshold || ControlArea_src/Noord)           && ControlArea_src/Noord           && closer2noord_then_noorderpark    && !TreatmentArea_Noord;
+			
+			attribute<bool>   TreatmentArea_Noorderpark  (NL_grid/domain) := AccessibilityChangeAboveThreshold  && TreatmentArea_src/Noorderpark                                        && closer2noorderpark_then_centraal && !closer2noord_then_noorderpark; 
+			attribute<bool>   ControlArea_Noorderpark    (NL_grid/domain) := (!AccessibilityChangeAboveThreshold || ControlArea_src/Noorderpark)     && ControlArea_src/Noorderpark     && closer2noorderpark_then_centraal && !closer2noord_then_noorderpark    && !TreatmentArea_Noorderpark;
+			
+			attribute<bool>   TreatmentArea_Centraal     (NL_grid/domain) := AccessibilityChangeAboveThreshold  && TreatmentArea_src/StationCentraal                                    && closer2centraal_then_rokin       && !closer2noorderpark_then_centraal; 
+			attribute<bool>   ControlArea_Centraal       (NL_grid/domain) := (!AccessibilityChangeAboveThreshold || ControlArea_src/StationCentraal) && ControlArea_src/StationCentraal && closer2centraal_then_rokin       && !closer2noorderpark_then_centraal && !TreatmentArea_Centraal && !ControlArea_Vijzelgracht && !ControlArea_DePijp;
+			
+			attribute<bool>   TreatmentArea_Rokin        (NL_grid/domain) := AccessibilityChangeAboveThreshold  && TreatmentArea_src/Rokin                                              && closer2rokin_then_vijzel         && !closer2centraal_then_rokin; 
+			attribute<bool>   ControlArea_Rokin          (NL_grid/domain) := (!AccessibilityChangeAboveThreshold || ControlArea_src/Rokin)           && ControlArea_src/Rokin           && closer2rokin_then_vijzel         && !closer2centraal_then_rokin       && !TreatmentArea_Rokin;
+			
+			attribute<bool>   TreatmentArea_Vijzelgracht (NL_grid/domain) := AccessibilityChangeAboveThreshold  && TreatmentArea_src/Vijzelgracht                                       && closer2vijzel_then_depijp        && !closer2rokin_then_vijzel; 
+			attribute<bool>   ControlArea_Vijzelgracht   (NL_grid/domain) := (!AccessibilityChangeAboveThreshold || ControlArea_src/Vijzelgracht)    && ControlArea_src/Vijzelgracht    && closer2vijzel_then_depijp        && !closer2rokin_then_vijzel         && !TreatmentArea_Vijzelgracht;
+					
+			attribute<bool>   TreatmentArea_DePijp       (NL_grid/domain) := AccessibilityChangeAboveThreshold  && TreatmentArea_src/DePijp                                             && closer2depijp_then_europaplein   && !closer2vijzel_then_depijp; 
+			attribute<bool>   ControlArea_DePijp         (NL_grid/domain) := (!AccessibilityChangeAboveThreshold || ControlArea_src/DePijp)          && ControlArea_src/DePijp          && closer2depijp_then_europaplein   && !closer2vijzel_then_depijp        && !TreatmentArea_DePijp;
+					
+			attribute<bool>   TreatmentArea_Europaplein  (NL_grid/domain) := AccessibilityChangeAboveThreshold  && TreatmentArea_src/Europaplein                                        && closer2europaplein_then_zuid     && !closer2depijp_then_europaplein; 
+			attribute<bool>   ControlArea_Europaplein    (NL_grid/domain) := (!AccessibilityChangeAboveThreshold || ControlArea_src/Europaplein)     && ControlArea_src/Europaplein     && closer2europaplein_then_zuid     && !closer2depijp_then_europaplein  && !TreatmentArea_Europaplein;
+					
+			attribute<bool>   TreatmentArea_Zuid         (NL_grid/domain) := AccessibilityChangeAboveThreshold  && TreatmentArea_src/StationZuid                                                                            && !closer2europaplein_then_zuid; 
+			attribute<bool>   ControlArea_Zuid           (NL_grid/domain) := (!AccessibilityChangeAboveThreshold || ControlArea_src/StationZuid)     && ControlArea_src/StationZuid                                         && !closer2europaplein_then_zuid    && !TreatmentArea_Zuid               && !ControlArea_Vijzelgracht && !ControlArea_DePijp;
+		}
+	
+		container TreatmentArea0 := 
+			for_each_nedv(
+				typeringen/metro_stations/name
+				, 'Analyse/NetwerkDist_Points_to_NZ/NetwerkDist_perstation/'+typeringen/metro_stations/name+'/Netwerk/OrgToDest/MakeOD_Time/grid  <= (treatment_size*60f)'
+				, NL_grid/domain
+				, bool
+			);
+		container TreatmentArea1 := 
+			for_each_ne(
+				typeringen/metro_stations/name
+				, 'District_T(TreatmentArea0/'+typeringen/metro_stations/name+')'
+			);
+			
+		container TreatmentArea_src := 
+			for_each_nedv(
+				typeringen/metro_stations/name
+				, 'TreatmentArea1/'+typeringen/metro_stations/name+'/district/select'
+				, NL_grid/domain
+				, bool
+			);
+		
+		Template District_T
+		{
+			attribute<bool> ToBeDistricted (NL_grid/domain);
+			//
+			unit<uint32> district := district(ToBeDistricted)
+			{
+				attribute<bool> select (NL_grid/domain) :=  districts > 0;
+			}
+		}
+			
+		container ControlArea0 := 
+			for_each_nedv(
+				typeringen/metro_stations/name
+				, 'Analyse/NetwerkDist_Points_to_NZ/NetwerkDist_perstation/'+typeringen/metro_stations/name+'/Netwerk/OrgToDest/MakeOD_Time/grid  <= (control_size*60f)'
+				, NL_grid/domain
+				, bool
+			);
+		container ControlArea1 := 
+			for_each_ne(
+				typeringen/metro_stations/name
+				, 'District_T(ControlArea0/'+typeringen/metro_stations/name+')'
+			);
+			
+		container ControlArea_src := 
+			for_each_nedv(
+				typeringen/metro_stations/name
+				, 'ControlArea1/'+typeringen/metro_stations/name+'/district/select'
+				, NL_grid/domain
+				, bool
+			);
+			
+		container OuterControlArea0 := 
+			for_each_nedv(
+				typeringen/metro_stations/name
+				, 'Analyse/NetwerkDist_Points_to_NZ/NetwerkDist_perstation/'+typeringen/metro_stations/name+'/Netwerk/OrgToDest/MakeOD_Time/grid  <= (outercontrol_size*60f)'
+				, NL_grid/domain
+				, bool
+			);
+			
+		container OuterControlArea1 := 
+			for_each_ne(
+				typeringen/metro_stations/name
+				, 'District_T(OuterControlArea0/'+typeringen/metro_stations/name+')'
+			);
+			
+		container OuterControlArea_src := 
+			for_each_nedv(
+				typeringen/metro_stations/name
+				, 'OuterControlArea1/'+typeringen/metro_stations/name+'/district/select'
+				, NL_grid/domain
+				, bool
+			);
+	
+	
+	}
+	
+	
+	
+	
+	container DiD
+	{
+		#include <did_verdichting.dms>
+		#include <did_prijzen.dms>
+	}
+	
+	// container Gebruiksdoelen
+	// {
+		// attribute<nrwonha>  Winkels2012            (NL_grid/domain)   := Brondata/BAG/Snapshots/Vbos/Y201201/vbo/GebruiksdoelSets/Winkel/GebruiksdoelSet/count_ha;
+		// attribute<float32>  Winkels2012_500m       (NL_grid/domain)   := potential(winkels2012[float32], geography/potentialen/pot500m/potrange/RelWeightSqrt);
+		
+		// attribute<nrwonha>  Restaurants2012        (NL_grid/domain)   := Brondata/BAG/Snapshots/Vbos/Y201201/vbo/GebruiksdoelSets/Bijeenkomst/GebruiksdoelSet/count_ha;
+		// attribute<float32>  Restaurants2012_500m   (NL_grid/domain)   := potential(Restaurants2012[float32], geography/potentialen/pot500m/potrange/RelWeightSqrt);
+
+		// attribute<nrwonha>  Hotels2012             (NL_grid/domain)   := Brondata/BAG/Snapshots/Vbos/Y201201/vbo/GebruiksdoelSets/Logies/GebruiksdoelSet/count_ha;
+		// attribute<float32>  Hotels2012_500m        (NL_grid/domain)   := potential(Hotels2012[float32], geography/potentialen/pot500m/potrange/RelWeightSqrt);
+
+	// }
+	
+	// #include <regressie.dms>
+	#include <Location_2_location.dms>
+	// #include <Woningprijs_Amsterdam.dms>
+	// #include <ori.dms>
+	// #include <bouwjaar_tijdlijn.dms>
+	
+/* 	container Trends_Stations
+	{
+		container Density_0_12min :=
+		for_each_nedv(
+			typeringen/jaren1222/name
+			, 'union_data(typeringen/metro_stations,' +replace(AsItemList('Per_station/'+typeringen/metro_stations/name+'/Density_0_12min/@Y@'),'@Y@', typeringen/jaren1222/name)+')'
+			, typeringen/metro_stations
+			, nrwonha
+		);
+		
+		container Density_12_24min :=
+		for_each_nedv(
+			typeringen/jaren1222/name
+			, 'union_data(typeringen/metro_stations,' +replace(AsItemList('Per_station/'+typeringen/metro_stations/name+'/Density_12_24min/@Y@'),'@Y@', typeringen/jaren1222/name)+')'
+			, typeringen/metro_stations
+			, nrwonha
+		);
+		container Density_12_36min :=
+		for_each_nedv(
+			typeringen/jaren1222/name
+			, 'union_data(typeringen/metro_stations,' +replace(AsItemList('Per_station/'+typeringen/metro_stations/name+'/Density_12_36min/@Y@'),'@Y@', typeringen/jaren1222/name)+')'
+			, typeringen/metro_stations
+			, nrwonha
+		);
+		
+		container Density_zonder0_0_12min :=
+		for_each_nedv(
+			typeringen/jaren1222/name
+			, 'union_data(typeringen/metro_stations,' +replace(AsItemList('Per_station/'+typeringen/metro_stations/name+'/Density_zonder0_0_12min/@Y@'),'@Y@', typeringen/jaren1222/name)+')'
+			, typeringen/metro_stations
+			, nrwonha
+		);
+		
+		container Density_zonder0_12_24min :=
+		for_each_nedv(
+			typeringen/jaren1222/name
+			, 'union_data(typeringen/metro_stations,' +replace(AsItemList('Per_station/'+typeringen/metro_stations/name+'/Density_zonder0_12_24min/@Y@'),'@Y@', typeringen/jaren1222/name)+')'
+			, typeringen/metro_stations
+			, nrwonha
+		);
+		container Density_zonder0_12_36min :=
+		for_each_nedv(
+			typeringen/jaren1222/name
+			, 'union_data(typeringen/metro_stations,' +replace(AsItemList('Per_station/'+typeringen/metro_stations/name+'/Density_zonder0_12_36min/@Y@'),'@Y@', typeringen/jaren1222/name)+')'
+			, typeringen/metro_stations
+			, nrwonha
+		);
+		
+		container Per_station := 
+			for_each_ne(
+				typeringen/metro_stations/name
+				, 'MeanDensity_BAG('+quote(typeringen/metro_stations/name)+')'
+			);
+			
+		Template MeanDensity_BAG
+		{
+			///
+			parameter<string> station;
+			///
+			
+			container Density_zonder0_0_12min := 
+				for_each_nedv(
+					/typeringen/jaren1222/name
+					, 'mean(
+						(Brondata/BAG/Snapshots/VBOs/'+typeringen/jaren1222/name+'01/vbo/GebruiksdoelSets/WoON/GebruiksdoelSet/count_ha 
+							* /Brondata/Regios/Gemeenten/src_2012/AgglAmsterdam/code_const[float32] 
+							* Brondata/BAG/Snapshots/Panden/Y202201/pand/ImpedancePerStation/'+station+'/grid_0_12min[float32]) > 0[nrwonha] 
+							
+							? Brondata/BAG/Snapshots/VBOs/'+typeringen/jaren1222/name+'01/vbo/GebruiksdoelSets/WoON/GebruiksdoelSet/count_ha 
+								* /Brondata/Regios/Gemeenten/src_2012/AgglAmsterdam/code_const[float32] 
+								* Brondata/BAG/Snapshots/Panden/Y202201/pand/ImpedancePerStation/'+station+'/grid_0_12min[float32]
+							: (0/0)[nrwonha])'
+					, void
+					, nrwonha
+				);
+			
+			container Density_zonder0_12_24min := 
+				for_each_nedv(
+					/typeringen/jaren1222/name
+					, 'mean(
+						(Brondata/BAG/Snapshots/VBOs/'+typeringen/jaren1222/name+'01/vbo/GebruiksdoelSets/WoON/GebruiksdoelSet/count_ha 
+							* /Brondata/Regios/Gemeenten/src_2012/AgglAmsterdam/code_const[float32] 
+							* Brondata/BAG/Snapshots/Panden/Y202201/pand/ImpedancePerStation/'+station+'/grid_12_24min[float32]) > 0[nrwonha] 
+							
+							? Brondata/BAG/Snapshots/VBOs/'+typeringen/jaren1222/name+'01/vbo/GebruiksdoelSets/WoON/GebruiksdoelSet/count_ha 
+								* /Brondata/Regios/Gemeenten/src_2012/AgglAmsterdam/code_const[float32] 
+								* Brondata/BAG/Snapshots/Panden/Y202201/pand/ImpedancePerStation/'+station+'/grid_12_24min[float32]
+							: (0/0)[nrwonha])'
+					, void
+					, nrwonha
+				);
+			container Density_zonder0_12_36min := 
+				for_each_nedv(
+					/typeringen/jaren1222/name
+					, 'mean(
+						(Brondata/BAG/Snapshots/VBOs/'+typeringen/jaren1222/name+'01/vbo/GebruiksdoelSets/WoON/GebruiksdoelSet/count_ha 
+							* /Brondata/Regios/Gemeenten/src_2012/AgglAmsterdam/code_const[float32] 
+							* Brondata/BAG/Snapshots/Panden/Y202201/pand/ImpedancePerStation/'+station+'/grid_12_36min[float32]) > 0[nrwonha] 
+							
+							? Brondata/BAG/Snapshots/VBOs/'+typeringen/jaren1222/name+'01/vbo/GebruiksdoelSets/WoON/GebruiksdoelSet/count_ha 
+								* /Brondata/Regios/Gemeenten/src_2012/AgglAmsterdam/code_const[float32] 
+								* Brondata/BAG/Snapshots/Panden/Y202201/pand/ImpedancePerStation/'+station+'/grid_12_36min[float32]
+							: (0/0)[nrwonha])'
+					, void
+					, nrwonha
+				);
+				
+			container Density_0_12min := 
+				for_each_nedv(
+					/typeringen/jaren1222/name
+					, 'mean(
+						Brondata/BAG/Snapshots/VBOs/'+typeringen/jaren1222/name+'01/vbo/GebruiksdoelSets/WoON/GebruiksdoelSet/count_ha 
+							* /Brondata/Regios/Gemeenten/src_2012/AgglAmsterdam/code_const[float32] 
+							* Brondata/BAG/Snapshots/Panden/Y202201/pand/ImpedancePerStation/'+station+'/grid_0_12min[float32])'
+					, void
+					, nrwonha
+				);
+			
+			container Density_12_24min := 
+				for_each_nedv(
+					/typeringen/jaren1222/name
+					, 'mean(
+						Brondata/BAG/Snapshots/VBOs/'+typeringen/jaren1222/name+'01/vbo/GebruiksdoelSets/WoON/GebruiksdoelSet/count_ha 
+							* /Brondata/Regios/Gemeenten/src_2012/AgglAmsterdam/code_const[float32] 
+							* Brondata/BAG/Snapshots/Panden/Y202201/pand/ImpedancePerStation/'+station+'/grid_12_24min[float32])'
+					, void
+					, nrwonha
+				);
+			container Density_12_36min := 
+				for_each_nedv(
+					/typeringen/jaren1222/name
+					, 'mean(
+						Brondata/BAG/Snapshots/VBOs/'+typeringen/jaren1222/name+'01/vbo/GebruiksdoelSets/WoON/GebruiksdoelSet/count_ha 
+							* /Brondata/Regios/Gemeenten/src_2012/AgglAmsterdam/code_const[float32] 
+							* Brondata/BAG/Snapshots/Panden/Y202201/pand/ImpedancePerStation/'+station+'/grid_12_36min[float32])'
+					, void
+					, nrwonha
+				);
+		}
+	}
+ */	
+
+/* 	container Trends_AMS
+	{
+		container Density_zonder0 := 
+			for_each_nedv(
+				/typeringen/jaren1222/name
+				, 'mean((Brondata/BAG/Snapshots/VBOs/'+typeringen/jaren1222/name+'01/vbo/GebruiksdoelSets/WoON/GebruiksdoelSet/count_ha * Brondata/Regios/Gemeenten/src_2012/AgglAmsterdam/code_const[float32]) > 0[nrwonha] ? Brondata/BAG/Snapshots/VBOs/'+typeringen/jaren1222/name+'01/vbo/GebruiksdoelSets/WoON/GebruiksdoelSet/count_ha * Brondata/Regios/Gemeenten/src_2012/AgglAmsterdam/code_const[float32] : (0/0)[nrwonha])'
+				, void
+				, nrwonha
+			);
+			
+		container Density := 
+			for_each_nedv(
+				/typeringen/jaren1222/name
+				, 'mean(Brondata/BAG/Snapshots/VBOs/'+typeringen/jaren1222/name+'01/vbo/GebruiksdoelSets/WoON/GebruiksdoelSet/count_ha * Brondata/Regios/Gemeenten/src_2012/AgglAmsterdam/code_const[float32])'
+				, void
+				, nrwonha
+			);
+			
+		container Density_zonder0_0012 := 
+			for_each_nedv(
+				/typeringen/jaren0012/name
+				, 'mean((Brondata/CBS_Vierkanten/woningen'+string(typeringen/jaren0012/values)+' * Brondata/NoordZuidlijn/borders/gemeente_2012/AgglAmsterdam/code_const[float32]) > 0[nrwonha] 
+							? Brondata/CBS_Vierkanten/woningen'+string(typeringen/jaren0012/values)+' * Brondata/Regios/Gemeenten/src_2012/AgglAmsterdam/code_const[float32] 
+							: (0/0)[nrwonha])'
+				, void
+				, nrwonha
+			);
+			
+		container Density_0012 := 
+			for_each_nedv(
+				/typeringen/jaren0012/name
+				, 'mean(Brondata/CBS_Vierkanten/woningen'+string(typeringen/jaren0012/values)+' * Brondata/Regios/Gemeenten/src_2012/AgglAmsterdam/code_const[float32])'
+				, void
+				, nrwonha
+			);
+	
+	
+	
+	}
+	
+ */	// #include <AnalyseCecile.dms>
+	// #include <RemeX.dms>
+	// #include <Aardbevingen.dms>
+	
+}

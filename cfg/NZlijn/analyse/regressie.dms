@@ -1,0 +1,118 @@
+container Regressie: using = "eenheden"
+{
+	container Distance: FreeData = "False"
+	{
+		attribute<uint32>      identificatie           (sg_points)   := sg_points/id;
+	
+		attribute<m>           dist_Treinstations      (sg_points)   := Brondata/Spatial_data/NWB/Treinstations/unique/dist;
+		attribute<m>           dist_Spoorwegen         (sg_points)   := Brondata/Spatial_data/NWB/Spoorwegen/DistTo;
+		attribute<m>           dist_Snelwegen          (sg_points)   := Brondata/Spatial_data/NWB/wegen_R/DistTo;
+		attribute<m>           dist_Opafritten         (sg_points)   := Brondata/Spatial_data/NWB/wegen_R_op_afritten/DistTo;
+		
+		// attribute<m>           dist_NZstations_all     (sg_points)   := Brondata/NoordZuidlijn/NZL_stations_src/Distance/dist;
+		attribute<m>           dist_Best_metro_stations(sg_points)   := Brondata/NoordZuidlijn/Tram_metro_stations/metro/dist;
+		attribute<m>           dist_Tram_stations      (sg_points)   := Brondata/NoordZuidlijn/Tram_metro_stations/tram/dist;
+		
+		attribute<m>           dist_Parken             (sg_points)   := Analyse/Landuse/parken/DistTo[m];
+		attribute<m>           dist_Water              (sg_points)   := Analyse/Landuse/water/DistTo[m];
+		
+		container dist_NZstations :=
+			for_each_nedv(
+				typeringen/metro_stations/name
+				, 'Brondata/NoordZuidlijn/NZL_stations/Losse_stations/'+typeringen/metro_stations/name+'/Subset/dist'
+				, sg_points
+				, m
+				)
+		{          
+			attribute<uint32> identificatie (sg_points)   := sg_points/id;
+		}
+	}
+	
+	container Other: FreeData = "False"
+	{
+		attribute<uint32>      identificatie      (sg_points)   := sg_points/id;
+		attribute<uint32>      stadsdeel_nr       (sg_points)   := Brondata/NoordZuidlijn/borders/Stadsdelen/stadsdeelnummer[Brondata/NoordZuidlijn/borders/Stadsdelen/point_rel];
+		attribute<uint32>      gemeente_nr        (sg_points)   := Brondata/NoordZuidlijn/borders/gemeente_2012/Regio_Amsterdam/CODE[Brondata/NoordZuidlijn/borders/gemeente_2012/Regio_Amsterdam/point_rel];
+		attribute<uint32>      regio_nr           (sg_points)   := IsDefined(gemeente_nr) ? gemeente_nr : stadsdeel_nr;
+		attribute<uint32>      Studiegebied       (sg_points)   := (regio_nr <= 8 || regio_nr == 384 ||  regio_nr == 437 ||  regio_nr == 362) ? 1 : 0;
+		
+		attribute<uint32>      UAI                (sg_points)   := Brondata/Spatial_data/Dani/UAI[sg_points/NL_grid_domain_rel];
+		attribute<float32>     LU_DivIndex12        (sg_points)   := Analyse/Landuse/landuse_type/diversity[sg_points/NL_grid_domain_rel];
+		attribute<float32>     GebrDoel_DivIndex12  (sg_points)   := Brondata/BAG/Snapshots/Vbos/Y201201/vbo/count_doelen/shannon_diversity[sg_points/NL_grid_domain_rel];
+		
+		attribute<float32>     Winkels_pot500m12    (sg_points)   := Analyse/gebruiksdoelen/Winkels2012_500m[sg_points/NL_grid_domain_rel];
+		
+		attribute<fractie>     Onbeb_fractie      (sg_points)   := Analyse/landuse/onbebouwbaar/onbeb_fractie[sg_points/NL_grid_domain_rel];
+	}
+	
+	
+	
+	container Density: FreeData = "False"
+	{
+		attribute<uint32>      identificatie      (sg_points)   := sg_points/id;
+
+		attribute<nrwonha>  won2000_V          (sg_points)   := Brondata/CBS_vierkanten/woningen2000[sg_points/NL_grid_domain_rel];
+		attribute<nrwonha>  won2006_V          (sg_points)   := Brondata/CBS_vierkanten/woningen2006[sg_points/NL_grid_domain_rel];
+		attribute<nrwonha>  won2012_V          (sg_points)   := Brondata/CBS_vierkanten/woningen2012[sg_points/NL_grid_domain_rel];
+		attribute<nrwonha>  won2012_B          (sg_points)   := value(Brondata/BAG/Snapshots/Vbos/Y201201/vbo/GebruiksdoelSets/Woon/GebruiksdoelSet/count_ha, nrwonha)[sg_points/NL_grid_domain_rel];
+		attribute<nrwonha>  won2018_B          (sg_points)   := value(Brondata/BAG/Snapshots/Vbos/Y201801/vbo/GebruiksdoelSets/Woon/GebruiksdoelSet/count_ha, nrwonha)[sg_points/NL_grid_domain_rel];
+			
+		attribute<nrwonha>  won20002006        (sg_points)   := won2006_V - won2000_V;
+		attribute<nrwonha>  won20062012        (sg_points)   := won2012_V - won2006_V;
+		attribute<nrwonha>  won20122018        (sg_points)   := won2018_B - won2012_B;
+		
+		
+		attribute<nrwoningen>  won2012_gem        (Brondata/NoordZuidlijn/borders/gemeente_2012/Regio_Amsterdam)   := count(Brondata/BAG/Snapshots/Vbos/Y201201/vbo/GebruiksdoelSets/Woon/GebruiksdoelSet/geometry, Brondata/BAG/Snapshots/Vbos/Y201201/vbo/GebruiksdoelSets/Woon/GebruiksdoelSet/gem_ams_rel)[int32]; 
+		attribute<nrwoningen>  won2018_gem        (Brondata/NoordZuidlijn/borders/gemeente_2012/Regio_Amsterdam)   := count(Brondata/BAG/Snapshots/Vbos/Y201801/vbo/GebruiksdoelSets/Woon/GebruiksdoelSet/geometry, Brondata/BAG/Snapshots/Vbos/Y201801/vbo/GebruiksdoelSets/Woon/GebruiksdoelSet/gem_ams_rel)[int32]; 
+		attribute<nrwoningen>  won20122018_gem    (Brondata/NoordZuidlijn/borders/gemeente_2012/Regio_Amsterdam)   := won2018_gem - won2012_gem; 
+		
+		attribute<nrwoningen>  won2012_wijk       (Brondata/regios/wijken/src_2012/Regio_Amsterdam)   := count(Brondata/BAG/Snapshots/Vbos/Y201201/vbo/GebruiksdoelSets/Woon/GebruiksdoelSet/geometry, Brondata/BAG/Snapshots/Vbos/Y201201/vbo/GebruiksdoelSets/Woon/GebruiksdoelSet/wijk_ams_rel)[int32]; 
+		attribute<nrwoningen>  won2018_wijk       (Brondata/regios/wijken/src_2012/Regio_Amsterdam)   := count(Brondata/BAG/Snapshots/Vbos/Y201801/vbo/GebruiksdoelSets/Woon/GebruiksdoelSet/geometry, Brondata/BAG/Snapshots/Vbos/Y201801/vbo/GebruiksdoelSets/Woon/GebruiksdoelSet/wijk_ams_rel)[int32]; 
+		attribute<nrwoningen>  won20122018_wijk   (Brondata/regios/wijken/src_2012/Regio_Amsterdam)   := won2018_wijk - won2012_wijk ; 
+		attribute<fractie>     won20122018_wijk_proc  (Brondata/regios/wijken/src_2012/Regio_Amsterdam)   := (won2018_wijk[float32] - won2012_wijk[float32]) / won2012_wijk[float32] ; 
+		
+		attribute<nrwoningen>  won2012_sd         (Brondata/NoordZuidlijn/borders/Stadsdelen)   := count(Brondata/BAG/Snapshots/Vbos/Y201201/vbo/GebruiksdoelSets/Woon/GebruiksdoelSet/geometry, Brondata/BAG/Snapshots/Vbos/Y201201/vbo/GebruiksdoelSets/Woon/GebruiksdoelSet/stadsdeel_rel)[int32]; 
+		attribute<nrwoningen>  won2018_sd         (Brondata/NoordZuidlijn/borders/Stadsdelen)   := count(Brondata/BAG/Snapshots/Vbos/Y201801/vbo/GebruiksdoelSets/Woon/GebruiksdoelSet/geometry, Brondata/BAG/Snapshots/Vbos/Y201801/vbo/GebruiksdoelSets/Woon/GebruiksdoelSet/stadsdeel_rel)[int32]; 
+		attribute<nrwoningen>  won20122018_sd     (Brondata/NoordZuidlijn/borders/Stadsdelen)   := won2018_sd - won2012_sd; 
+		
+		attribute<nrwoningen>  won2012_sdbew         (Brondata/NoordZuidlijn/borders/Stadsdelen_Bewoond)   := count(Brondata/BAG/Snapshots/Vbos/Y201201/vbo/GebruiksdoelSets/Woon/GebruiksdoelSet/geometry, Brondata/BAG/Snapshots/Vbos/Y201201/vbo/GebruiksdoelSets/Woon/GebruiksdoelSet/stadsdeel_bew_rel)[int32]; 
+		attribute<nrwoningen>  won2018_sdbew         (Brondata/NoordZuidlijn/borders/Stadsdelen_Bewoond)   := count(Brondata/BAG/Snapshots/Vbos/Y201801/vbo/GebruiksdoelSets/Woon/GebruiksdoelSet/geometry, Brondata/BAG/Snapshots/Vbos/Y201801/vbo/GebruiksdoelSets/Woon/GebruiksdoelSet/stadsdeel_bew_rel)[int32]; 
+		attribute<nrwoningen>  won20122018_sdbew     (Brondata/NoordZuidlijn/borders/Stadsdelen_Bewoond)   := won2018_sdbew - won2012_sdbew; 
+		
+		attribute<nrwoningen>  won2012_buurt         (Brondata/regios/buurten/src_2012/Regio_Amsterdam)   := count(Brondata/BAG/Snapshots/Vbos/Y201201/vbo/GebruiksdoelSets/Woon/GebruiksdoelSet/geometry, Brondata/BAG/Snapshots/Vbos/Y201201/vbo/GebruiksdoelSets/Woon/GebruiksdoelSet/buurt_ams_rel)[int32]; 
+		attribute<nrwoningen>  won2018_buurt         (Brondata/regios/buurten/src_2012/Regio_Amsterdam)   := count(Brondata/BAG/Snapshots/Vbos/Y201801/vbo/GebruiksdoelSets/Woon/GebruiksdoelSet/geometry, Brondata/BAG/Snapshots/Vbos/Y201801/vbo/GebruiksdoelSets/Woon/GebruiksdoelSet/buurt_ams_rel)[int32]; 
+		attribute<nrwoningen>  won20122018_buurt     (Brondata/regios/buurten/src_2012/Regio_Amsterdam)   := won2018_buurt - won2012_buurt; 
+		
+		attribute<fractie>  won20122018_buurt_perc     (Brondata/regios/buurten/src_2012/Regio_Amsterdam)   := (won2018_buurt[float32] - won2012_buurt[float32]) / won2012_buurt[float32]; 
+		
+		
+		container Density_per_station :=
+			for_each_nedv(
+				typeringen/metro_stations_buffers/name
+				, 'Analyse/buffers/area_per_ring/' +typeringen/metro_stations_buffers/metro_stations_name+ '/stralen/' +typeringen/metro_stations_buffers/buffer_name+ '/Density'
+				, void
+				, nrwonha
+			);
+		
+		Container Results
+		{
+			attribute<string> name                  (typeringen/metro_stations_buffers) := typeringen/metro_stations_buffers/name;
+			attribute<string> station_name          (typeringen/metro_stations_buffers) := typeringen/metro_stations_buffers/metro_stations_name;
+			attribute<string> buffer_name           (typeringen/metro_stations_buffers) := typeringen/metro_stations_buffers/buffer_name;
+			attribute<nrwonha> density_transposed   (typeringen/metro_stations_buffers) := ='union_data(typeringen/metro_stations_buffers,' + AsItemList('Density_per_station/' +string(typeringen/metro_stations_buffers/name)) + ')';
+		}
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+

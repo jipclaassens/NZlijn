@@ -1,0 +1,87 @@
+////////////////////////////////////////////////////////////////////////////////////////
+//                                                                                    //
+//                                                                                    //
+//                       Configuratie voor project: Open Data Analyse                 //
+//                                                                                    //
+//                              Object Vision 2011                                    //
+//                                                                                    //
+////////////////////////////////////////////////////////////////////////////////////////
+//                                                                                    //
+//                       Configuratiebestand met opbouw wegsegmenten voor netwerk     //
+//                       Nog geen koppeling met org en dest locaties                  //
+//                                                                                    //
+////////////////////////////////////////////////////////////////////////////////////////
+
+container NetworkPreperation
+{
+	container Pedestrian
+	{
+		unit<uint32> land_road
+		:	expr        = "Subset(OSM/Wegen_Amsterdam/IsPartOfPedestrianNetwork)"
+		,	DialogData  = "geometry"
+		,	DialogType  = "Map"
+		{
+			attribute<geography/rdc>                geometry (arc) := OSM/Wegen_Amsterdam/geometry[nr_OrgEntity];
+			attribute<typeringen/wegtype>            wegtype        := OSM/Wegen_Amsterdam/wegtype[nr_OrgEntity];
+		}
+		
+		container preperation
+		{
+			unit<uint32> road_segments_not_unique  := arc2segm(land_road/geometry)
+			{
+				attribute<geography/rdc>               point;
+				attribute<geography/rdc>               nextpoint;
+				attribute<string>                       key          := String(pointRow(point)) + '_' + String(pointCol(point)) + '_' + String(pointRow(nextpoint)) + '_'+ String(pointCol(nextpoint));
+				attribute<land_road>                    SequenceNr;
+				attribute<typeringen/wegtype>           wegtype      := land_road/wegtype[SequenceNr];
+			}
+			// In de OSM komen bepaalde wegen en wegsegmenten dubbel voor, deze leiden tot problemen bij het bepalen van het type kruispunt
+			// vandaar dat ze hier uit de selectie worden gehaald.
+			
+			unit <uint32> road_segments := unique(road_segments_not_unique/key)
+			,	DialogData = "wegtype"
+			,	DialogType = "Map"
+			{
+				attribute<geography/rdc>                point       := rjoin(values, road_segments_not_unique/key, road_segments_not_unique/point);
+				attribute<geography/rdc>                nextpoint   := rjoin(values, road_segments_not_unique/key, road_segments_not_unique/nextpoint);
+				attribute<typeringen/wegtype>            wegtype     := rjoin(values, road_segments_not_unique/key, road_segments_not_unique/wegtype);
+	
+				unit<uint32> pointset  := union_unit(road_segments, road_segments)
+				{
+					attribute<geography/rdc>      point    := Union_Data(pointset, road_segments/point, road_segments/nextpoint);
+					attribute<road_segments>       ArcID    := value(ID(pointset) % nrofrows(road_segments), road_segments);
+					attribute<uint32>              VolgNr   := ID(pointset) / nrofrows(road_segments);
+				}
+				attribute<geography/rdc> line(arc)  := points2sequence(pointset/point, pointset/ArcID, pointset/VolgNr);
+			}
+			unit<uint32> extra_links  := ExtraVerbindingen/link
+			{
+				attribute<geography/rdc>                line (arc)  := ExtraVerbindingen/link/line;
+				attribute<typeringen/wegtype>            wegtype     := ExtraVerbindingen/link/wegtype;
+			}
+			
+			unit<uint32> extra_nodes := ExtraVerbindingen/nodes
+			{
+				attribute<geography/rdc> location  := ExtraVerbindingen/nodes/UnionData;
+			}
+			unit<uint32> road_segments_with_extra_nodes := connect(road_segments/line, extra_nodes/location)
+			,	isHidden = "True"
+			,	FreeData = "False"
+			{
+				attribute<geography/rdc>               UnionData (arc);
+				attribute<typeringen/wegtype>           wegtype        := MakeDefined(road_segments/wegtype[nr_OrgEntity], value(69,typeringen/wegtype));
+			}
+		}
+		unit <uint32> all  := union_unit(preperation/road_segments_with_extra_nodes, preperation/extra_links)
+		,	DialogData  = "line"
+		,	DialogType  = "Map"
+		,	FreeData    = "False"
+		{
+			attribute<geography/rdc>               line (arc)  := union_data(., preperation/road_segments_with_extra_nodes/UnionData, preperation/extra_links/line),	Label = "Netwerk geschikt voor voetgangers";
+			attribute<typeringen/wegtype>           wegtype     := union_data(., preperation/road_segments_with_extra_nodes/wegtype, preperation/extra_links/wegtype);
+			attribute<.>                            id          := id(.);
+		}
+	}
+	
+	#include <ExtraVerbindingen.dms>
+}

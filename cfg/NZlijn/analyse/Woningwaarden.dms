@@ -1,0 +1,8 @@
+container Woningwaarden
+{
+	#include<prijsindex.dms>
+	#include<RegionalAvgCharacteristics.dms>
+	#include<verwervingskosten.dms>
+	
+
+}

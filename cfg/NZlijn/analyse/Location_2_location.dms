@@ -1,0 +1,83 @@
+Container NetwerkDist_Points_to_NZ : using = "geography"
+{
+	container NetwerkDist_perstation := 
+		for_each_ne(
+			// typeringen/all_metro_stations/name
+			typeringen/metro_stations/name
+			// , 'MaakNetwerkDist_templ(Brondata/Metrostations/Losse_stations/' +typeringen/all_metro_stations/name+ '/Subset, Brondata/BAG/Snapshots/Panden/Y202201/pand)'
+			// , 'MaakNetwerkDist_templ(Brondata/Metrostations/Losse_stations/' +typeringen/metro_stations/name+ '/Subset, Brondata/BAG/Snapshots/Panden/Y202201/pand)'
+			, 'MaakNetwerkDist_templ(Brondata/Metrostations/Losse_stations/' +typeringen/metro_stations/name+ '/Subset, /geography/sg_points_25m)'
+		), FreeData = "false"
+	{
+		unit<uint32>    pand := /Brondata/BAG/Snapshots/Panden/Y202201/pand;
+		
+		// attribute<bool> NZ_treated_pand  (pand)           := =AsList('Analyse/NetwerkDist_Points_to_NZ/NetwerkDist_perstation/'+(typeringen/metro_stations/name)+'/Netwerk/OrgToDest/MakeOD_Time/impedance_org  <= (12f*60f)', ' || ');
+		
+		parameter<float32> treatment_size := 12f;
+		parameter<float32> control_size   := 36f;
+		
+		attribute<bool> NZ_treated        (NL_grid/domain) := =AsList('Analyse/NetwerkDist_Points_to_NZ/NetwerkDist_perstation/'+(typeringen/metro_stations/name)+'/Netwerk/OrgToDest/MakeOD_Time/grid  <= (treatment_size*60f)', ' || ');
+		attribute<bool> NZ_control0       (NL_grid/domain) := =AsList('(Analyse/NetwerkDist_Points_to_NZ/NetwerkDist_perstation/'+(typeringen/metro_stations/name)+'/Netwerk/OrgToDest/MakeOD_Time/grid  > (treatment_size*60f) && Analyse/NetwerkDist_Points_to_NZ/NetwerkDist_perstation/'+(typeringen/metro_stations/name)+'/Netwerk/OrgToDest/MakeOD_Time/grid  <= (control_size*60f))', ' || ');
+		attribute<bool> NZ_control        (NL_grid/domain) := NZ_treated ? FALSE : NZ_control0;
+	}
+
+	template MaakNetwerkDist_templ
+	{
+		////
+		unit<uint32> dest;
+		unit<uint32> org;
+		////
+
+		container Netwerk :=
+			rekenschemas/netwerk(
+				  org
+				, dest
+				, Brondata/Spatial_data/OSM/NetworkPreperation/Pedestrian/all
+				, org/geometry
+				, dest/geometry
+				, Brondata/Spatial_data/OSM/NetworkPreperation/Pedestrian/all/line
+			);
+	}
+	
+	// container RingIs0_1500m := 
+		// for_each_nedv(
+			// typeringen/all_metro_stations/NZ_stations/name
+			// , 'Analyse/NetwerkDist_Points_to_NZ/NetwerkDist_perstation/'+typeringen/all_metro_stations/NZ_stations/name+'/netwerk/OrgToDest/MakeOD_Time/Grid < 1080[s]'
+			// , NL_grid/domain
+			// , bool
+		// ), FreeData = "false"
+	// {
+		// attribute<bool> total (NL_grid/domain) := ='add('+AsItemList(typeringen/all_metro_stations/NZ_stations/name+'[uint32]')+')[uint32] >= 1 ? TRUE : FALSE';
+	// }
+	
+	// container RingIs1500_5000m := 
+		// for_each_nedv(
+			// typeringen/all_metro_stations/NZ_stations/name
+			// , 'Analyse/NetwerkDist_Points_to_NZ/NetwerkDist_perstation/'+typeringen/all_metro_stations/NZ_stations/name+'/netwerk/OrgToDest/MakeOD_Time/Grid >= 1080[s] && Analyse/NetwerkDist_Points_to_NZ/NetwerkDist_perstation/'+typeringen/all_metro_stations/NZ_stations/name+'/netwerk/OrgToDest/MakeOD_Time/Grid < 3600[s]'
+			// , NL_grid/domain
+			// , bool
+		// ), FreeData = "false"
+	// {
+		// attribute<bool> total (NL_grid/domain) := ='add('+AsItemList(typeringen/all_metro_stations/NZ_stations/name+'[uint32]')+')[uint32] >= 1 ? TRUE : FALSE';
+	// }
+	
+	// container RingIs5000_10000m := 
+		// for_each_nedv(
+			// typeringen/all_metro_stations/NZ_stations/name
+			// , 'Analyse/NetwerkDist_Points_to_NZ/NetwerkDist_perstation/'+typeringen/all_metro_stations/NZ_stations/name+'/netwerk/OrgToDest/MakeOD_Time/Grid > 3600[s] && Analyse/NetwerkDist_Points_to_NZ/NetwerkDist_perstation/'+typeringen/all_metro_stations/NZ_stations/name+'/netwerk/OrgToDest/MakeOD_Time/Grid <= 7200[s]'
+			// , NL_grid/domain
+			// , bool
+		// ), FreeData = "false"
+	// {
+		// attribute<bool> total (NL_grid/domain) := ='add('+AsItemList(typeringen/all_metro_stations/NZ_stations/name+'[uint32]')+')[uint32] >= 1 ? TRUE : FALSE';
+	// }
+	
+	// attribute<uint2> Ring0_1500_5000m (NL_grid/domain) := RingIs0_1500m/total 
+															// ? 0[uint2] 
+															// : RingIs1500_5000m/total 
+																// ? 1[uint2] 
+																// : RingIs5000_10000m/total 
+																	// ? 2[uint2] 
+																	// : 0[uint2];
+	
+}

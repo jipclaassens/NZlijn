@@ -1,0 +1,44 @@
+container kwartaal_change :  using = "eenheden"
+{
+	container Data := 
+		for_each_nedv(
+			typeringen/kwartalen/name
+			, 'Brondata/BAG/Snapshots/VBOs/'+string(typeringen/kwartalen/name)+'/Vbo/GebruiksdoelSets/woon/GebruiksdoelSet/count_ha'
+			, NL_grid/domain
+			, nrwonha
+		);
+		
+	container Quarterly_change := 
+		for_each_nedv(
+			typeringen/kwartalen/name_triv
+			, 'Brondata/BAG/Snapshots/VBOs/'+string(typeringen/kwartalen/name)+'/Vbo/GebruiksdoelSets/woon/GebruiksdoelSet/count_ha - Brondata/BAG/Snapshots/VBOs/'+string(typeringen/kwartalen/name_prev)+'/Vbo/GebruiksdoelSets/woon/GebruiksdoelSet/count_ha'
+			, NL_grid/domain
+			, nrwonha
+		);
+
+	container Sloop := 
+		for_each_nedv(
+			typeringen/kwartalen/name_triv
+			, 'Quarterly_change/'+string(typeringen/kwartalen/name_triv)+' < -2[nrwonha]'
+			, NL_grid/domain
+			, bool
+		);
+	
+	container Bouw := 
+		for_each_nedv(
+			typeringen/kwartalen/name_triv
+			, 'Quarterly_change/'+string(typeringen/kwartalen/name_triv)+' > 2[nrwonha]'
+			, NL_grid/domain
+			, bool
+		);
+	
+	container Sloop_voor_Bouw := 
+		for_each_nedv(
+			typeringen/kwartalen/name_triv
+			, 'AND(OR(Sloop/'+string(typeringen/kwartalen/name_triv_3prev)+', Sloop/'+string(typeringen/kwartalen/name_triv_2prev)+', Sloop/'+string(typeringen/kwartalen/name_triv)+'), Bouw/'+string(typeringen/kwartalen/name_triv)+')'
+			, NL_grid/domain
+			, bool
+		);
+		
+	attribute<bool> SloopNieuwBouw (NL_grid/domain) := ='OR('+AsItemlist('Sloop_voor_Bouw/'+(typeringen/kwartalen/name_triv))+')';
+}

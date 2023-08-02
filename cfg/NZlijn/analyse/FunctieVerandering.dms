@@ -1,0 +1,67 @@
+container FunctieVerandering:  using = "eenheden;typeringen"
+{   
+	unit<uint32> Vbo_Y2012  := /Brondata/BAG/Snapshots/VBOs/Y201201/vbo/src;
+	unit<uint32> Vbo_Y2021  := /Brondata/BAG/Snapshots/VBOs/Y202101/vbo/src;
+	unit<uint32> Pand_Y2012 := /Brondata/BAG/Snapshots/Panden/Y201201/pand;
+	unit<uint32> Pand_Y2021 := /Brondata/BAG/Snapshots/Panden/Y202101/pand;
+	
+	unit<uint32> Jaren : nrofrows = 2
+	{
+		attribute<uint32> Jaar : [2012, 2021];
+		attribute<string> name := 'Y'+string(jaar);
+	}
+	
+	container PerJaar :=
+		for_each_ne(
+			Jaren/name
+			, 'PerJaar_T('+quote(Jaren/name)+')'
+		);
+	
+	Template PerJaar_T 
+	{
+		parameter<string> Jaar;
+		
+		unit<uint32> Pand := ='Pand_'+Jaar
+		{
+			unit<uint32> Vbo  := ='Vbo_'+Jaar;
+			
+			attribute<string> Year := const(Jaar, .);
+			attribute<string> ID   := identificatie;
+			attribute<float32> X   := pointcol(pand_centroid);
+			attribute<float32> Y   := pointrow(pand_centroid);
+
+			container NZ_dist_perStation :=
+				for_each_nedv(
+					typeringen/all_metro_stations/NZ_stations/name
+					,'NetwerkDist_perstation/'+string(typeringen/all_metro_stations/NZ_stations/name)+'/Netwerk/OrgToDest/MakeOD_Time/grid[NL_grid_domain_rel]'
+					, Pand
+					, s
+				);
+
+			container Count_VBOs_perGebruiksdoel :=
+				for_each_nedv(
+					vbo_gebruiksdoel/name,
+					'sum(Vbo/gebruiksdoel_class == vbo_gebruiksdoel/v/'+vbo_gebruiksdoel/name+' ? 1 : 0, Vbo/pand_rel)'
+					, Pand
+					, uint32
+				);
+				
+			attribute<uint32> Aantal_uq_functies := ='add('+AsItemList('Count_VBOs_perGebruiksdoel/'+vbo_gebruiksdoel/name+' > 0 ? 1 : 0')+')';
+			
+			container Sum_VBOs_opp_perGebruiksdoel :=
+				for_each_nedv(
+					vbo_gebruiksdoel/name,
+					'sum(Vbo/gebruiksdoel_class == vbo_gebruiksdoel/v/'+vbo_gebruiksdoel/name+' ? vbo/oppervlakte_trunc2[m2] : 0[m2], Vbo/pand_rel)'
+					, Pand
+					, m2
+				);
+				
+			container NetwerkDist_perstation := 
+				for_each_ne(
+					typeringen/all_metro_stations/NZ_stations/name
+					, 'Analyse/NetwerkDist_Points_to_NZ/MaakNetwerkDist_templ(Brondata/Metrostations/Losse_stations/' +typeringen/all_metro_stations/NZ_stations/name+ '/Subset, Pand)'
+				);
+		}
+	}
+}
+

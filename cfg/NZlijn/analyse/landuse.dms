@@ -1,0 +1,73 @@
+container landuse :  using = "eenheden"
+{
+	attribute<typeringen/bbg_ek>    bbg2015       (BBGA) := BBGA/bbg2015;
+	attribute<typeringen/gg_src>    gg_src_rel    (BBGA) := rlookup(bbg2015, typeringen/gg_src/bbg_klasse);
+	
+	attribute<BBGA>                 bbg_rel_100m  (NL_grid/domain)         := poly2grid(BBGA/geometry, NL_grid/domain);
+	attribute<BBGA>                 bbg_rel_10m   (NL_grid/domain_10m)     := NL_grid/domain_10m/bbg_rel;
+	
+	attribute<typeringen/bbg_ek>    bbg2015_100m  (NL_grid/domain)         := bbg2015[bbg_rel_100m];
+	attribute<typeringen/bbg_ek>    bbg2015_10m   (NL_grid/domain_10m)     := bbg2015[bbg_rel_10m];
+	
+	container landuse_type := 
+		for_each_nedv(
+		 typeringen/gg_src/name
+		,'(sum(bbg2015_10m == ' + string(typeringen/gg_src/bbg_klasse) + '[typeringen/gg_src] ? 1f : 0f, NL_grid/domain_10m/grid_100m_rel) / 100f)'
+		,NL_grid/domain
+		,float32)
+	{
+			// attribute<bool>    Is100procent (NL_grid/domain) := Total == 1b;
+			// attribute<uint8>   Total        (NL_grid/domain) := = 'add(' + asList(typeringen/gg_src/name, ',') + ')';
+			attribute<float32>   diversity        (NL_grid/domain) := = 'add('+asList( + 'sqr(' + typeringen/gg_src/name + ')',',')+')';
+	}
+	
+	unit<uint32>  parken := subset(bbg2015 == 40[uint8])
+	,  FreeData = "True"
+	{
+		attribute<geography/rdc>                  geometry (polygon)                       := BBGA/geometry[nr_OrgEntity];
+		container                                 point_rel_info_sgpoints                  := connect_info(geometry, sg_points/Geometry);
+		attribute<m> 		                      Dist2sgpoints (sg_points)                := point_rel_info_sgpoints/dist[m];
+		container                                 point_rel_info_nvm                       := connect_info(geometry, Brondata/NVM/Subset_Amsterdam/geometry);
+		attribute<m> 		                      Dist2nvm (Brondata/NVM/Subset_Amsterdam) := point_rel_info_nvm/dist[m];
+		
+	}
+	
+	unit<uint32>  water  := subset(bbg2015 >= 70[uint8])
+	,  FreeData = "True"
+	{
+		attribute<geography/rdc>                  geometry (polygon)                       := BBGA/geometry[nr_OrgEntity];
+		container                                 point_rel_info_sgpoints                  := connect_info(geometry, sg_points/Geometry);
+		attribute<m> 		                      Dist2sgpoints (sg_points)                := point_rel_info_sgpoints/dist[m];
+		container                                 point_rel_info_nvm                       := connect_info(geometry, Brondata/NVM/Subset_Amsterdam/geometry);
+		attribute<m> 		                      Dist2nvm (Brondata/NVM/Subset_Amsterdam) := point_rel_info_nvm/dist[m];
+	}
+	
+	unit<uint32>  onbebouwbaar  := subset(typeringen/gg_src/onbebouwbaar[gg_src_rel] == 1b)
+	,  FreeData = "True"
+	{
+		attribute<geography/rdc>                 geometry (polygon)                       := BBGA/geometry[nr_OrgEntity];
+		attribute<m2>                             area                                     := area(geometry, m2);
+		attribute<onbebouwbaar>                   bbg_rel_100m (NL_grid/domain)            := poly2grid(geometry, NL_grid/domain);
+		attribute<onbebouwbaar>                   bbg_rel_10m  (NL_grid/domain_10m)        := poly2grid(geometry, NL_grid/domain_10m);
+		
+		attribute<bool>                           onbebouwbaar_100m (NL_grid/domain)       := IsDefined(bbg_rel_100m);
+		attribute<bool>                           onbebouwbaar_10m  (NL_grid/domain_10m)   := IsDefined(bbg_rel_10m);
+		
+		attribute<fractie>                        onbeb_fractie  (NL_grid/domain)          := sum(onbebouwbaar_10m ? 1f : 0f, NL_grid/domain_10m/grid_100m_rel) / 100f;		
+	}
+	
+	unit<uint32>  bebouwbaar  := subset(typeringen/gg_src/onbebouwbaar[gg_src_rel] != 1b)
+	,  FreeData = "True"
+	{
+		attribute<geography/rdc>                 geometry (polygon)                       := BBGA/geometry[nr_OrgEntity];
+		attribute<m2>                             area                                     := area(geometry, m2);
+		attribute<onbebouwbaar>                   bbg_rel_100m (NL_grid/domain)            := poly2grid(geometry, NL_grid/domain);
+		attribute<onbebouwbaar>                   bbg_rel_10m  (NL_grid/domain_10m)        := poly2grid(geometry, NL_grid/domain_10m);
+		
+		attribute<bool>                           onbebouwbaar_100m (NL_grid/domain)       := IsDefined(bbg_rel_100m);
+		attribute<bool>                           onbebouwbaar_10m  (NL_grid/domain_10m)   := IsDefined(bbg_rel_10m);
+		
+		attribute<fractie>                        onbeb_fractie  (NL_grid/domain)          := sum(onbebouwbaar_10m ? 1f : 0f, NL_grid/domain_10m/grid_100m_rel) / 100f;		
+	
+	}
+}

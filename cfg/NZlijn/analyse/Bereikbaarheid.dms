@@ -1,0 +1,26 @@
+container Bereikbaarheid
+{
+	// attribute<int32> PiekDiffAbs_src (NL_grid/domain)
+	// :	StorageName     = "%LocalDataDir%/OVGTFS/Results/main/diff_piek_abs.tif"
+	// ,	StorageType     = "gdal.grid"
+	// ,	StorageReadOnly = "True";
+	
+	// attribute<int32> PiekDiffAbs (NL_grid/domain) := PiekDiffAbs_src > 250000i ? 0i : PiekDiffAbs_src;
+	
+	// attribute<uint32> PiekVoor (NL_grid/domain)
+	// :	StorageName     = "%LocalDataDir%/OVGTFS/Results/main/Piek_Voor.tif"
+	// ,	StorageType     = "gdal.grid"
+	// ,	StorageReadOnly = "True";
+	// attribute<uint32> PiekNa (NL_grid/domain)
+	// :	StorageName     = "%LocalDataDir%/OVGTFS/Results/main/Piek_Na.tif"
+	// ,	StorageType     = "gdal.grid"
+	// ,	StorageReadOnly = "True";
+	
+
+	// attribute<float32> PiekDiffPerc_src (NL_grid/domain)
+	// :	StorageName     = "%LocalDataDir%/OVGTFS/Results/main/diff_piek_perc.tif"
+	// ,	StorageType     = "gdal.grid"
+	// ,	StorageReadOnly = "True";
+	
+	// attribute<float32> PiekDiffPerc (NL_grid/domain) := PiekDiffPerc_src > 2f ? 2f : PiekDiffPerc_src;
+}

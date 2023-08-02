@@ -1,0 +1,19 @@
+container UrbanAttractivityIndex : FreeData = "False" 
+{
+	attribute<float32>   Detailhandel_count         (NL_grid/domain)  := Brondata/BAG/Snapshots/Vbos/Y201201/vbo/GebruiksdoelSets/winkel/GebruiksdoelSet/count_ha[float32];
+	attribute<float32>   BijeenkomstLogies_count    (NL_grid/domain)  := Brondata/BAG/Snapshots/Vbos/Y201201/vbo/GebruiksdoelSets/bijeenkomst/GebruiksdoelSet/count_ha[float32] + Brondata/BAG/Snapshots/Vbos/Y201201/vbo/GebruiksdoelSets/logies/GebruiksdoelSet/count_ha[float32];
+	attribute<float32>   Monumentaal_count          (NL_grid/domain)  := MakeDefined(Brondata/BAG/Snapshots/Panden/Y201201/pand/monumentale_per_domain_grid[float32], 0f);
+	
+	attribute<float32>   Detailhandel               (NL_grid/domain)  := potential(Detailhandel_count, geography/potentialen/pot5000m/potrange/AbsWeight);
+	parameter<float32>   Max_Detailhandel                             := max(Detailhandel);
+	attribute<float32>   BijeenkomstLogies          (NL_grid/domain)  := potential(BijeenkomstLogies_count, geography/potentialen/pot5000m/potrange/AbsWeight);
+	parameter<float32>   Max_BijeenkomstLogies                        := max(BijeenkomstLogies);
+	attribute<float32>   Monumentaal                (NL_grid/domain)  := potential(Monumentaal_count, geography/potentialen/pot5000m/potrange/AbsWeight);
+	parameter<float32>   Max_Monumentaal                              := max(Monumentaal);
+	
+	attribute<float32>   Detailhandel_norm          (NL_grid/domain)  := (Detailhandel / Max_Detailhandel) / 3f;
+	attribute<float32>   BijeenkomstLogies_norm     (NL_grid/domain)  := (BijeenkomstLogies / Max_BijeenkomstLogies) / 3f;
+	attribute<float32>   Monumentaal_norm           (NL_grid/domain)  := (Monumentaal / Max_Monumentaal) / 3f;
+
+	attribute<float32>   UAI                        (NL_grid/domain)  := Detailhandel_norm + BijeenkomstLogies_norm + Monumentaal_norm; //, StorageName = "%SourceDataDir%/SpatialData/UAI_5000m.tif";
+}

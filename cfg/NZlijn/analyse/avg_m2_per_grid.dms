@@ -1,0 +1,77 @@
+container avg_m2_per_grid : FreeData = "False" 
+{ 
+	unit<uint32> nvm := /Brondata/NVM/Subset_Amsterdam
+	{
+		attribute<geography/rdc>        geometry                := Brondata/NVM/Subset_Amsterdam/geometry;
+		attribute<eur>                  price                   := Brondata/NVM/Subset_Amsterdam/price;
+		attribute<jaar>                 trans_year              := Brondata/NVM/Subset_Amsterdam/trans_year;
+		attribute<m2>                   size                    := Brondata/NVM/Subset_Amsterdam/size;
+		attribute<eur_m2>               price_m2                := price / size;
+		attribute<NL_grid/domain_500m>  NL_grid_domain_rel      := geometry[Geography/NL_grid/domain_500m];
+		
+		
+		container price_m2_per_jaar := 
+			for_each_nedv(
+				typeringen/jaren8519/name
+				, 'mean(nvm/trans_year == '+string(typeringen/jaren8519/values)+'[int16] ? price_m2 : (0/0)[eur_m2], NL_grid_domain_rel)'
+				, NL_grid/domain_500m
+				, eur_m2
+			);
+			
+		container count_per_jaar := 
+			for_each_nedv(
+				typeringen/jaren8519/name
+				, 'sum(nvm/trans_year == '+string(typeringen/jaren8519/values)+'[int16] ? 1 : 0, NL_grid_domain_rel)'
+				, NL_grid/domain_500m
+				, uint32
+			);
+		
+		container traveltime_perstation :=
+			for_each_nedv(
+				typeringen/all_metro_stations/name
+				, 'Analyse/NetwerkDist_Points_to_NZ/NetwerkDist_perstation/'+string(typeringen/all_metro_stations/name)+'/Netwerk/OrgToDest/MakeOD_Time/grid_500m[geography/sg_points_500m/NL_grid_domain_500m_rel]'
+				, geography/sg_points_500m
+				, s
+			);
+		
+		container per_jaar_point := 
+			for_each_nedv(
+				typeringen/jaren8519/name
+				, 'price_m2_per_jaar/'+typeringen/jaren8519/name+'[geography/sg_points_500m/NL_grid_domain_500m_rel]'
+				, geography/sg_points_500m
+				, eur_m2
+			)
+		{
+			attribute<uint32>         id                                   (geography/sg_points_500m) := id(geography/sg_points_500m);
+			// attribute<s>              Station_Noord_reistijd               (geography/sg_points_500m) := Analyse/NetwerkDist_Points_to_NZ/NetwerkDist_perstation/Station_Noord/Netwerk/OrgToDest/MakeOD_Time/grid_500m[geography/sg_points_500m/NL_grid_domain_500m_rel];
+			// attribute<s>              Station_Noorderpark_reistijd         (geography/sg_points_500m) := Analyse/NetwerkDist_Points_to_NZ/NetwerkDist_perstation/Station_Noorderpark/Netwerk/OrgToDest/MakeOD_Time/grid_500m[geography/sg_points_500m/NL_grid_domain_500m_rel];
+			// attribute<s>              Station_Centraal_reistijd            (geography/sg_points_500m) := Analyse/NetwerkDist_Points_to_NZ/NetwerkDist_perstation/Station_Centraal/Netwerk/OrgToDest/MakeOD_Time/grid_500m[geography/sg_points_500m/NL_grid_domain_500m_rel];
+			// attribute<s>              Station_Rokin_reistijd               (geography/sg_points_500m) := Analyse/NetwerkDist_Points_to_NZ/NetwerkDist_perstation/Station_Rokin/Netwerk/OrgToDest/MakeOD_Time/grid_500m[geography/sg_points_500m/NL_grid_domain_500m_rel];
+			// attribute<s>              Station_Vijzelgracht_reistijd        (geography/sg_points_500m) := Analyse/NetwerkDist_Points_to_NZ/NetwerkDist_perstation/Station_Vijzelgracht/Netwerk/OrgToDest/MakeOD_Time/grid_500m[geography/sg_points_500m/NL_grid_domain_500m_rel];
+			// attribute<s>              Station_De_Pijp_reistijd             (geography/sg_points_500m) := Analyse/NetwerkDist_Points_to_NZ/NetwerkDist_perstation/Station_De_Pijp/Netwerk/OrgToDest/MakeOD_Time/grid_500m[geography/sg_points_500m/NL_grid_domain_500m_rel];
+			// attribute<s>              Station_Europaplein_reistijd         (geography/sg_points_500m) := Analyse/NetwerkDist_Points_to_NZ/NetwerkDist_perstation/Station_Europaplein/Netwerk/OrgToDest/MakeOD_Time/grid_500m[geography/sg_points_500m/NL_grid_domain_500m_rel];
+			// attribute<s>              Station_Zuid_reistijd                (geography/sg_points_500m) := Analyse/NetwerkDist_Points_to_NZ/NetwerkDist_perstation/Station_Zuid/Netwerk/OrgToDest/MakeOD_Time/grid_500m[geography/sg_points_500m/NL_grid_domain_500m_rel];
+			
+			// attribute<s>              Station_Isolatorweg_reistijd         (geography/sg_points_500m) := Analyse/NetwerkDist_Points_to_NZ/NetwerkDist_perstation/Station_Sloterdijk/Netwerk/OrgToDest/MakeOD_Time/grid_500m[geography/sg_points_500m/NL_grid_domain_500m_rel];
+			// attribute<s>              Station_De_Vlughtlaan_reistijd       (geography/sg_points_500m) := Analyse/NetwerkDist_Points_to_NZ/NetwerkDist_perstation/Station_De_Vlughtlaan/Netwerk/OrgToDest/MakeOD_Time/grid_500m[geography/sg_points_500m/NL_grid_domain_500m_rel];
+			// attribute<s>              Station_Jan_van_Galenstraat_reistijd (geography/sg_points_500m) := Analyse/NetwerkDist_Points_to_NZ/NetwerkDist_perstation/Station_Jan_van_Galenstraat/Netwerk/OrgToDest/MakeOD_Time/grid_500m[geography/sg_points_500m/NL_grid_domain_500m_rel];
+			// attribute<s>              Station_Postjesweg_reistijd          (geography/sg_points_500m) := Analyse/NetwerkDist_Points_to_NZ/NetwerkDist_perstation/Station_Postjesweg/Netwerk/OrgToDest/MakeOD_Time/grid_500m[geography/sg_points_500m/NL_grid_domain_500m_rel];
+			// attribute<s>              Station_Lelylaan_reistijd            (geography/sg_points_500m) := Analyse/NetwerkDist_Points_to_NZ/NetwerkDist_perstation/Station_Lelylaan/Netwerk/OrgToDest/MakeOD_Time/grid_500m[geography/sg_points_500m/NL_grid_domain_500m_rel];
+			// attribute<s>              Station_Heemstedestraat_reistijd     (geography/sg_points_500m) := Analyse/NetwerkDist_Points_to_NZ/NetwerkDist_perstation/Station_Heemstedestraat/Netwerk/OrgToDest/MakeOD_Time/grid_500m[geography/sg_points_500m/NL_grid_domain_500m_rel];
+			// attribute<s>              Station_Henk_Sneevlietweg_reistijd   (geography/sg_points_500m) := Analyse/NetwerkDist_Points_to_NZ/NetwerkDist_perstation/Station_Henk_Sneevlietweg/Netwerk/OrgToDest/MakeOD_Time/grid_500m[geography/sg_points_500m/NL_grid_domain_500m_rel];
+			// attribute<s>              Station_Amstelveenseweg_reistijd     (geography/sg_points_500m) := Analyse/NetwerkDist_Points_to_NZ/NetwerkDist_perstation/Station_Amstelveenseweg/Netwerk/OrgToDest/MakeOD_Time/grid_500m[geography/sg_points_500m/NL_grid_domain_500m_rel];
+		}
+		
+		container count_per_jaar_point := 
+			for_each_nedv(
+				typeringen/jaren8519/name
+				, 'count_per_jaar/'+typeringen/jaren8519/name+'[geography/sg_points_500m/NL_grid_domain_500m_rel]'
+				, geography/sg_points_500m
+				, uint32
+			)
+		{
+			attribute<uint32>         id                                   (geography/sg_points_500m) := id(geography/sg_points_500m);
+		}
+	}
+	
+}
