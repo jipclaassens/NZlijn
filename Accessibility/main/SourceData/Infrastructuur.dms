@@ -25,12 +25,12 @@ container Infrastructuur
 	, SyncMode = "none"
 	{
 		attribute<dpoint>     geometry (arc);
-		attribute<CoordSys>   geometry_rd (arc) := LatLongWgs842RD(geometry[fpoint], CoordSys);
+		attribute<rdc>   geometry_rd (arc) := LatLongWgs842RD(geometry[fpoint], rdc);
 		attribute<int32>      lijn;
 		
 		unit<uint32> Metro52 := subset(lijn == 52i || id(.) == 81)
 		{
-			attribute<CoordSys>   geometry_rd (arc) := ../geometry_rd[nr_OrgEntity];
+			attribute<rdc>   geometry_rd (arc) := ../geometry_rd[nr_OrgEntity];
 		}
 	}
 
@@ -43,7 +43,7 @@ container Infrastructuur
 	, SyncMode = "none"
 	{
 		attribute<dpoint>     geometry ;
-		attribute<CoordSys>   geometry_rd  := LatLongWgs842RD(geometry[fpoint], CoordSys);
+		attribute<rdc>   geometry_rd  := LatLongWgs842RD(geometry[fpoint], rdc);
 		attribute<string>     Modaliteit;
 		attribute<string>     Lijn;
 		attribute<string>     naam : DialogType = "LabelText";
@@ -54,7 +54,7 @@ container Infrastructuur
 		,	DialogData = "geometry"
 		,	DialogType = "map"
 		{
-			attribute<CoordSys>        geometry   := ../geometry_rd[nr_OrgEntity];
+			attribute<rdc>        geometry   := ../geometry_rd[nr_OrgEntity];
 			attribute<string>          naam       := ../naam[nr_OrgEntity], DialogType = "LabelText";
 		}
 		
@@ -62,7 +62,7 @@ container Infrastructuur
 		,	DialogData = "geometry"
 		,	DialogType = "map"
 		{
-			attribute<CoordSys>        geometry   := values;
+			attribute<rdc>        geometry   := values;
 			attribute<string>          naam       := replace(rjoin(values, Lijn52_src/geometry, Lijn52_src/naam),'Vijzelgracht /Weteringcircuit','Vijzelgracht'), DialogType = "LabelText";
 		}
 	}

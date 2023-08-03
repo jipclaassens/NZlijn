@@ -64,11 +64,11 @@ container NetworkAnalyses : using = "units;ModelParameters;Classifications;geome
 		
 		unit<uint32> Stops := SourceData/GTFS/StudyAreaFeeds/Stops;
 		
-		container RoadNets_Org2Dest_W   := templates/createNetwork(Org  , Dest    , SourceData/OSM/Network_Pedestrian, 'Walking', 'Org2Dest');
-		container RoadNets_Org2Stop_W   := templates/createNetwork(Org  , Stops   , SourceData/OSM/Network_Pedestrian, 'Walking', 'Org2Stop');
-		container RoadNets_Stop2Dest_W  := templates/createNetwork(Stops, Dest    , SourceData/OSM/Network_Pedestrian, 'Walking', 'Stop2Dest');
+		container RoadNets_Org2Dest_W   := templates/createNetwork_T(Org  , Dest    , SourceData/OSM/Network_Pedestrian, 'Walking', 'Org2Dest');
+		container RoadNets_Org2Stop_W   := templates/createNetwork_T(Org  , Stops   , SourceData/OSM/Network_Pedestrian, 'Walking', 'Org2Stop');
+		container RoadNets_Stop2Dest_W  := templates/createNetwork_T(Stops, Dest    , SourceData/OSM/Network_Pedestrian, 'Walking', 'Stop2Dest');
 		
-		container StaticNets          := templates/StaticNetsCreator(Stops, SourceData/GTFS/StudyAreaFeeds/Links);
+		container StaticNets          := templates/StaticNetsCreator_T(Stops, SourceData/GTFS/StudyAreaFeeds/Links);
 		
 		container CreateODconnections : using = "StaticNets"
 		{
@@ -170,7 +170,7 @@ container NetworkAnalyses : using = "units;ModelParameters;Classifications;geome
 		, StorageName = "='%LocalDataDir%/NZLijn/OD_'+string(ModelParameters/MaxOVTime)+'min_W_W_ORG-'+ModelParameters/Orgset+'_DEST-'+ModelParameters/DestSet+'_SA-'+ModelParameters/StudyArea+'.fss'"
 		{
 			attribute<Combine_OrgDest>  OD_nummer                    := combine_data(Combine_OrgDest, OrgZone_rel, DstZone_rel);
-			attribute<float32>          nr_banen                     := Setup/dest/nr_banen[float32][DstZone_rel];
+			attribute<uint32>           nr_banen                     := Setup/dest/nr_banen[DstZone_rel];
 		}
 	}
 	

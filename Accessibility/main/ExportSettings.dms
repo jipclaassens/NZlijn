@@ -1,12 +1,7 @@
 container ExportSettings: url = "='#'+ExportSettings/Docdata +'/ExportSettings.adms'"
 {
-	container SvnImpl
+	container MetaInfo 
 	{
-		parameter<String> RevisionInfoCmd := Replace(Expand(., 'SubWCRev %projDir% > %projDir%/SubWCRevData.str'), '/', '\\');
-		parameter<uint32> WriteCode := exec_ec(Expand(., '%env:ComSpec%'), '/c ' + RevisionInfoCmd, Expand(., '%projdir%'));
-	}
-	
-	container MetaInfo {
 		parameter<string> FileName : ='%storageBaseName%.xml';
 		parameter<string> FileType : ='xml'; // default is 'ini' but ini files cannot be used well to store multi-line properties such as error messages of inproperly configured properties
 		container Contents
@@ -26,9 +21,35 @@ container ExportSettings: url = "='#'+ExportSettings/Docdata +'/ExportSettings.a
 				parameter<string> User         := expand(., '%env:USERNAME%');
 				parameter<string> ComputerName := expand(., '%env:COMPUTERNAME%');
 			}
-			container Svn
+			container Parameters
 			{
-				parameter<string> RevisionInfo: Storagename = "=(SvnImpl/WriteCode==0)?'%projDir%/SubWCRevData.str':'Error '+String(SvnImpl/WriteCode)+' while producing %projDir%/SubWCRevData.str'";
+				parameter<string>  GTFS_file_date                          := string(ModelParameters/GTFS_FileDate);
+				parameter<string>  OSM_file_date                           := string(ModelParameters/OSM_Date);
+				parameter<string>  LISA_jaar                               := '2018';
+				parameter<string>  Analysis_date                           := string(ModelParameters/Analysis_date);
+				parameter<string>  Orgset                                  := string(ModelParameters/Orgset);
+				parameter<string>  Destset                                 := string(ModelParameters/Destset);
+				parameter<string>  Arrival_or_Departure_at_time            := string(ModelParameters/Arrival_or_Departure_at_time);
+				parameter<string>  MaxTransferDistKm                       := string(ModelParameters/MaxTransferDistKm);
+				parameter<string>  MaxODconn                               := string(ModelParameters/MaxODconn);
+				parameter<string>  MaxWalkingTime_Org2Stop                 := string(ModelParameters/MaxWalkingTime_Org2Stop);
+				parameter<string>  MaxWalkingTime_Stop2Dest                := string(ModelParameters/MaxWalkingTime_Stop2Dest);
+				parameter<string>  MaxWalkingTime_Org2Dest                 := string(ModelParameters/MaxWalkingTime_Org2Dest);
+				parameter<string>  MaxBikingTime_Org2Stop                  := string(ModelParameters/MaxBikingTime_Org2Stop);
+				parameter<string>  MaxBikingTime_Stop2Dest                 := string(ModelParameters/MaxBikingTime_Stop2Dest);
+				parameter<string>  MaxBikingTime_Org2Dest                  := string(ModelParameters/MaxBikingTime_Org2Dest);
+				parameter<string>  MaxOVTime                               := string(ModelParameters/MaxOVTime);
+				parameter<string>  OngelijkvloersPenalty                   := string(ModelParameters/OngelijkvloersPenalty);
+				parameter<string>  Dest_location_scale                     := string(ModelParameters/banen_locaties_schaal);
+				parameter<string>  TransferEffectiveSpeed                  := string(ModelParameters/TransferEffectiveSpeed);
+				parameter<string>  WegingWachttijdThuisVoortransport       := string(ModelParameters/WegingWachttijdThuisVoortransport);
+				parameter<string>  WalkingSpeed_kmhr                       := string(ModelParameters/WalkingSpeed_kmhr);
+				parameter<string>  BikingSpeed_kmhr                        := string(ModelParameters/BikingSpeed_kmhr);
+				parameter<string>  MaxCarSpeed                             := string(ModelParameters/MaxCarSpeed);
+				parameter<string>  MaxCarSpeed_limit                       := string(ModelParameters/MaxCarSpeed_limit);
+				parameter<string>  CarDefaultSpeed                         := string(ModelParameters/CarDefaultSpeed);
+				parameter<string>  CarDefaultSpeed_low                     := string(ModelParameters/CarDefaultSpeed_low);
+				parameter<string>  Ferry_Speed                             := string(ModelParameters/Ferry_Speed);
 			}
 		}
 	}

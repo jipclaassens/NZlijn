@@ -2,7 +2,7 @@ container Templates: Using = "Units;Classifications"
 {  
 	#include <netwerk.dms>
 	
-	Template createNetwork : using = "geometries"
+	Template createNetwork_T : using = "geometries"
 	{
 		unit<uint32>      inStart;
 		unit<uint32>      inEind;
@@ -90,73 +90,73 @@ container Templates: Using = "Units;Classifications"
 		}
 	}
 	
-	Template MakeOD_BanenPerNetwerkType : FreeData = "false"
-	{
-		unit<uint32>       org;
-		unit<uint32>       dest;
-		parameter<string>  netwerk_type_OSM;
-		parameter<km_hr>   maxspeed_OSM;
-		parameter<string>  netwerk_type_Logit := netwerk_type_OSM == 'pedestrian' ? 'Bike' : netwerk_type_OSM;
+	// Template MakeOD_BanenPerNetwerkType_T
+	// {
+		// unit<uint32>       org;
+		// unit<uint32>       dest;
+		// parameter<string>  netwerk_type_OSM;
+		// parameter<km_hr>   maxspeed_OSM;
+		// parameter<string>  netwerk_type_Logit := netwerk_type_OSM == 'pedestrian' ? 'Bike' : netwerk_type_OSM;
 		
-		container NetwerkSpec := =
-			'templates/netwerk(
-				  org
-				, dest
-				, SourceData/OSM/Read_OSM_fss_Nederland_'+string(netwerk_type_OSM)+'
-				, org/geometry
-				, dest/point
-				, SourceData/OSM/Read_OSM_fss_Nederland_'+string(netwerk_type_OSM)+'/line
-				, '+quote(netwerk_type_OSM)+'
-			)';
+		// container NetwerkSpec := =
+			// 'templates/netwerk_T(
+				  // org
+				// , dest
+				// , SourceData/OSM/Read_OSM_fss_Nederland_'+string(netwerk_type_OSM)+'
+				// , org/geometry
+				// , dest/point
+				// , SourceData/OSM/Read_OSM_fss_Nederland_'+string(netwerk_type_OSM)+'/line
+				// , '+quote(netwerk_type_OSM)+'
+			// )';
 
-		unit<uint64> OD_traveltime := 
-			dijkstra_m64('bidirectional(link_flag);startPoint(Node_rel);endPoint(Node_rel);od:impedance,OrgZone_rel,DstZone_rel'
-				, NetwerkSpec/OrgToDest/impedance
-				, NetwerkSpec/OrgToDest/F1
-				, NetwerkSpec/OrgToDest/F2
-				, NetwerkSpec/OrgToDest/LinkSet/wegtype != classifications/OSM/wegtype/V/motorway  && NetwerkSpec/OrgToDest/LinkSet/wegtype != classifications/OSM/wegtype/V/motorway_link // motor way en motor way link, snelwegen zijn niet bidirectional
-				, NetwerkSpec/OrgToDest/nr_orgNode 
-				, NetwerkSpec/OrgToDest/nr_destNode 
-			)
-		, StorageName = "='%LocalDataDir%/OVGTFS/ODfull_'+netwerk_type_OSM+'_ORG-'+SourceData/Orgset+'_DEST-'+DestSet_string+'_NETWERK-'+SourceData/NetwerkExtent+'_SA-'+SourceData/StudyArea+'.fss'"
-		{
-			attribute<float32> reistijd_min              := impedance / 60f;
-			attribute<uint64>  OD_nummer                 := combine_data(., OrgZone_rel, DstZone_rel);
+		// unit<uint64> OD_traveltime := 
+			// dijkstra_m64('bidirectional(link_flag);startPoint(Node_rel);endPoint(Node_rel);od:impedance,OrgZone_rel,DstZone_rel'
+				// , NetwerkSpec/OrgToDest/impedance
+				// , NetwerkSpec/OrgToDest/F1
+				// , NetwerkSpec/OrgToDest/F2
+				// , NetwerkSpec/OrgToDest/LinkSet/wegtype != classifications/OSM/wegtype/V/motorway  && NetwerkSpec/OrgToDest/LinkSet/wegtype != classifications/OSM/wegtype/V/motorway_link // motor way en motor way link, snelwegen zijn niet bidirectional
+				// , NetwerkSpec/OrgToDest/nr_orgNode 
+				// , NetwerkSpec/OrgToDest/nr_destNode 
+			// )
+		// , StorageName = "='%LocalDataDir%/OVGTFS/ODfull_'+netwerk_type_OSM+'_ORG-'+SourceData/Orgset+'_DEST-'+DestSet_string+'_NETWERK-'+SourceData/NetwerkExtent+'_SA-'+SourceData/StudyArea+'.fss'"
+		// {
+			// attribute<float32> reistijd_min              := impedance / 60f;
+			// attribute<uint64>  OD_nummer                 := combine_data(., OrgZone_rel, DstZone_rel);
 			
-			attribute<float32> banen                     := dests/nr_banen[float32][DstZone_rel];
-			attribute<float32> decay_function            := ='reistijd_min == 0f ? 1f : 1f / (1f + exp(parameters/'+netwerk_type_Logit+'_a + parameters/'+netwerk_type_Logit+'_b*log(reistijd_min) + parameters/'+netwerk_type_Logit+'_c*reistijd_min))';
-			attribute<float32> banen_decayed             := MakeDefined(banen * decay_function,0f);
+			// attribute<float32> banen                     := dests/nr_banen[float32][DstZone_rel];
+			// attribute<float32> decay_function            := ='reistijd_min == 0f ? 1f : 1f / (1f + exp(parameters/'+netwerk_type_Logit+'_a + parameters/'+netwerk_type_Logit+'_b*log(reistijd_min) + parameters/'+netwerk_type_Logit+'_c*reistijd_min))';
+			// attribute<float32> banen_decayed             := MakeDefined(banen * decay_function,0f);
 			
-			attribute<float32> banen_bereikbaar (org)   := sum(banen_decayed, OrgZone_rel);
-		}
+			// attribute<float32> banen_bereikbaar (org)   := sum(banen_decayed, OrgZone_rel);
+		// }
 		
-		unit<uint64> OD_traveltime_limit30m := 
-			dijkstra_m64('bidirectional(link_flag);startPoint(Node_rel);endPoint(Node_rel);cut(OrgZone_max_imp);od:impedance,OrgZone_rel,DstZone_rel'
-				, NetwerkSpec/OrgToDest/impedance
-				, NetwerkSpec/OrgToDest/F1
-				, NetwerkSpec/OrgToDest/F2
-				, NetwerkSpec/OrgToDest/LinkSet/wegtype != classifications/OSM/wegtype/V/motorway  && NetwerkSpec/OrgToDest/LinkSet/wegtype != classifications/OSM/wegtype/V/motorway_link // motor way en motor way link, snelwegen zijn niet bidirectional
-				, NetwerkSpec/OrgToDest/nr_orgNode 
-				, NetwerkSpec/OrgToDest/nr_destNode 
-				, 1800f
-			)
-		, StorageName = "='%LocalDataDir%/OVGTFS/OD_30min_'+netwerk_type_OSM+'_ORG-'+SourceData/Orgset+'_DEST-'+DestSet_string+'_NETWERK-'+SourceData/NetwerkExtent+'_SA-'+SourceData/StudyArea+'.fss'"
-		{
-			attribute<float32> reistijd_min              := impedance / 60f;
-			attribute<uint64>  OD_nummer                 := combine_data(., OrgZone_rel, DstZone_rel);
+		// unit<uint64> OD_traveltime_limit30m := 
+			// dijkstra_m64('bidirectional(link_flag);startPoint(Node_rel);endPoint(Node_rel);cut(OrgZone_max_imp);od:impedance,OrgZone_rel,DstZone_rel'
+				// , NetwerkSpec/OrgToDest/impedance
+				// , NetwerkSpec/OrgToDest/F1
+				// , NetwerkSpec/OrgToDest/F2
+				// , NetwerkSpec/OrgToDest/LinkSet/wegtype != classifications/OSM/wegtype/V/motorway  && NetwerkSpec/OrgToDest/LinkSet/wegtype != classifications/OSM/wegtype/V/motorway_link // motor way en motor way link, snelwegen zijn niet bidirectional
+				// , NetwerkSpec/OrgToDest/nr_orgNode 
+				// , NetwerkSpec/OrgToDest/nr_destNode 
+				// , 1800f
+			// )
+		// , StorageName = "='%LocalDataDir%/OVGTFS/OD_30min_'+netwerk_type_OSM+'_ORG-'+SourceData/Orgset+'_DEST-'+DestSet_string+'_NETWERK-'+SourceData/NetwerkExtent+'_SA-'+SourceData/StudyArea+'.fss'"
+		// {
+			// attribute<float32> reistijd_min              := impedance / 60f;
+			// attribute<uint64>  OD_nummer                 := combine_data(., OrgZone_rel, DstZone_rel);
 			
-			attribute<float32> banen                     := dests/nr_banen[float32][DstZone_rel];
-			attribute<float32> decay_function            := ='reistijd_min == 0f ? 1f : 1f / (1f + exp(parameters/'+netwerk_type_Logit+'_a + parameters/'+netwerk_type_Logit+'_b*log(reistijd_min) + parameters/'+netwerk_type_Logit+'_c*reistijd_min))';
-			attribute<float32> banen_decayed             := MakeDefined(banen * decay_function,0f);
+			// attribute<float32> banen                     := dests/nr_banen[float32][DstZone_rel];
+			// attribute<float32> decay_function            := ='reistijd_min == 0f ? 1f : 1f / (1f + exp(parameters/'+netwerk_type_Logit+'_a + parameters/'+netwerk_type_Logit+'_b*log(reistijd_min) + parameters/'+netwerk_type_Logit+'_c*reistijd_min))';
+			// attribute<float32> banen_decayed             := MakeDefined(banen * decay_function,0f);
 			
-			attribute<float32> banen_bereikbaar_decayed (org) := sum(banen_decayed, OrgZone_rel);
-			attribute<float32> banen_bereikbaar (org)         := sum(banen, OrgZone_rel);
-		}
-	}
+			// attribute<float32> banen_bereikbaar_decayed (org) := sum(banen_decayed, OrgZone_rel);
+			// attribute<float32> banen_bereikbaar (org)         := sum(banen, OrgZone_rel);
+		// }
+	// }
 	
 	#include<StaticNetsCreator.dms>
 
-	Template LoadCSVThroughGDAL 
+	Template LoadCSVThroughGDAL_T
 	{
 		unit<uint32> File_Structure;
 		parameter<File_Structure> inFile;
@@ -188,7 +188,7 @@ container Templates: Using = "Units;Classifications"
 		}
 	}
 	
-	Template doDateSelection 
+	Template doDateSelection_T
 	{
 		container Data;
 		unit<uint32> Services;
@@ -219,11 +219,11 @@ container Templates: Using = "Units;Classifications"
 		}
 	}
 
-	unit<SPoint> Neighbourhood: Expr = "range(spoint, point(int16(-1), int16(-1)), point(int16(2), int16(2)))", Descr = "Rooks case contiguous neighbours (first order)"
+	unit<SPoint> Neighbourhood := range(spoint, point(int16(-1), int16(-1)), point(int16(2), int16(2))), Descr = "Rooks case contiguous neighbours (first order)"
 	{
-		attribute<uint32> Top : 	Expr = "uint32(id(.) = point(int16(0),int16(1),spoint))";
-		attribute<uint32> Right : 	Expr = "uint32(id(.) = point(int16(1),int16(0),spoint))";
-		attribute<uint32> Bottom : 	Expr = "uint32(id(.) = point(int16(0),int16(-1),spoint))";
-		attribute<uint32> Left : 	Expr = "uint32(id(.) = point(int16(-1),int16(0),spoint))";
+		attribute<uint32> Top : 	 = uint32(id(.) = point(int16(0),int16(1),spoint));
+		attribute<uint32> Right : 	 = uint32(id(.) = point(int16(1),int16(0),spoint));
+		attribute<uint32> Bottom : 	 = uint32(id(.) = point(int16(0),int16(-1),spoint));
+		attribute<uint32> Left : 	 = uint32(id(.) = point(int16(-1),int16(0),spoint));
 	}
 }

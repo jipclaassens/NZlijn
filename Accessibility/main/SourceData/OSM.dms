@@ -12,7 +12,7 @@ container OSM
 			, 'Prepare_SourceData_T('+quote(Regios/label)+','+quote(Regios/country)+')'
 		)
 	{
-		parameter<string> Generate := =AsList(Regios/name+'/Generate', ' + ');
+		// parameter<string> Generate := =AsList(Regios/name+'/Generate', ' + ');
 	}
 	
 	Template Prepare_SourceData_T
@@ -29,11 +29,6 @@ container OSM
 		{
 			attribute<wgs84_base>        geometry    (arc);
 			attribute<rdc>               geometry_rd (arc)   := LatLongWgs842RD(geometry, dpoint)[rdc];
-			// attribute<rdc>               geometry_simplify (arc) := bg_simplify_linestring(geometry_rd, 1d);
-			
-			// unit<uint32> SeqPoint_org   := sequence2points(geometry_rd);
-			// unit<uint32> SeqPoint_simpl := sequence2points(geometry_simplify);
-
 			attribute<string>            fclass;
 			attribute<int32>             maxspeed;
 		}
@@ -68,11 +63,7 @@ container OSM
 			for_each_ne(
 				Regios/Countries/name
 				, 'Make_Merged_Roads_perCountry_T('+quote(Regios/Countries/name)+')'
-			)
-		{
-			// parameter<string> Generate := =AsList('Make_Merged_Roads_perCountry/'+Regios/Countries/name+'/Generate','+');
-		}
-
+			);
 		
 		Template Make_Merged_Roads_perCountry_T
 		{
@@ -314,169 +305,4 @@ container OSM
 			attribute<bool> isVerbonden (src) := all(pointset/isVerbonden, pointset/ArcNr);
 		}
 	}
-	
-
-
-
-
-
-
-
-
-
-
-
-
-
-/* 	unit<uint32> Read_OSM_shape 
-	: StorageName = "%GTFSDataDir%/_roadnetworks/amsterdam_walk_network/edges/edges.shp"
-	, StorageType = "gdal.vect"
-	, StorageReadOnly = "True"
-	, DialogData = "line"
-	, DialogType = "map" 
-	{
-		attribute<dpoint>     line (arc);
-		attribute<CoordSys>   line_rd (arc) := LatLongWgs842RD(line[fpoint], CoordSys);
-	}
-
-	unit<uint32> Make_OSM_fss := Read_OSM_shape
-	, StorageName = "%GTFSDataDir%/_roadnetworks/amsterdam_walk_network/edges/edges.fss"
-	, DialogData = "line_rd"
-	, DialogType = "map" 
-	{
-		attribute<CoordSys>   line_rd (arc) := Read_OSM_shape/line_rd;
-		attribute<float32>    length        := arc_length(line_rd, float32);
-	}
-
-	unit<uint32> Read_OSM_fss_Amsterdam_Pedestrian
-	: StorageName = "%GTFSDataDir%/_roadnetworks/amsterdam_walk_network/edges/edges.fss"
-	, StorageReadOnly = "true"
-	, DialogData = "line_rd"
-	, DialogType = "map" 
-	{
-		attribute<CoordSys>   line_rd (arc);
-		attribute<CoordSys>   line (arc) := line_rd; 
-		attribute<float32>    length;
-	}
-	
-	// unit<uint32> Read_OSM_fss_Nederland
-	// : StorageName = "%GTFSDataDir%/_roadnetworks/20180101/Pedestrian_network.fss"
-	// , StorageReadOnly = "true"
-	// , DialogData = "line_rd"
-	// , DialogType = "map" 
-	// {
-		// attribute<CoordSys>   line (arc);
-		// attribute<float32>    length := arc_length(line, float32);
-	// }
-	
-	
-	
-	unit<uint32> Read_OSM_fss_Nederland_Car
-	:	DialogData  = "line"
-	,	DialogType  = "Map"
-	,	StorageName = "= '%LocalDataDir%/NLDB/Car_network_20200117.fss'"
-	,	StorageReadOnly = "true"
-	{
-		attribute<geometries/rdc>               line (arc);
-		attribute<classifications/OSM/wegtype>  wegtype;
-		attribute<string>                       wegtype_label;
-		attribute<float32>                      length        := arc_length(line, float32);
-		attribute<int32>                        maxspeed;
-		attribute<float32>                      congestion_speed;
-	}
-	
-	unit<uint32> Read_OSM_fss_Nederland_Bike
-	:	DialogData  = "line"
-	,	DialogType  = "Map"
-	,	StorageName = "= '%LocalDataDir%/NLDB/Bike_network_20200117.fss'"
-	,	StorageReadOnly = "true"
-	{
-		attribute<geometries/rdc>               line (arc);
-		attribute<classifications/OSM/wegtype>  wegtype;
-		attribute<string>                       wegtype_label;
-		attribute<float32>                      length        := arc_length(line, float32);
-		attribute<int32>                        maxspeed;
-		attribute<float32>                      congestion_speed;
-	}
-	
-	unit<uint32> Read_OSM_fss_Nederland_Pedestrian 
-	:	DialogData  = "line"
-	,	DialogType  = "Map"
-	,	StorageName = "= '%LocalDataDir%/NLDB/Pedestrian_network_20200117.fss'"
-	,	StorageReadOnly = "true"
-	{
-		attribute<geometries/rdc>               line (arc);
-		attribute<classifications/OSM/wegtype>  wegtype;
-		attribute<string>                       wegtype_label;
-		attribute<float32>                      length        := arc_length(line, float32);
-		attribute<int32>                        maxspeed;
-		attribute<float32>                      congestion_speed;
-	}
-	
-	unit<uint32> Read_OSM_fss := ='Read_OSM_fss_'+NetwerkExtent+'_Pedestrian'
-	, DialogData = "line_rd"
-	, DialogType = "map" 
-	{
-		attribute<CoordSys>   line_rd (arc) := ='Read_OSM_fss_'+NetwerkExtent+'_Pedestrian/line';
-		attribute<float32>    length        := ='Read_OSM_fss_'+NetwerkExtent+'_Pedestrian/length';
-		
-		container MakeConnectedRoads
-		{
-			unit <uint32> LinkSet := arc2segm(../line_rd)
-			,	DialogData = "segments"
-			,	DialogType = "Map"
-			{
-				attribute<geometries/rdc>                point;
-				attribute<geometries/rdc>                nextpoint;
-				attribute<Lines>                         SequenceNr;
-				attribute<m>                             lengte        := arc_length(segments, m);
-				attribute<bool>                          isConnected   := all(pointset/isConnected, pointset/ArcID);
-
-				unit<uint32> pointset := Union_Unit(LinkSet, LinkSet)
-				{
-					attribute<geometries/rdc>   point        := Union_Data(pointset, LinkSet/point, LinkSet/nextpoint);
-					attribute<bool>             isConnected  := isNull(rlookup(point, NodesNotConnected/point));
-					attribute<Lines>            roadsnr      := Union_Data(pointset, LinkSet/SequenceNr, LinkSet/SequenceNr);
-					attribute<LinkSet>          ArcID        := value(ID(pointset) % nrofrows(LinkSet), LinkSet);
-					attribute<uint32>           VolgNr       := ID(pointset) / nrofrows(LinkSet);
-				}
-				attribute<geometries/rdc> segments(arc) := points2sequence(pointset/point, pointset/ArcID, pointset/VolgNr);
-			}
-			unit<uint32> NodeSet := unique(LinkSet/pointset/point)
-			,	DialogData = "Values"
-			,	DialogType = "Map"
-			{
-				attribute<geometries/rdc>   Values;
-				attribute<Linkset>          LinkSetnr := rlookup(Values, LinkSet/point);
-				attribute<Lines>            roadsnr := LinkSet/SequenceNr[LinkSetnr];
-			}
-			attribute<NodeSet> F1(LinkSet)  := rlookup(LinkSet/point,     NodeSet/Values);
-			attribute<NodeSet> F2(LinkSet)  := rlookup(LinkSet/nextpoint, NodeSet/Values);
-
-			unit<uint32> networks := connected_parts(F1, F2)
-			{
-				attribute<uint32>   nr_nodes    := sum(const(1, NodeSet, uint32), partnr);
-				attribute<float32>  Lengte      := sum(LinkSet/lengte[NodeSet/LinkSetnr], partnr);
-				parameter<uint32>   MaxNrNodex  := max(networks/nr_nodes);
-				parameter<networks> main        := rlookup(MaxNrNodex, nr_nodes); // we gaan ervan uit dat het netwerk met de meeste nodes het hoofd netwerk is
-			}
-			unit<uint32> NodesNotConnected := Subset(networks/partnr <> networks/main)
-			{
-				attribute<geometries/rdc> point := NodeSet/Values[Nr_OrgEntity];
-			}
-			unit<uint32> NodesNotConnectedNetwork_gt5km := Subset(networks/partnr <> networks/main && networks/lengte[networks/partnr] > float32(5000))
-			{
-				attribute<geometries/rdc> point := NodeSet/Values[Nr_OrgEntity];
-			}
-		}
-		
-		unit<uint32> result := Subset(MakeConnectedRoads/Linkset/isConnected)
-		,	DialogType = "Map"
-		,	DialogData = "line"
-		{
-			attribute<geometries/rdc>         line (arc)                := MakeConnectedRoads/Linkset/Segments[nr_OrgEntity];
-			attribute<float32>                length := arc_length(line, float32);
-		}
-	}
- */
 }

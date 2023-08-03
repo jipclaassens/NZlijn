@@ -14,7 +14,7 @@ container LoadFeeds : using = "classifications"
 	container impl := 
 		for_each_ne(
 			File_Structure/Name
-			, 'Templates/LoadCSVThroughGDAL(File_Structure,'+string(id(File_Structure))+')'
+			, 'Templates/LoadCSVThroughGDAL_T(File_Structure,'+string(id(File_Structure))+')'
 		);
 	
 	container ReadFSS := 
@@ -92,7 +92,7 @@ container LoadFeeds : using = "classifications"
 		attribute<string>     RouteName       := Trips/RouteName[TripRef];
 	}
 	
-	container DateSelection      := Templates/doDateSelection(ReadFSS, Services);
+	container DateSelection      := Templates/doDateSelection_T(ReadFSS, Services);
 	
 	unit<uint32> Calendar        := DateSelection/Calendar; 
 	unit<uint32> Calendar_dates  := DateSelection/Calendar_dates;

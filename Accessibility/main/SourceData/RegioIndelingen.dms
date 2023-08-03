@@ -2,85 +2,85 @@ container RegioIndelingen : using = "geometries"
 {
 	container impl
 	{
-		unit<uint32> Read_PC4_shape
-		:	StorageName     = "%SourceDataDir%/CBS/pc6_tm2019_shp/pc4_xy_tm2020.shp"
-		,	StorageType     = "gdal.vect"
-		,	StorageReadOnly = "True"
-		, 	FreeData = "False"
-		{
-			attribute<rdc>             geometry;
-			attribute<string>               postcode4;
-		}
+		// unit<uint32> Read_PC4_shape
+		// :	StorageName     = "%SourceDataDir%/CBS/pc6_tm2019_shp/pc4_xy_tm2020.shp"
+		// ,	StorageType     = "gdal.vect"
+		// ,	StorageReadOnly = "True"
+		// , 	FreeData = "False"
+		// {
+			// attribute<rdc>             geometry;
+			// attribute<string>               postcode4;
+		// }
 		
-		unit<uint32> Read_PC4_shape_areas
-		:	StorageName     = "%SourceDataDir%/CBS/pc6_tm2019_shp/pc4_xy_tm2020_areas.shp"
-		,	StorageType     = "gdal.vect"
-		,	StorageReadOnly = "True"
-		, 	FreeData = "False"
-		{
-			attribute<rdc>             geometry (poly);
-			attribute<string>               PC4;
-		}
+		// unit<uint32> Read_PC4_shape_areas
+		// :	StorageName     = "%SourceDataDir%/CBS/pc6_tm2019_shp/pc4_xy_tm2020_areas.shp"
+		// ,	StorageType     = "gdal.vect"
+		// ,	StorageReadOnly = "True"
+		// , 	FreeData = "False"
+		// {
+			// attribute<rdc>             geometry (poly);
+			// attribute<string>               PC4;
+		// }
 		
-		unit<uint32> Read_PC6_shape
-		:	StorageName     = "%SourceDataDir%/CBS/pc6_tm2019_shp/pc6_xy_tm2020.shp"
-		,	StorageType     = "gdal.vect"
-		,	StorageReadOnly = "True"
-		, 	FreeData = "False"
-		{
-			attribute<rdc>             geometry;
-			attribute<string>               postcode6;
-		}
+		// unit<uint32> Read_PC6_shape
+		// :	StorageName     = "%SourceDataDir%/CBS/pc6_tm2019_shp/pc6_xy_tm2020.shp"
+		// ,	StorageType     = "gdal.vect"
+		// ,	StorageReadOnly = "True"
+		// , 	FreeData = "False"
+		// {
+			// attribute<rdc>             geometry;
+			// attribute<string>               postcode6;
+		// }
 		
-		unit<uint32> Read_PC6_shape_areas
-		:	StorageName     = "%SourceDataDir%/CBS/pc6_tm2019_shp/pc6_xy_tm2020_areas.shp"
-		,	StorageType     = "gdal.vect"
-		,	StorageReadOnly = "True"
-		, 	FreeData = "False"
-		{
-			attribute<rdc>             geometry (poly);
-			attribute<string>               PC6;
-		}
+		// unit<uint32> Read_PC6_shape_areas
+		// :	StorageName     = "%SourceDataDir%/CBS/pc6_tm2019_shp/pc6_xy_tm2020_areas.shp"
+		// ,	StorageType     = "gdal.vect"
+		// ,	StorageReadOnly = "True"
+		// , 	FreeData = "False"
+		// {
+			// attribute<rdc>             geometry (poly);
+			// attribute<string>               PC6;
+		// }
 		
-		unit<uint32> Make_PC4_FSS := Read_PC4_shape
-		,	StorageName     = "%SourceDataDir%/CBS/pc6_tm2019_shp/pc4_xy_tm2020.fss"
-		{
-			attribute<rdc>             geometry      := Read_PC4_shape/geometry;
-			attribute<string>               PC4           := Read_PC4_shape/postcode4;
-			attribute<string>               label         := PC4, DialogType = "LabelText";
-			attribute<uint32>               inwoners      := MakeDefined(rjoin(pc4, Read_PC4_FSS_areas/pc4, Read_PC4_FSS_areas/inwoners), 0);
-		}
+		// unit<uint32> Make_PC4_FSS := Read_PC4_shape
+		// ,	StorageName     = "%SourceDataDir%/CBS/pc6_tm2019_shp/pc4_xy_tm2020.fss"
+		// {
+			// attribute<rdc>             geometry      := Read_PC4_shape/geometry;
+			// attribute<string>               PC4           := Read_PC4_shape/postcode4;
+			// attribute<string>               label         := PC4, DialogType = "LabelText";
+			// attribute<uint32>               inwoners      := MakeDefined(rjoin(pc4, Read_PC4_FSS_areas/pc4, Read_PC4_FSS_areas/inwoners), 0);
+		// }
 		
-		unit<uint32> Make_PC4_areas_FSS := Read_PC4_shape_areas
-		,	StorageName     = "%SourceDataDir%/CBS/pc6_tm2019_shp/pc4_xy_tm2020_areas.fss"
-		{
-			attribute<rdc>             geometry (poly) := Read_PC4_shape_areas/geometry;
-			attribute<string>               PC4             := Read_PC4_shape_areas/PC4;
+		// unit<uint32> Make_PC4_areas_FSS := Read_PC4_shape_areas
+		// ,	StorageName     = "%SourceDataDir%/CBS/pc6_tm2019_shp/pc4_xy_tm2020_areas.fss"
+		// {
+			// attribute<rdc>             geometry (poly) := Read_PC4_shape_areas/geometry;
+			// attribute<string>               PC4             := Read_PC4_shape_areas/PC4;
 			
-			attribute<string>               label         := PC4, DialogType = "LabelText";
-		}
+			// attribute<string>               label         := PC4, DialogType = "LabelText";
+		// }
 		
-		unit<uint32> Make_PC6_FSS := Read_PC6_shape
-		,	StorageName     = "%SourceDataDir%/CBS/pc6_tm2019_shp/pc6_xy_tm2020.fss"
-		{
-			attribute<rdc>             geometry      := Read_PC6_shape/geometry;
+		// unit<uint32> Make_PC6_FSS := Read_PC6_shape
+		// ,	StorageName     = "%SourceDataDir%/CBS/pc6_tm2019_shp/pc6_xy_tm2020.fss"
+		// {
+			// attribute<rdc>             geometry      := Read_PC6_shape/geometry;
 			// attribute<string>               PC6           := Read_PC6_shape/PC6;
-			attribute<string>               PC6           := Read_PC6_shape/postcode6;
+			// attribute<string>               PC6           := Read_PC6_shape/postcode6;
 			
-			attribute<string>               label         := PC6, DialogType = "LabelText";
-			attribute<uint32>               Amsterdam_rel := point_in_polygon(geometry, /geometries/selection_polygon/polygon);
+			// attribute<string>               label         := PC6, DialogType = "LabelText";
+			// attribute<uint32>               Amsterdam_rel := point_in_polygon(geometry, /geometries/selection_polygon/polygon);
 			// attribute<uint32>               pijp_rel      := point_in_polygon(geometry, /SourceData/RegioIndelingen/Read_Buurten_fss/Subset/Geometry);
-			attribute<uint32>               MRA_rel       := point_in_polygon(geometry, /SourceData/RegioIndelingen/grootstedelijke_agglomeratie/MRA/Geometry);
-		}
+			// attribute<uint32>               MRA_rel       := point_in_polygon(geometry, /SourceData/RegioIndelingen/grootstedelijke_agglomeratie/MRA/Geometry);
+		// }
 		
-		unit<uint32> Make_PC6_areas_FSS := Read_PC6_shape_areas
-		,	StorageName     = "%SourceDataDir%/CBS/pc6_tm2019_shp/pc6_xy_tm2020_areas.fss"
-		{
-			attribute<rdc>             geometry (poly)      := Read_PC6_shape_areas/geometry;
-			attribute<string>               PC6           := Read_PC6_shape_areas/PC6;
+		// unit<uint32> Make_PC6_areas_FSS := Read_PC6_shape_areas
+		// ,	StorageName     = "%SourceDataDir%/CBS/pc6_tm2019_shp/pc6_xy_tm2020_areas.fss"
+		// {
+			// attribute<rdc>             geometry (poly)      := Read_PC6_shape_areas/geometry;
+			// attribute<string>               PC6           := Read_PC6_shape_areas/PC6;
 			
-			attribute<string>               label         := PC6, DialogType = "LabelText";
-		}
+			// attribute<string>               label         := PC6, DialogType = "LabelText";
+		// }
 		
 		unit<uint32> Read_Buurten_shape
 		:	StorageName     = "%SourceDataDir%/CBS/2016/buurt_2016.shp"
@@ -99,7 +99,7 @@ container RegioIndelingen : using = "geometries"
 			attribute<string>               BU_NAAM          := Read_Buurten_shape/BU_NAAM;
 			attribute<string>               label            := BU_NAAM;
 			attribute<geometries/rdc>       point            := centroid_or_mid(geometry);
-			attribute<.>                    Ams_sel_rel      := point_in_polygon(point, Gemeenten/Amsterdam_selectie/geometry);
+			// attribute<.>                    Ams_sel_rel      := point_in_polygon(point, Gemeenten/Amsterdam_selectie/geometry);
 		}
 		
 		
@@ -116,92 +116,49 @@ container RegioIndelingen : using = "geometries"
 		attribute<string>               PC4;
 		attribute<string>               name                          := label;
 		attribute<string>               label                         : DialogType = "LabelText";
-		attribute<uint32>               nr_inwoners                   := MakeDefined(rjoin(pc4, PC4_vlakken/pc4, PC4_vlakken/nr_inwoners), 0);
-		attribute<.>                    prov_rel                      := point_in_polygon(point, Provincies/geometry);
-		attribute<.>                    ams_rel                       := point_in_polygon(point, /SourceData/RegioIndelingen/Buurten/zonder_water_unioned/Geometry);
-		attribute<float32>              rescaled_inwoners_per_prov    := rjoin(pc4, unioned_rescaled_wrong_order/pc4, unioned_rescaled_wrong_order/rescaled);
-		attribute<float32>              sum_inwoners_prov             := sum(nr_inwoners[float32], prov_rel);
+		// attribute<uint32>               nr_inwoners                   := MakeDefined(rjoin(pc4, PC4_vlakken/pc4, PC4_vlakken/nr_inwoners), 0);
+		// attribute<.>                    prov_rel                      := point_in_polygon(point, Provincies/geometry);
+		// attribute<.>                    ams_rel                       := point_in_polygon(point, /SourceData/RegioIndelingen/Buurten/zonder_water_unioned/Geometry);
+		// attribute<float32>              rescaled_inwoners_per_prov    := rjoin(pc4, unioned_rescaled_wrong_order/pc4, unioned_rescaled_wrong_order/rescaled);
+		// attribute<float32>              sum_inwoners_prov             := sum(nr_inwoners[float32], prov_rel);
 		
-		unit<uint32> unioned_rescaled_wrong_order := ='union_unit('+AsItemList('Rescaled_PerProv/'+provincies/name+'/subset')+')'
-		{
-			attribute<rdc>             geometry      := ='union_data(.,'+AsItemList('Rescaled_PerProv/'+provincies/name+'/subset/geometry')+')';
-			attribute<string>               PC4           := ='union_data(.,'+AsItemList('Rescaled_PerProv/'+provincies/name+'/subset/PC4')+')';
-			attribute<float32>              rescaled      := ='union_data(.,'+AsItemList('Rescaled_PerProv/'+provincies/name+'/subset/rescaled')+')';
-		}
+		// unit<uint32> unioned_rescaled_wrong_order := ='union_unit('+AsItemList('Rescaled_PerProv/'+provincies/name+'/subset')+')'
+		// {
+			// attribute<rdc>             geometry      := ='union_data(.,'+AsItemList('Rescaled_PerProv/'+provincies/name+'/subset/geometry')+')';
+			// attribute<string>               PC4           := ='union_data(.,'+AsItemList('Rescaled_PerProv/'+provincies/name+'/subset/PC4')+')';
+			// attribute<float32>              rescaled      := ='union_data(.,'+AsItemList('Rescaled_PerProv/'+provincies/name+'/subset/rescaled')+')';
+		// }
 		
-		container Rescaled_PerProv := 
-			for_each_ne(
-				provincies/name
-				, 'Scale_inwoners_T('+string(id(provincies))+')'
-			);
+		// container Rescaled_PerProv := 
+			// for_each_ne(
+				// provincies/name
+				// , 'Scale_inwoners_T('+string(id(provincies))+')'
+			// );
 		
-		Template Scale_inwoners_T
-		{
-			parameter<uint32> prov_rel;
+		// Template Scale_inwoners_T
+		// {
+			// parameter<uint32> prov_rel;
 			
-			unit<uint32> subset := subset(PC4_punten/prov_rel == prov_rel)
-			,	DialogType      = "map"
-			,	DialogData      = "geometry"
-			{
-				attribute<rdc>             geometry          := PC4_puntenpoint[nr_OrgEntity];
-				attribute<string>               PC4               := PC4_punten/PC4[nr_OrgEntity];
-				attribute<string>               label             := PC4_punten/label[nr_OrgEntity], DialogType = "LabelText";
-				attribute<uint32>               nr_inwoners          := PC4_punten/nr_inwoners[nr_OrgEntity];
-				parameter<float32>              sum_inwoners      := sum(nr_inwoners)[float32];
-				attribute<float32>              rescaled          := nr_inwoners[float32] / sum_inwoners;
-			}
-		}
+			// unit<uint32> subset := subset(PC4_punten/prov_rel == prov_rel)
+			// {
+				// attribute<rdc>             geometry          := PC4_puntenpoint[nr_OrgEntity];
+				// attribute<string>               PC4               := PC4_punten/PC4[nr_OrgEntity];
+				// attribute<string>               label             := PC4_punten/label[nr_OrgEntity], DialogType = "LabelText";
+				// attribute<uint32>               nr_inwoners          := PC4_punten/nr_inwoners[nr_OrgEntity];
+				// parameter<float32>              sum_inwoners      := sum(nr_inwoners)[float32];
+				// attribute<float32>              rescaled          := nr_inwoners[float32] / sum_inwoners;
+			// }
+		// }
 		
-		unit<uint32> MRA := subset(IsDefined(ams_rel))
-		,	DialogType      = "map"
-		,	DialogData      = "point"
-		,	FreeData = "false"
-		{
-			attribute<geometries/rdc>       point  := ../point[nr_OrgEntity];
-			attribute<string>               PC4    := ../PC4[nr_OrgEntity];
-			attribute<string>               name   := ../name[nr_OrgEntity];
-		}
+		// unit<uint32> MRA := subset(IsDefined(ams_rel))
+		// ,	DialogType      = "map"
+		// ,	DialogData      = "point"
+		// {
+			// attribute<geometries/rdc>       point  := ../point[nr_OrgEntity];
+			// attribute<string>               PC4    := ../PC4[nr_OrgEntity];
+			// attribute<string>               name   := ../name[nr_OrgEntity];
+		// }
 		
-		unit<uint32> PC4_EUR := subset(PC4 == '3062') //EUR
-		,	DialogType      = "map"
-		,	DialogData      = "point"
-		{
-			attribute<geometries/rdc>       point  := ../point[nr_OrgEntity];
-			attribute<string>               PC4    := ../PC4[nr_OrgEntity];
-			attribute<string>               name   := ../name[nr_OrgEntity];
-		}
-		unit<uint32> PC4_TUD := subset(PC4 == '2628') //TUD
-		,	DialogType      = "map"
-		,	DialogData      = "point"
-		{
-			attribute<geometries/rdc>       point  := ../point[nr_OrgEntity];
-			attribute<string>               PC4       := ../PC4[nr_OrgEntity];
-			attribute<string>               name   := ../name[nr_OrgEntity];
-		}
-		unit<uint32> PC4_UU := subset(PC4 == '3584') //UU
-		,	DialogType      = "map"
-		,	DialogData      = "point"
-		{
-			attribute<geometries/rdc>       point  := ../point[nr_OrgEntity];
-			attribute<string>               PC4       := ../PC4[nr_OrgEntity];
-			attribute<string>               name   := ../name[nr_OrgEntity];
-		}
-		unit<uint32> PC4_LEI := subset(PC4 == '2311') //LEI
-		,	DialogType      = "map"
-		,	DialogData      = "point"
-		{
-			attribute<geometries/rdc>       point  := ../point[nr_OrgEntity];
-			attribute<string>               PC4       := ../PC4[nr_OrgEntity];
-			attribute<string>               name   := ../name[nr_OrgEntity];
-		}
-		unit<uint32> PC4_VU := subset(PC4 == '1081') //VU
-		,	DialogType      = "map"
-		,	DialogData      = "point"
-		{
-			attribute<geometries/rdc>       point  := ../point[nr_OrgEntity];
-			attribute<string>               PC4       := ../PC4[nr_OrgEntity];
-			attribute<string>               name   := ../name[nr_OrgEntity];
-		}
 	}
 	
 	unit<uint32> PC4_vlakken
@@ -213,7 +170,7 @@ container RegioIndelingen : using = "geometries"
 		attribute<rdc>             geometry (poly);
 		attribute<string>               PC4;
 		attribute<string>               label : DialogType = "LabelText";
-		attribute<uint32>               nr_inwoners := sum(/SourceData/Inwoners/inwoner2017, /SourceData/Inwoners/pc4_rel);
+		// attribute<uint32>               nr_inwoners := sum(/SourceData/Inwoners/inwoner2017, /SourceData/Inwoners/pc4_rel);
 		attribute<m2>                   area        := abs(area(geometry, m2));
 	}
 	
@@ -266,7 +223,7 @@ container RegioIndelingen : using = "geometries"
 		attribute<string>               PC6;
 		// attribute<uint32>               nr_woningen;
 		attribute<rdc>             centroid            := centroid_or_mid(geometry);
-		attribute<.>                    PC4_rel             := point_in_polygon(centroid, PC4_vlakken/geometry);
+		// attribute<.>                    PC4_rel             := point_in_polygon(centroid, PC4_vlakken/geometry);
 		attribute<m2>                   area                := abs(area(geometry, m2));
 		
 		// attribute<float32>              nr_inwoners         := value(PC4_vlakken/nr_inwoners,float32)[PC4_rel] * (area[float32] / value(PC4_vlakken/area,float32)[PC4_rel]);
@@ -313,18 +270,18 @@ container RegioIndelingen : using = "geometries"
 			attribute<geometries/rdc>  geometry_rd (poly);
 			attribute<string>          PC6;
 			attribute<string>          label                   := PC6, DialogType = "LabelText";
-			attribute<uint32>          nr_woningen             := rjoin(pc6, ../pc6, ../nr_woningen);
+			// attribute<uint32>          nr_woningen             := rjoin(pc6, ../pc6, ../nr_woningen);
 			// attribute<float32>         nr_inwoners             := rjoin(pc6, ../pc6, ../nr_inwoners);
 			
-			unit<uint32> met_woningen := subset(nr_woningen > 5)
-			,	DialogType      = "map"
-			,	DialogData      = "geometry_rd"
-			{
-				attribute<geometries/rdc>  geometry_rd (poly) := ../geometry_rd[nr_OrgEntity];
-				attribute<string>          PC6                := ../PC6[nr_OrgEntity];
-				attribute<string>          label              := PC6, DialogType = "LabelText";
+			// unit<uint32> met_woningen := subset(nr_woningen > 5)
+			// ,	DialogType      = "map"
+			// ,	DialogData      = "geometry_rd"
+			// {
+				// attribute<geometries/rdc>  geometry_rd (poly) := ../geometry_rd[nr_OrgEntity];
+				// attribute<string>          PC6                := ../PC6[nr_OrgEntity];
+				// attribute<string>          label              := PC6, DialogType = "LabelText";
 				// attribute<float32>         nr_inwoners        := ../nr_inwoners[nr_OrgEntity];
-			}
+			// }
 		}
 		
 		
@@ -343,7 +300,7 @@ container RegioIndelingen : using = "geometries"
 		attribute<.>                    Ams_sel_rel;
 		attribute<geometries/rdc>       point;
 		attribute<.>                    id               := id(.);
-		attribute<uint32>               inwoners         := sum(/SourceData/Inwoners/inwoner2017,/SourceData/inwoners/buurt_rel);
+		// attribute<uint32>               inwoners         := sum(/SourceData/Inwoners/inwoner2017,/SourceData/inwoners/buurt_rel);
 		
 		unit<uint32> subset_old := subset(IsDefined(Ams_sel_rel))
 		,	DialogType      = "map"
@@ -371,7 +328,7 @@ container RegioIndelingen : using = "geometries"
 			attribute<string>               name             := label;
 			attribute<.>                    id               := id(.);
 			attribute<geometries/rdc>       point            := ../point[nr_OrgEntity];
-			attribute<uint32>               inwoners         := sum(/SourceData/Inwoners/inwoner2017,/SourceData/inwoners/buurtsub_rel);
+			// attribute<uint32>               inwoners         := sum(/SourceData/Inwoners/inwoner2017,/SourceData/inwoners/buurtsub_rel);
 			
 			parameter<ipoint> union (poly)             := union_polygon(ipolygon(geometry));
 			parameter<ipoint> union_minus_water (poly) := union - BBG/Overig_binnenwater/MRA_water/groot_water/union;
@@ -405,27 +362,27 @@ container RegioIndelingen : using = "geometries"
 		}
 	}
 	
-	unit<uint32> Provincies 
-	:	StorageName     = "%SourceDataDir%/CBS/2012/CBS_Provincie_2012.fss"
-	,	StorageReadOnly = "true"
-	{
-		attribute<geometries/rdc> geometry (poly);
-		attribute<string>         label;
-		attribute<string>         name                       := replace(label, '-','_');
-		attribute<.>              grid   (NL_grid/domain);
+	// unit<uint32> Provincies 
+	// :	StorageName     = "%SourceDataDir%/CBS/2012/CBS_Provincie_2012.fss"
+	// ,	StorageReadOnly = "true"
+	// {
+		// attribute<geometries/rdc> geometry (poly);
+		// attribute<string>         label;
+		// attribute<string>         name                       := replace(label, '-','_');
+		// attribute<.>              grid   (NL_grid/domain);
 		
-		container V := for_each_nedv(name, String(ID(.))+'[..]', void, .);
-	}
+		// container V := for_each_nedv(name, String(ID(.))+'[..]', void, .);
+	// }
 	
 	unit<uint32> Buitenland : nrofrows = 1
 	{
 		attribute<string>         name            := const('Buitenland',.);
 	}
 	
-	unit<uint32> Provincies_metBuitenland := union_unit(Provincies, Buitenland)
-	{
-		attribute<string>         name           := union_data(., Provincies/name, Buitenland/name);
-	}
+	// unit<uint32> Provincies_metBuitenland := union_unit(Provincies, Buitenland)
+	// {
+		// attribute<string>         name           := union_data(., Provincies/name, Buitenland/name);
+	// }
 	
 	unit<uint32> BBG_2003 
 	:	StorageName     = "%SourceDataDir%/CBS/Begrenzing_Bebouwd_Gebied/BBG_2003.fss"
@@ -434,17 +391,17 @@ container RegioIndelingen : using = "geometries"
 		attribute<geometries/rdc> geometry (poly);
 	}
 	
-	unit<uint32> grootstedelijke_agglomeratie 
-	:	StorageName     = "%SourceDataDir%/CBS/2012/CBS_grootstedelijke_agglomeratie_2012.shp"
-	,	StorageType     = "gdal.vect"
-	,	StorageReadOnly = "True"
-	{
-		attribute<geometries/rdc>   geometry  (polygon) ;
-		attribute<string>           label                      := statnaam ;
+	// unit<uint32> grootstedelijke_agglomeratie 
+	// :	StorageName     = "%SourceDataDir%/CBS/2012/CBS_grootstedelijke_agglomeratie_2012.shp"
+	// ,	StorageType     = "gdal.vect"
+	// ,	StorageReadOnly = "True"
+	// {
+		// attribute<geometries/rdc>   geometry  (polygon) ;
+		// attribute<string>           label                      := statnaam ;
 		
-		unit<uint32> MRA := subset(Label == 'Amsterdam')
-		{
-			attribute<geometries/rdc>   geometry  (poly) := ../geometry[nr_OrgEntity];
-		}
-	}
+		// unit<uint32> MRA := subset(Label == 'Amsterdam')
+		// {
+			// attribute<geometries/rdc>   geometry  (poly) := ../geometry[nr_OrgEntity];
+		// }
+	// }
 }

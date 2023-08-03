@@ -1,0 +1,264 @@
+container geometries
+{
+	#include <ngr_layer.dms>
+
+	unit<fpoint> rdc_base : SpatialReference = "EPSG:28992", DialogData = "ngr_layer";
+	// unit<fpoint> rdc      := range(rdc_base, point(300000f,0f), point(625000f,280000f));
+	unit<fpoint> rdc      := range(rdc_base, point(0f, 300000f), point(280000f, 625000f)); //heel NL
+	unit<ipoint> rdc_mm   := gridset(rdc, point(0.001,0.001), point(0.0, 0.0), ipoint);
+	
+	unit<dpoint>  wgs84_base : SpatialReference = "EPSG:4326";
+	
+	unit<uint32> selection_polygon : nrofrows = 1, Using = "units"
+	{
+		parameter<rdc> top_left     := point(NL_grid/x_min - 5000[m], NL_grid/y_max + 5000[m], rdc); //XY
+		parameter<rdc> top_right    := point(NL_grid/x_max + 5000[m], NL_grid/y_max + 5000[m], rdc);
+		parameter<rdc> bottom_left  := point(NL_grid/x_min - 5000[m], NL_grid/y_min - 5000[m], rdc);
+		parameter<rdc> bottom_right := point(NL_grid/x_max + 5000[m], NL_grid/y_min - 5000[m], rdc);
+		
+		unit<uint32> point_set : nrofrows = 5
+		{
+			attribute<rdc>  point        := union_data(., top_left, top_right, bottom_right, bottom_left, top_left);
+			attribute<..>   sequence_rel := const(0, .);
+			attribute<.>    ordinal      := id(.);
+		}
+		
+		attribute<rdc> polygon (poly)      := points2sequence(point_set/point, point_set/sequence_rel, point_set/ordinal);
+		
+	}
+	unit<uint32> selection_polygon_MRA : nrofrows = 1, Using = "units"
+	{
+		parameter<rdc> top_left     := point(NL_grid/x_min + 20000[m], NL_grid/y_max - 20000[m], rdc); //XY
+		parameter<rdc> top_right    := point(NL_grid/x_max - 20000[m], NL_grid/y_max - 20000[m], rdc);
+		parameter<rdc> bottom_left  := point(NL_grid/x_min + 20000[m], NL_grid/y_min + 20000[m], rdc);
+		parameter<rdc> bottom_right := point(NL_grid/x_max - 20000[m], NL_grid/y_min + 20000[m], rdc);
+		
+		unit<uint32> point_set : nrofrows = 5
+		{
+			attribute<rdc>  point        := union_data(., top_left, top_right, bottom_right, bottom_left, top_left);
+			attribute<..>   sequence_rel := const(0, .);
+			attribute<.>    ordinal      := id(.);
+		}
+		
+		attribute<rdc> polygon (poly)      := points2sequence(point_set/point, point_set/sequence_rel, point_set/ordinal);
+		
+	}
+	
+	container NL_grid: Using = "units"
+	{
+		parameter<m> gridsize     := 100[m];
+		parameter<m> gridsize_500m := 500[m];
+		parameter<m> gridsize_1000m := 1000[m];
+		parameter<m> gridsize_5000m := 5000[m];
+		
+		parameter<m> x_min := ModelParameters/StudyArea == 'NL' ? Nederland/x_min : Amsterdam/x_min;
+		parameter<m> x_max := ModelParameters/StudyArea == 'NL' ? Nederland/x_max : Amsterdam/x_max;
+		parameter<m> y_min := ModelParameters/StudyArea == 'NL' ? Nederland/y_min : Amsterdam/y_min;
+		parameter<m> y_max := ModelParameters/StudyArea == 'NL' ? Nederland/y_max : Amsterdam/y_max;
+		
+		container Amsterdam
+		{
+			parameter<m> x_min := 75000[m];
+			parameter<m> x_max := 165000[m];
+			parameter<m> y_min := 445000[m];
+			parameter<m> y_max := 530000[m];
+		}
+		
+		container Nederland
+		{
+			parameter<m> x_min := 0[m];
+			parameter<m> x_max := 280000[m];
+			parameter<m> y_min := 300000[m];
+			parameter<m> y_max := 625000[m];
+		}
+		
+		parameter<int16> nr_cols := int16((x_max - x_min) / gridsize);
+		parameter<int16> nr_rows := int16((y_max - y_min) / gridsize);
+
+		unit<spoint> domain :=
+			range(
+				 gridset(
+					 rdc
+					,point(gridsize, -gridsize, rdc)
+					,point(x_min, y_max, rdc)
+					,spoint
+				)
+				,point(0s, 0s)
+				,point(nr_cols, nr_rows)
+			)
+		,	DialogData = "rdc"
+		,	DialogType = "map"
+		{
+			attribute<.>               id             := id(.);
+			attribute<rdc>             point_rd       := id[rdc] + point(0.5f * gridsize, -0.5f * gridsize, rdc);
+			attribute<uint32>          identificatie  := (pointcol(id)[uint32] + 1) + ((pointrow(id)[uint32]) * 250);
+			attribute<domain_1000m>    grid_1000m_rel := id(.)[domain_1000m];
+			
+		}
+		
+		unit<uint32> points_100m := Subset(isDefined(domain/id))
+		,	DialogData = "geometry"
+		,	DialogType = "map"
+		{
+			attribute<rdc> 	                geometry  := domain/point_rd[nr_OrgEntity];	
+			attribute<uint32>               id        := domain/identificatie[nr_OrgEntity];
+			
+			attribute<float32>              x         := PointCol(geometry);
+			attribute<float32>              y         := PointRow(geometry);
+			
+			attribute<NL_grid/domain>       NL_grid_domain_rel  := geometry[NL_grid/domain];
+			attribute<bool>                 IsNederland         := IsDefined(point_in_polygon(geometry, SourceData/RegioIndelingen/Provincies/Geometry));
+			attribute<bool>                 IsBuurtenSub        := IsDefined(point_in_polygon(geometry, SourceData/RegioIndelingen/Buurten/zonder_water_unioned/Geometry));
+			
+			unit<uint32> MakePoints_100m_Buurt := subset(IsBuurtenSub)
+			,	DialogData = "geometry"
+			,	DialogType = "map"
+			,	FreeData = "false"
+			,	StorageName     = "%LocalDataDir%/NZlijn/Points_100m_buurt.fss"
+			{
+				attribute<rdc> 	                geometry  := points_100m/geometry[nr_OrgEntity];
+				attribute<rdc> 	                point     := geometry;
+				attribute<uint32>               id        := points_100m/id[nr_OrgEntity];
+				attribute<NL_grid/domain>       NL_grid_domain_rel  := geometry[NL_grid/domain];
+				attribute<string>               label     := 'p'+string(id), DialogType = "LabelText";
+				attribute<string>               name      := label;
+			}
+			unit<uint32> Points_100m_Buurt
+			:	DialogData = "geometry"
+			,	DialogType = "map"
+			,	FreeData = "false"
+			,	StorageName     = "%LocalDataDir%/NZlijn/Points_100m_buurt.fss"
+			,	StorageReadOnly = "true"
+			{
+				attribute<rdc> 	                geometry;
+				attribute<NL_grid/domain>       per_grid := geometry[NL_grid/domain];
+				attribute<rdc> 	                point;
+				attribute<uint32>               id;
+				attribute<NL_grid/domain>       NL_grid_domain_rel;
+				attribute<string>               label: DialogType = "LabelText";
+				attribute<string>               name;
+			}
+		}
+		
+		///////////////////////
+		parameter<int16> nr_cols_500m := int16((x_max - x_min) / gridsize_500m);
+		parameter<int16> nr_rows_500m := int16((y_max - y_min) / gridsize_500m);
+		
+		unit<spoint> domain_500m_untiled :=
+			range(
+				 gridset(
+					 rdc
+					,point(gridsize_500m, -gridsize_500m, rdc)
+					,point(x_min, y_max, rdc)
+					,spoint
+				)
+				,point(0s, 0s)
+				,point(nr_cols_500m, nr_rows_500m)
+			)
+		,	DialogData = "rdc"
+		{
+			attribute<domain>      grid_100m_rel    := id(.)[domain];
+		}
+
+		unit<spoint> domain_500m := TiledUnit(Point(1000s, 1200s, domain_500m_untiled))
+		{
+			attribute<.>               id               := id(.);
+			attribute<rdc>             point_rd         := id[rdc] + point(0.5f * gridsize_500m, -0.5f * gridsize_500m, rdc);
+			attribute<uint32>          identificatie    := (pointcol(id)[uint32] + 1) + ((pointrow(id)[uint32]) * 250);
+			attribute<string>          id_name          := 'p' + string(identificatie);
+		}
+		
+		unit<uint32> points_500m := Subset(isDefined(domain_500m/id))
+		,	DialogData = "geometry"
+		,	DialogType = "map"
+		{
+			attribute<rdc> 	                geometry  := domain_500m/point_rd[nr_OrgEntity];	
+			attribute<uint32>               id        := domain_500m/identificatie[nr_OrgEntity];
+			
+			attribute<float32>              x         := PointCol(geometry);
+			attribute<float32>              y         := PointRow(geometry);
+			
+			attribute<NL_grid/domain_500m> NL_grid_domain_500m_rel  := geometry[NL_grid/domain_500m];	
+		}
+		
+		///////////////////////
+		parameter<int16> nr_cols_1000m := int16((x_max - x_min) / gridsize_1000m);
+		parameter<int16> nr_rows_1000m := int16((y_max - y_min) / gridsize_1000m);
+		
+		unit<spoint> domain_1000m_untiled :=
+			range(
+				 gridset(
+					 rdc
+					,point(gridsize_1000m, -gridsize_1000m, rdc)
+					,point(x_min, y_max, rdc)
+					,spoint
+				)
+				,point(0s, 0s)
+				,point(nr_cols_1000m, nr_rows_1000m)
+			)
+		,	DialogData = "rdc"
+		{
+			attribute<domain>      grid_100m_rel    := id(.)[domain];
+		}
+
+		unit<spoint> domain_1000m := TiledUnit(Point(1000s, 1200s, domain_1000m_untiled))
+		{
+			attribute<.>               id               := id(.);
+			attribute<rdc>             point_rd         := id[rdc] + point(0.5f * gridsize_1000m, -0.5f * gridsize_1000m, rdc);
+			attribute<uint32>          identificatie    := (pointcol(id)[uint32] + 1) + ((pointrow(id)[uint32]) * 250);
+		}
+		
+		unit<uint32> points_1000m := Subset(isDefined(domain_1000m/id))
+		,	DialogData = "geometry"
+		,	DialogType = "map"
+		{
+			attribute<rdc> 	                geometry  := domain_1000m/point_rd[nr_OrgEntity];	
+			attribute<uint32>               id        := domain_1000m/identificatie[nr_OrgEntity];
+			
+			attribute<float32>              x         := PointCol(geometry);
+			attribute<float32>              y         := PointRow(geometry);
+			
+			attribute<NL_grid/domain_1000m> NL_grid_domain_1000m_rel  := geometry[NL_grid/domain_1000m];	
+		}
+		
+		///////////////////////
+		parameter<int16> nr_cols_5000m := int16((x_max - x_min) / gridsize_5000m);
+		parameter<int16> nr_rows_5000m := int16((y_max - y_min) / gridsize_5000m);
+		
+		unit<spoint> domain_5000m_untiled :=
+			range(
+				 gridset(
+					 rdc
+					,point(gridsize_5000m, -gridsize_5000m, rdc)
+					,point(x_min, y_max, rdc)
+					,spoint
+				)
+				,point(0s, 0s)
+				,point(nr_cols_5000m, nr_rows_5000m)
+			)
+		,	DialogData = "rdc"
+		{
+			attribute<domain>      grid_100m_rel    := id(.)[domain];
+		}
+
+		unit<spoint> domain_5000m := TiledUnit(Point(1000s, 1200s, domain_5000m_untiled))
+		{
+			attribute<.>               id               := id(.);
+			attribute<rdc>             point_rd         := id[rdc] + point(0.5f * gridsize_5000m, -0.5f * gridsize_5000m, rdc);
+			attribute<uint32>          identificatie    := (pointcol(id)[uint32] + 1) + ((pointrow(id)[uint32]) * 250);
+		}
+		
+		unit<uint32> points_5000m := Subset(isDefined(domain_5000m/id))
+		,	DialogData = "geometry"
+		,	DialogType = "map"
+		{
+			attribute<rdc> 	                geometry  := domain_5000m/point_rd[nr_OrgEntity];	
+			attribute<uint32>               id        := domain_5000m/identificatie[nr_OrgEntity];
+			
+			attribute<float32>              x         := PointCol(geometry);
+			attribute<float32>              y         := PointRow(geometry);
+			
+			attribute<NL_grid/domain_5000m> NL_grid_domain_5000m_rel  := geometry[NL_grid/domain_5000m];	
+		}
+	}
+}

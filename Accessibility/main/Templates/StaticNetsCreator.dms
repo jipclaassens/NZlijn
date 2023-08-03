@@ -1,4 +1,4 @@
-Template StaticNetsCreator : using = "geometries"
+Template StaticNetsCreator_T : using = "geometries"
 {
 	unit<uint32> inStops;
 	unit<uint32> inLinks;

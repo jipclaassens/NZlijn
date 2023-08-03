@@ -1,25 +1,12 @@
-////////////////////////////////////////////////////////////////////////////////////////
-//                                                                                    //
-//                                                                                    //
-//                       Configuratie voor project: Open Data Analyse                 //
-//                                                                                    //
-//                              Object Vision 2011                                    //
-//                                                                                    //
-////////////////////////////////////////////////////////////////////////////////////////
-//                                                                                    //
-//                  Configuratiebestand voor opbouw Netwerk                           //
-//                                                                                    //
-////////////////////////////////////////////////////////////////////////////////////////
-
-container Netwerk :	Using      = "units;classifications",	isTemplate = "True"
+Template Netwerk_T : Using      = "units;classifications"
 {
 	// begin case parameters
 	unit<uint32> orgDomain;
 	unit<uint32> destDomain;
 	unit<uint32> roadDomain;
 
-	attribute<geometries/rdc> orgLocations  (orgDomain): FreeData = "False";
-	attribute<geometries/rdc> destLocations (destDomain): FreeData = "False";
+	attribute<geometries/rdc> orgLocations  (orgDomain);
+	attribute<geometries/rdc> destLocations (destDomain);
 	attribute<geometries/rdc> roads         (arc,roadDomain);
 	parameter<string>         network_type;
 	// end case parameters
