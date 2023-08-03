@@ -1,27 +1,13 @@
-container eenheden: isHidden = "True"
+container eenheden
 {
-	unit<int32>     	datum;
 	unit<int16>     	jaar;
-	unit<int16>     	maand;
-	unit<int16>     	bj              := baseunit('bj', int16), label = "bouwjaar", cdf = "typeringen/bouwjaren/ClassBreaks";
 	unit<float32>  		m               := baseunit('m', float32);
 	unit<float32>  		km              := 1000f * m;
 	unit<float32>   	m2            	:= m * m;
-	unit<int32>     	mm;
-	unit<int32>     	mm2            	:= mm * mm;
 	unit<int32>     	nrwoningen;
 	unit<float32>  		ha           	:= 10000f * m2              , label = "hectare";
 	unit<float32>   	nrwonha        	:= nrwoningen / ha;
 	unit<float32>   	eur;
-	unit<float32>   	eur_m2        	:= eur / m2;
-	unit<float32>  	  	eur_ha         	:= eur / ha;
-	unit<float32>    	procent         := 100f * fractie;
-	unit<float32>    	fractie;
-	
-	unit<float32> Eur_woning      := EUR / Woning;
-	unit<float32> Woning_ha       := Woning / ha;
-	unit<float32> Woning          := BaseUnit('W', float32);
-	unit<Float32> m2_Woning :=  m2 / Woning;
 	
 	unit<float32>       s               := baseunit('s', float32)   , label = "second", cdf = "typeringen/seconden/ClassBreaks";
 	unit<float32>       min             := 60.0 * s                 , label = "minute";
@@ -31,14 +17,7 @@ container eenheden: isHidden = "True"
 	unit<float32>       km_hr           := km / hr                  , label = "kilometer per hour";
 	
 	
-	unit<uint32>  color: Range = "[0, 16777217)";
-	unit<uint32>  rgb;
 	unit<float32> fontsize;
-	unit<int16>   size;
-	unit<int16>   index;
-	unit<string>  fontname;
-	unit<int16>   style;
-	unit<float32> ratio;
 	
 }
 

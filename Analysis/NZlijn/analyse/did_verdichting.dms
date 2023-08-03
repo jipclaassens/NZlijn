@@ -9,7 +9,7 @@ container DiD_Verdichting :=
 	attribute<uint32>                identificatie      (sg_points)   := sg_points/id;
 	attribute<float32>               x_coord            (sg_points)   := sg_points/x;
 	attribute<float32>               y_coord            (sg_points)   := sg_points/y;
-	attribute<string>                PC4                (sg_points)   := rjoin(sg_points/pc4_rel, id(brondata/regios/postcode_gebieden/postcode4), brondata/regios/postcode_gebieden/postcode4/name);
+	// attribute<string>                PC4                (sg_points)   := rjoin(sg_points/pc4_rel, id(brondata/regios/postcode_gebieden/postcode4), brondata/regios/postcode_gebieden/postcode4/name);
 	
 	attribute<nrwonha>               won2000            (sg_points)   := Brondata/CBS_vierkanten/woningen2000[sg_points/NL_grid_domain_rel];
 	attribute<nrwonha>               won2001            (sg_points)   := Brondata/CBS_vierkanten/woningen2001[sg_points/NL_grid_domain_rel];
@@ -55,11 +55,11 @@ container DiD_Verdichting :=
 	// attribute<int32>                 wonopp2021         (sg_points)   := Brondata/BAG/Snapshots/Vbos/Y202101/vbo/GebruiksdoelSets/woon/GebruiksdoelSet/sum_opp_ha[sg_points/NL_grid_domain_rel];
 	// attribute<int32>                 wonopp2022         (sg_points)   := Brondata/BAG/Snapshots/Vbos/Y202201/vbo/GebruiksdoelSets/woon/GebruiksdoelSet/sum_opp_ha[sg_points/NL_grid_domain_rel];
 	
-	attribute<uint32>                gemeente_rel       (sg_points)   := point_in_polygon(sg_points/geometry, /Brondata/regios/gemeenten/src_2021/Geometry);
+	attribute<Brondata/regios/gemeente>                gemeente_rel       (sg_points)   := point_in_polygon(sg_points/geometry, /Brondata/regios/gemeente/Geometry);
 	attribute<bool>                  amsterdam_rel      (sg_points)   := gemeente_name = 'Amsterdam';
-	attribute<string>                gemeente_name      (sg_points)   := rjoin(gemeente_rel, id(Brondata/regios/gemeenten/src_2021), Brondata/regios/gemeenten/src_2021/GM_NAAM);
-	attribute<uint32>                buurt_rel          (sg_points)   := point_in_polygon(sg_points/geometry, /Brondata/regios/buurten/src_2021/Geometry);
-	attribute<uint32>                pc6_rel            (sg_points)   := point_in_polygon(sg_points/geometry, /Brondata/Regios/Postcode_gebieden/Postcode6_areas/Geometry);
+	attribute<string>                gemeente_name      (sg_points)   := Brondata/regios/gemeente/statnaam[gemeente_rel];
+	attribute<Brondata/regios/buurt>                buurt_rel          (sg_points)   := point_in_polygon(sg_points/geometry, /Brondata/regios/buurt/Geometry);
+	// attribute<uint32>                pc6_rel            (sg_points)   := point_in_polygon(sg_points/geometry, /Brondata/Regios/Postcode_gebieden/Postcode6_areas/Geometry);
 	
 	// attribute<string>                buurt_name         (sg_points)   := rjoin(buurt_rel, id(Brondata/regios/buurten/src_2016), Brondata/regios/buurten/src_2016/BU_NAAM);
 	// attribute<string>                buurt_code         (sg_points)   := rjoin(buurt_rel, id(Brondata/regios/buurten/src_2016), Brondata/regios/buurten/src_2016/BU_CODE);
@@ -100,7 +100,7 @@ container DiD_Verdichting :=
 	attribute<uint2>          zuid_ta                   (sg_points) := /Analyse/TreatmentControlAreas/Set_TA12_CA_24_50000banen/zuid_ta[NL_grid_domain_rel][uint2];
 	attribute<uint2>          zuid_ca                   (sg_points) := /Analyse/TreatmentControlAreas/Set_TA12_CA_24_50000banen/zuid_ca[NL_grid_domain_rel][uint2];
 	
-	container averages_houses
+/* 	container averages_houses
 	{
 		container mean_TA_transposed :=
 			for_each_nedv(
@@ -406,6 +406,6 @@ container DiD_Verdichting :=
 				// , float32
 			// );
 	}
-
+ */
 
 }

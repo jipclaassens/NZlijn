@@ -4,7 +4,7 @@ container DiD_Prijzen :=
 		, 'Analyse/NetwerkDist_Points_to_NZ/NetwerkDist_perstation/'+string(typeringen/all_metro_stations/NZ_stations/name)+'/Netwerk/OrgToDest/MakeOD_Time/grid[NL_grid_domain_rel]'
 		, Brondata/NVM/Points
 		, s
-	), using = "eenheden", FreeData = "False"
+	), using = "eenheden"
 {
 	unit<uint32>              NVM_AMS                                        := Brondata/NVM/Points;
 
@@ -35,9 +35,9 @@ container DiD_Prijzen :=
 	attribute<uint2>          d_garden                             (NVM_AMS) := NVM_AMS/d_garden;
 	attribute<uint2>          d_listed                             (NVM_AMS) := NVM_AMS/d_listed;
 	
-	attribute<string>         gemeente_name                        (NVM_AMS) := NVM_AMS/gem_21_naam;
+	attribute<string>         gemeente_name                        (NVM_AMS) := NVM_AMS/gem_naam;
 	attribute<uint32>         buurt_rel                            (NVM_AMS) := NVM_AMS/buurt_rel;
-	attribute<uint32>         pc6_rel                              (NVM_AMS) := NVM_AMS/pc6_rel;
+	// attribute<uint32>         pc6_rel                              (NVM_AMS) := NVM_AMS/pc6_rel;
 	
 	attribute<uint2>          HasEverHadAWoning                    (NVM_AMS) := /Analyse/HasWoning/HasWoning[NL_grid_domain_rel][uint2];
 	attribute<int32>          diff_Spits_abs                       (NVM_AMS) := /Brondata/Bereikbaarheid/diff_Spits_abs[NL_grid_domain_rel];

@@ -49,7 +49,7 @@ container Analyse: Using = "Eenheden;geography"
 			attribute<string> label := name;
 			container V := for_each_nedv(name, String(ID(.))+'[..]', void, .);
 		}
-		unit<uint32>       PC6                          := /Brondata/BAG/Snapshots/Adressen/Y202201/adres/PC6_AMS;
+		// unit<uint32>       PC6                          := /Brondata/BAG/Snapshots/Adressen/Y202201/adres/PC6_AMS;
 		parameter<int32>   Threshold_ToenameAantalBanen := 50000i; //banen
 		parameter<float32> treatment_size               := 12f;    //minuten
 		parameter<float32> control_size                 := 24f;    //minuten
@@ -397,6 +397,8 @@ container Analyse: Using = "Eenheden;geography"
 	{
 		#include <did_verdichting.dms>
 		#include <did_prijzen.dms>
+		
+		parameter<string> check := 'Check', ExplicitSuppliers = "DiD_Prijzen";
 	}
 	
 	// container Gebruiksdoelen

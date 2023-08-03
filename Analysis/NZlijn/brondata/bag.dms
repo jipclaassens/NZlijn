@@ -32,7 +32,7 @@ container BAG : using = "geography"
 			
 			parameter<string> SnapshotDirJaar := replace(SnapshotDir, 'YYYY', string(Jaar));
 			unit<uint32>  vbo_domein            := ='VBOs/' + Jaar_str + '/vbo';
-			unit<uint32> RegioUnit_PC6 := ='Snapshots/Adressen/'+Jaar_str+'/adres/PC6_AMS';
+			// unit<uint32> RegioUnit_PC6 := ='Snapshots/Adressen/'+Jaar_str+'/adres/PC6_AMS';
 			
 			unit<uint32> pand_src
 			:	StorageName     = "= SnapshotDirJaar + '/pand.fss'"
@@ -43,9 +43,9 @@ container BAG : using = "geography"
 				attribute<string>                       identificatie;
 				attribute<eenheden/jaar>                bouwjaar;
 				// attribute<typeringen/WPSrc>             type_woonpand_rel;
-				attribute<WPSrc>      woonpand_type;
-				attribute<WPSrc>      WPSrc_rel             := woonpand_type;
-				attribute<WP>         WP_rel                := rjoin(WPSrc_rel, id(WPSrc), WPSrc/WP_rel);
+				// attribute<WPSrc>      woonpand_type;
+				// attribute<WPSrc>      WPSrc_rel             := woonpand_type;
+				// attribute<WP>         WP_rel                := rjoin(WPSrc_rel, id(WPSrc), WPSrc/WP_rel);
 				
 				attribute<geography/rdc_mm>             NW     := lower_bound(pand_src/geometry_mm);
 				attribute<geography/rdc_mm>             SE     := upper_bound(pand_src/geometry_mm);
@@ -83,7 +83,7 @@ container BAG : using = "geography"
 				attribute<string>                     identificatie               := pand_src/identificatie[Nr_OrgEntity];
 				attribute<eenheden/jaar>              bouwjaar                    := pand_src/bouwjaar[Nr_OrgEntity];
 				attribute<int16>                      bouwjaar_trunc              := bouwjaar < 1000s || bouwjaar > 2019s ? (0/0)[int16] : bouwjaar < 1600s ? 1600s : bouwjaar;
-				attribute<typeringen/WP>              woonpand_rel                := pand_src/wp_rel[Nr_OrgEntity];
+				// attribute<typeringen/WP>              woonpand_rel                := pand_src/wp_rel[Nr_OrgEntity];
 				// attribute<typeringen/WP>              woonpand_rel                := pand_src/woonpand_rel[Nr_OrgEntity];
 				attribute<eenheden/m2>                opp                         := area(geometry, eenheden/m2);
 				
@@ -93,9 +93,9 @@ container BAG : using = "geography"
 				attribute<uint32>                     studyarea_rel               := point_in_polygon(pand_centroid, selectie_polygoon/polygon);
 				
 				attribute<.>                          pand_vbo_rel (vbo_domein)                  := vbo_domein/pand_rel;
-				attribute<string>            PC6                 := first(vbo_domein/pc6, pand_vbo_rel);
-				attribute<RegioUnit_PC6>     pc6_rel             := rlookup(PC6, RegioUnit_PC6/pc6);
-				attribute<int16>             median_bouwjaar_app_perPC6  (RegioUnit_PC6) := rth_element(woonpand_rel == wp/v/appartement ? bouwjaar_trunc : 0s/0s, 0.5f, pc6_rel);
+				// attribute<string>            PC6                 := first(vbo_domein/pc6, pand_vbo_rel);
+				// attribute<RegioUnit_PC6>     pc6_rel             := rlookup(PC6, RegioUnit_PC6/pc6);
+				// attribute<int16>             median_bouwjaar_app_perPC6  (RegioUnit_PC6) := rth_element(woonpand_rel == wp/v/appartement ? bouwjaar_trunc : 0s/0s, 0.5f, pc6_rel);
 				
 				
 				attribute<uint32>                     sum_vbo                     := ='count(vbos/'+Jaar_str+'/vbo/geometry, vbos/'+Jaar_str+'/vbo/pand_rel)';
@@ -136,7 +136,7 @@ container BAG : using = "geography"
 			// unit<uint32>  pand_met_vbo_woon_domein   := pand_domein/pand_woon_vbo;
 			// unit<uint32>  pand_met_vbo_domein        := pand_domein/pand_met_vbo;
 			// unit<uint32>  adres_domein               := Adressen/adres;
-			unit<uint32> RegioUnit_PC6 := ='Snapshots/Adressen/'+Jaar_str+'/adres/PC6_AMS';
+			// unit<uint32> RegioUnit_PC6 := ='Snapshots/Adressen/'+Jaar_str+'/adres/PC6_AMS';
 			
 			unit<uint32> vbo
 			:	StorageName     = "= SnapshotDirJaar + '/vbo.fss'"
@@ -156,11 +156,11 @@ container BAG : using = "geography"
 				attribute<pand_src_domein>            pand_src_rel := rlookup(pand_id, pand_src_domein/identificatie);
 				attribute<pand_domein>                pand_rel     := rlookup(pand_id, pand_domein/identificatie);
 				attribute<string>                     PC6                  := ='rjoin(nummeraanduiding_id, /Brondata/BAG/Snapshots/Adressen/'+Jaar_str+'/adres/nummeraanduiding_id, /Brondata/BAG/Snapshots/Adressen/'+Jaar_str+'/adres/postcode)';
-				attribute<typeringen/WP>              woonpand_rel         := pand_domein/woonpand_rel[pand_rel];
+				// attribute<typeringen/WP>              woonpand_rel         := pand_domein/woonpand_rel[pand_rel];
 
 				attribute<uint32>                     studyarea_rel        := point_in_polygon(geometry, selectie_polygoon/polygon);
 				attribute<uint32>                     ams_rel              := point_in_polygon(geometry, selectie_polygoon/polygon);
-				attribute<uint32>                     gem_ams_rel          := point_in_polygon(geometry, /Brondata/regios/gemeenten/src_2016/Amsterdam/Geometry);
+				// attribute<uint32>                     gem_ams_rel          := point_in_polygon(geometry, /Brondata/regios/gemeenten/src_2016/Amsterdam/Geometry);
 				
 				attribute<string> gebruiksdoel := 
 					gebruiksdoelen/woon 
@@ -204,18 +204,18 @@ container BAG : using = "geography"
 					attribute<string>                                                  nummeraanduiding_id := vbo/nummeraanduiding_id[nr_OrgEntity];
 					// attribute<uint32>                                                  pand_rel            := ='point_in_polygon(geometry_mm, panden/'+Jaar_str+'/pand/geometry_mm)';
 					attribute<string>                                                  pand_id             := vbo/pand_id[nr_OrgEntity];
-					attribute<typeringen/WP>                                           woonpand_rel        := vbo/woonpand_rel[nr_OrgEntity];
+					// attribute<typeringen/WP>                                           woonpand_rel        := vbo/woonpand_rel[nr_OrgEntity];
 					attribute<NL_grid/domain>                                          NL_grid_domain_rel  := geometry[NL_grid/domain];
 					attribute</typeringen/vbo_gebruiksdoel>                            gebruiksdoel_class  := vbo/gebruiksdoel_class[nr_OrgEntity];
 					
-					attribute<Regios/Gemeenten/src_2012/AgglAmsterdam>      aggl_ams_rel        := point_in_polygon(geometry, Regios/Gemeenten/src_2012/AgglAmsterdam/geometry);
-					attribute<bool>                                         IsAgglAms           := IsDefined(aggl_ams_rel);
-					attribute<Regios/Gemeenten/src_2012/Regio_Amsterdam>    gem_ams_rel         := point_in_polygon(geometry, Regios/gemeenten/src_2012/Regio_Amsterdam/geometry);
-					attribute<Regios/buurten/src_2012/Regio_Amsterdam>      buurt_ams_rel       := point_in_polygon(geometry, Regios/buurten/src_2012/Regio_Amsterdam/Geometry_f);
-					attribute<Regios/wijken/src_2012/Regio_Amsterdam>       wijk_ams_rel        := point_in_polygon(geometry, Regios/wijken/src_2012/Regio_Amsterdam/geometry_f);
-					attribute<Regios/Stadsdelen>                            stadsdeel_rel       := point_in_polygon(geometry, Regios/Stadsdelen/geometry);
-					attribute<Regios/Stadsdelen_Bewoond>                    stadsdeel_bew_rel   := point_in_polygon(geometry, Regios/Stadsdelen_Bewoond/geometry);
-					attribute<regios/Postcode_gebieden/Postcode6_areas/MRA> pc6_mra_rel         := point_in_polygon(geometry, Brondata/regios/Postcode_gebieden/Postcode6_areas/MRA/geometry);
+					// attribute<Regios/Gemeenten/src_2012/AgglAmsterdam>      aggl_ams_rel        := point_in_polygon(geometry, Regios/Gemeenten/src_2012/AgglAmsterdam/geometry);
+					// attribute<bool>                                         IsAgglAms           := IsDefined(aggl_ams_rel);
+					// attribute<Regios/Gemeenten/src_2012/Regio_Amsterdam>    gem_ams_rel         := point_in_polygon(geometry, Regios/gemeenten/src_2012/Regio_Amsterdam/geometry);
+					// attribute<Regios/buurten/src_2012/Regio_Amsterdam>      buurt_ams_rel       := point_in_polygon(geometry, Regios/buurten/src_2012/Regio_Amsterdam/Geometry_f);
+					// attribute<Regios/wijken/src_2012/Regio_Amsterdam>       wijk_ams_rel        := point_in_polygon(geometry, Regios/wijken/src_2012/Regio_Amsterdam/geometry_f);
+					// attribute<Regios/Stadsdelen>                            stadsdeel_rel       := point_in_polygon(geometry, Regios/Stadsdelen/geometry);
+					// attribute<Regios/Stadsdelen_Bewoond>                    stadsdeel_bew_rel   := point_in_polygon(geometry, Regios/Stadsdelen_Bewoond/geometry);
+					// attribute<regios/Postcode_gebieden/Postcode6_areas/MRA> pc6_mra_rel         := point_in_polygon(geometry, Brondata/regios/Postcode_gebieden/Postcode6_areas/MRA/geometry);
 				}
 				
 				unit<uint32> Amsterdam_selectie := subset(IsDefined(studyarea_rel))
@@ -298,57 +298,57 @@ container BAG : using = "geography"
 						attribute<string>                                                  PC6                 := ='rjoin(nummeraanduiding_id, /Brondata/BAG/Snapshots/Adressen/'+Jaar_str+'/adres/nummeraanduiding_id, /Brondata/BAG/Snapshots/Adressen/'+Jaar_str+'/adres/postcode)';
 
 						attribute<string>                                                  pand_id             := vbo/pand_id[nr_OrgEntity];
-						attribute<typeringen/WP>                                           woonpand_rel        := vbo/woonpand_rel[nr_OrgEntity];
-						attribute<typeringen/WP>                                           WP_rel              := id(typeringen/WP)[woonpand_rel];
-						attribute<typeringen/WP2>                                          WP2_rel             := switch(
-																													case(WP4_rel == typeringen/WP4/V/appartement,WP2/V/meergezins)
-																													,case(WP4_rel == typeringen/WP4/V/vrijstaand,WP2/V/eengezins)
-																													,case(WP4_rel == typeringen/WP4/V/twee_onder_1_kap,WP2/V/eengezins)
-																													,case(WP4_rel == typeringen/WP4/V/rijtjeswoning,WP2/V/eengezins)
-																													, 0b/0b
-																												);
-						attribute<typeringen/WP4>                                          WP4_rel             := typeringen/WP/WP4_rel[WP_rel];
+						// attribute<typeringen/WP>                                           woonpand_rel        := vbo/woonpand_rel[nr_OrgEntity];
+						// attribute<typeringen/WP>                                           WP_rel              := id(typeringen/WP)[woonpand_rel];
+						// attribute<typeringen/WP2>                                          WP2_rel             := switch(
+																													// case(WP4_rel == typeringen/WP4/V/appartement,WP2/V/meergezins)
+																													// ,case(WP4_rel == typeringen/WP4/V/vrijstaand,WP2/V/eengezins)
+																													// ,case(WP4_rel == typeringen/WP4/V/twee_onder_1_kap,WP2/V/eengezins)
+																													// ,case(WP4_rel == typeringen/WP4/V/rijtjeswoning,WP2/V/eengezins)
+																													// , 0b/0b
+																												// );
+						// attribute<typeringen/WP4>                                          WP4_rel             := typeringen/WP/WP4_rel[WP_rel];
 						attribute<NL_grid/domain>                                          NL_grid_domain_rel  := geometry[NL_grid/domain];
 						
-						attribute<Regios/Gemeenten/src_2012/AgglAmsterdam>      aggl_ams_rel        := point_in_polygon(geometry, Regios/Gemeenten/src_2012/AgglAmsterdam/geometry);
-						attribute<bool>                                         IsAgglAms           := IsDefined(aggl_ams_rel);
-						attribute<Regios/Gemeenten/src_2012/Regio_Amsterdam>    gem_ams_rel         := point_in_polygon(geometry, Regios/gemeenten/src_2012/Regio_Amsterdam/geometry);
-						attribute<Regios/buurten/src_2012/Regio_Amsterdam>      buurt_ams_rel       := point_in_polygon(geometry, Regios/buurten/src_2012/Regio_Amsterdam/Geometry_f);
-						attribute<Regios/wijken/src_2012/Regio_Amsterdam>       wijk_ams_rel        := point_in_polygon(geometry, Regios/wijken/src_2012/Regio_Amsterdam/geometry_f);
-						attribute<Regios/Stadsdelen>                            stadsdeel_rel       := point_in_polygon(geometry, Regios/Stadsdelen/geometry);
-						attribute<Regios/Stadsdelen_Bewoond>                    stadsdeel_bew_rel   := point_in_polygon(geometry, Regios/Stadsdelen_Bewoond/geometry);
+						// attribute<Regios/Gemeenten/src_2012/AgglAmsterdam>      aggl_ams_rel        := point_in_polygon(geometry, Regios/Gemeenten/src_2012/AgglAmsterdam/geometry);
+						// attribute<bool>                                         IsAgglAms           := IsDefined(aggl_ams_rel);
+						// attribute<Regios/Gemeenten/src_2012/Regio_Amsterdam>    gem_ams_rel         := point_in_polygon(geometry, Regios/gemeenten/src_2012/Regio_Amsterdam/geometry);
+						// attribute<Regios/buurten/src_2012/Regio_Amsterdam>      buurt_ams_rel       := point_in_polygon(geometry, Regios/buurten/src_2012/Regio_Amsterdam/Geometry_f);
+						// attribute<Regios/wijken/src_2012/Regio_Amsterdam>       wijk_ams_rel        := point_in_polygon(geometry, Regios/wijken/src_2012/Regio_Amsterdam/geometry_f);
+						// attribute<Regios/Stadsdelen>                            stadsdeel_rel       := point_in_polygon(geometry, Regios/Stadsdelen/geometry);
+						// attribute<Regios/Stadsdelen_Bewoond>                    stadsdeel_bew_rel   := point_in_polygon(geometry, Regios/Stadsdelen_Bewoond/geometry);
 						// attribute<regios/Postcode_gebieden/Postcode6_areas/MRA> pc6_mra_rel         := point_in_polygon(geometry, Brondata/regios/Postcode_gebieden/Postcode6_areas/MRA/geometry);
-						attribute<RegioUnit_PC6>                                pc6_rel             := rlookup(PC6, RegioUnit_PC6/pc6);
+						// attribute<RegioUnit_PC6>                                pc6_rel             := rlookup(PC6, RegioUnit_PC6/pc6);
 						
-						attribute<float32>                                      app_perPC6          (RegioUnit_PC6)           := sum(WP4_rel == WP4/V/appartement ? 1 : 0, pc6_rel)[float32];
-						attribute<float32>                                      pr_app_perPC6       (RegioUnit_PC6)           := sum(WP4_rel == WP4/V/appartement ? 1 : 0, pc6_rel)[float32] / sum(IsDefined(WP4_rel) ? 1 : 0, pc6_rel)[float32];
-						attribute<float32>                                      avg_opp_app_perPC6  (RegioUnit_PC6)           := mean(WP4_rel == WP4/V/appartement ? oppervlakte_trunc[float32] : 0f/0f, pc6_rel);
+						// attribute<float32>                                      app_perPC6          (RegioUnit_PC6)           := sum(WP4_rel == WP4/V/appartement ? 1 : 0, pc6_rel)[float32];
+						// attribute<float32>                                      pr_app_perPC6       (RegioUnit_PC6)           := sum(WP4_rel == WP4/V/appartement ? 1 : 0, pc6_rel)[float32] / sum(IsDefined(WP4_rel) ? 1 : 0, pc6_rel)[float32];
+						// attribute<float32>                                      avg_opp_app_perPC6  (RegioUnit_PC6)           := mean(WP4_rel == WP4/V/appartement ? oppervlakte_trunc[float32] : 0f/0f, pc6_rel);
 						
 						
 						attribute<nrwonha>                                      count_ha (NL_grid/domain)   := count(geometry, NL_grid_domain_rel)[nrwonha];  
 						attribute<int32>                                        sum_opp_ha (NL_grid/domain) := sum(oppervlakte < 1000i && oppervlakte >= 10i ? oppervlakte : 0i, NL_grid_domain_rel);  
 						
-						attribute<nrwonha>                                      count_ha_ams_zonder0 (NL_grid/domain) := (count_ha * Regios/gemeenten/src_2012/AgglAmsterdam/code_const[float32]) > 0[nrwonha] ? count_ha * Regios/gemeenten/src_2012/AgglAmsterdam/code_const[float32] : (0/0)[nrwonha];  
+						// attribute<nrwonha>                                      count_ha_ams_zonder0 (NL_grid/domain) := (count_ha * Regios/gemeenten/src_2012/AgglAmsterdam/code_const[float32]) > 0[nrwonha] ? count_ha * Regios/gemeenten/src_2012/AgglAmsterdam/code_const[float32] : (0/0)[nrwonha];  
 
-						container Oppervlakte_4WP :=
-							for_each_nedv(
-								  typeringen/WP/name
-								, 'MakeDefined(mean(woonpand_rel == ' + string(id(typeringen/WP)) + '[typeringen/WP] ? oppervlakte_trunc[float32] : (0/0)[m2_woning], geometry[NL_grid/domain]), 0[m2_woning])'
-								, NL_grid/domain
-								, m2_woning
-							);
+						// container Oppervlakte_4WP :=
+							// for_each_nedv(
+								  // typeringen/WP/name
+								// , 'MakeDefined(mean(woonpand_rel == ' + string(id(typeringen/WP)) + '[typeringen/WP] ? oppervlakte_trunc[float32] : (0/0)[m2_woning], geometry[NL_grid/domain]), 0[m2_woning])'
+								// , NL_grid/domain
+								// , m2_woning
+							// );
 
 
-						container type_woonpand :=
-							for_each_nedv(
-								typeringen/WP/name 
-								, 'sum(woonpand_rel == ' + string(id(typeringen/WP)) + '[typeringen/vbo_gebruiksdoel] ? 1 : 0, NL_grid_domain_rel)'
-								, NL_grid/domain
-								, uint32
-							), Freedata = "False"
-						{
-							attribute<uint32> totaal (NL_grid/domain) := ='add(' + AsItemList(typeringen/WP/name) + ')';
-						}
+						// container type_woonpand :=
+							// for_each_nedv(
+								// typeringen/WP/name 
+								// , 'sum(woonpand_rel == ' + string(id(typeringen/WP)) + '[typeringen/vbo_gebruiksdoel] ? 1 : 0, NL_grid_domain_rel)'
+								// , NL_grid/domain
+								// , uint32
+							// ), Freedata = "False"
+						// {
+							// attribute<uint32> totaal (NL_grid/domain) := ='add(' + AsItemList(typeringen/WP/name) + ')';
+						// }
 					}
 				}
 				
