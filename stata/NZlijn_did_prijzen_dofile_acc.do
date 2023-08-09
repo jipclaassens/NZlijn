@@ -2,18 +2,25 @@ capture log close
 cd "D:\OneDrive\OneDrive - Objectvision\VU\Projects\202110-NZpaper\"
 log using temp\nzlijn_did_prijzen_log.txt, text replace
 
+global filedate = 20230809
+global acc_range = 45
+global TAsize = 12
+global CAsize = 24
+
+import delimited data/SourceData_NVM_points_${filedate}.csv, clear
+
 ///////////////////////////////////////
 **# DATA PREPAREREN
 ///////////////////////////////////////
 
-import delimited C:\GeoDMS\LocalData\NZlijn\Results\nzlijn\Analyse_DiD_Prijzen_20221028_12_24min.csv, delimiter(";") clear   
+import delimited C:\GeoDMS\LocalData\NZlijn\Analyse\DiD\DiD_Prijzen_${acc_range}min_${TAsize}_${CAsize}min_${filedate}.csv, delimiter(";") clear   
 // import delimited C:\GeoDMS\LocalData\NZlijn\Results\nzlijn\Analyse_DiD_Prijzen_20221005_6_12min.csv, delimiter(";") clear   
-save "data/DMS_did_prijzen_raw.dta", replace
-use "data/DMS_did_prijzen_raw.dta", clear
+save data/DMS_did_prijzen_raw.dta, replace
+use data/DMS_did_prijzen_raw.dta, clear
 
 drop geometry nl_grid_domain*
 
-local replaceNullList = "lotsize bouwjaar bouwjaar_augm pc6_rel diff_spits_abs"
+local replaceNullList = "lotsize bouwjaar bouwjaar_augm buurt_rel diff_spits_abs_15min diff_spits_abs_30min diff_spits_abs_45min"
 foreach x of local replaceNullList{
 	replace `x' = "" if `x' == "null"
 	destring `x', replace
@@ -142,11 +149,12 @@ foreach s of local stations{
 		g ca = `s'_ca + `s'_ta
 		
 		areg lnprice treated treattime did lnsize nbath nrooms d_maintgood d_central d_kk d_isol_compl d_erfpacht d_privpark i.building_type b1.construction_period i.trans_year i.trans_month if ca == 1, r absorb(buurt_rel)
-		outreg2 using output/prijzen/did_windows_indiv_AccBased_buurt_12_24min_8043, excel cttop (`s', `d') label dec(3) addtext (Year FE, Yes, Month FE, Yes, Neighbourhood FE, Yes) keep(treat* did*) 
+		outreg2 using output/prijzen/did_windows_indiv_AccBased_${acc_range}min_buurt_${TAsize}_${CAsize}min_${filedate}, excel cttop (`s', `d') label dec(3) addtext (Year FE, Yes, Month FE, Yes, Neighbourhood FE, Yes) keep(treat* did*)  
 		
 		drop did* treated treattime* ca
 	}
 }
+
 
 ///zonder property chars
 local stations "noord"
@@ -169,7 +177,7 @@ foreach s of local stations{
 
 //descriptives
 estpost sum price trans_year trans_month  size nrooms nbath bouwjaar_augm d_maintgood d_central d_kk d_isol_compl d_erfpacht d_privpark d_ap d_ter d_sem d_det d_constr* tt_*  
-esttab using output/sum_prijzen.rtf, cells("count(fmt(0)) mean(fmt(3)) sd(fmt(3)) min(fmt(0)) max(fmt(0))") label nomtitle nonumber replace
+esttab using output/sum_prijzen_${acc_range}min_${TAsize}_${CAsize}min_${filedate}.rtf, cells("count(fmt(0)) mean(fmt(3)) sd(fmt(3)) min(fmt(0)) max(fmt(0))") label nomtitle nonumber replace
 
 
 

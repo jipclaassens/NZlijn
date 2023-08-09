@@ -67,7 +67,7 @@ container Analyse: Using = "Eenheden;geography"
 		attribute<bool>   AccessibilityChangeAboveThreshold_30min   (NL_grid/domain) := Brondata/Bereikbaarheid/OD_30min_DiffPiekPerc_W_OV_W_with_W_W_ORG_Point100m_DEST_LISA_WT_0  >= Threshold_ToenameAantalBanen;
 		attribute<bool>   AccessibilityChangeAboveThreshold_45min   (NL_grid/domain) := Brondata/Bereikbaarheid/OD_45min_DiffPiekPerc_W_OV_W_with_W_W_ORG_Point100m_DEST_LISA_WT_0  >= Threshold_ToenameAantalBanen;
 		
-		attribute<bool>   AccessibilityChangeAboveThreshold         (NL_grid/domain) := AccessibilityChangeAboveThreshold_30min;
+		attribute<bool>   AccessibilityChangeAboveThreshold         (NL_grid/domain) := AccessibilityChangeAboveThreshold_45min;
 		
 		container Set_TA12_CA_24_50000banen: FreeData = "false"
 		{
