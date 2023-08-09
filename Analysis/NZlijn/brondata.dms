@@ -121,11 +121,18 @@ container Brondata : using = "eenheden;geography;typeringen"
 
 	container Bereikbaarheid
 	{
+		attribute<int32>   OD_15min_DiffPiekPerc_W_OV_W_with_W_W_ORG_Point100m_DEST_LISA_WT_0  (NL_grid/domain) : StorageName = "%LocalDataDir%/NZlijn/Results/OD_15min_DiffPiekAbs_W_OV_W_with_W_W_ORG-Point100m_DEST-LISA_WT-0.tif", StorageReadOnly = "true", StorageType = "gdal.grid";
+		attribute<int32>   OD_30min_DiffPiekPerc_W_OV_W_with_W_W_ORG_Point100m_DEST_LISA_WT_0  (NL_grid/domain) : StorageName = "%LocalDataDir%/NZlijn/Results/OD_30min_DiffPiekAbs_W_OV_W_with_W_W_ORG-Point100m_DEST-LISA_WT-0.tif", StorageReadOnly = "true", StorageType = "gdal.grid";
+		attribute<int32>   OD_45min_DiffPiekPerc_W_OV_W_with_W_W_ORG_Point100m_DEST_LISA_WT_0  (NL_grid/domain) : StorageName = "%LocalDataDir%/NZlijn/Results/OD_45min_DiffPiekAbs_W_OV_W_with_W_W_ORG-Point100m_DEST-LISA_WT-0.tif", StorageReadOnly = "true", StorageType = "gdal.grid";
+
+		// attribute<int32>   OD_15min_DiffPiekPerc_W_OV_W_with_W_W_ORG_Point100m_DEST_LISA_WT_1  (NL_grid/domain) : StorageName = "%LocalDataDir%/NZlijn/Results/OD_15min_DiffPiekAbs_W_OV_W_with_W_W_ORG-Point100m_DEST-LISA_WT-1.tif", StorageReadOnly = "true", StorageType = "gdal.grid";
+		// attribute<int32>   OD_30min_DiffPiekPerc_W_OV_W_with_W_W_ORG_Point100m_DEST_LISA_WT_1  (NL_grid/domain) : StorageName = "%LocalDataDir%/NZlijn/Results/OD_30min_DiffPiekAbs_W_OV_W_with_W_W_ORG-Point100m_DEST-LISA_WT-1.tif", StorageReadOnly = "true", StorageType = "gdal.grid";
+		// attribute<int32>   OD_45min_DiffPiekPerc_W_OV_W_with_W_W_ORG_Point100m_DEST_LISA_WT_1  (NL_grid/domain) : StorageName = "%LocalDataDir%/NZlijn/Results/OD_45min_DiffPiekAbs_W_OV_W_with_W_W_ORG-Point100m_DEST-LISA_WT-1.tif", StorageReadOnly = "true", StorageType = "gdal.grid";
 		attribute<int32>   diff_Spits_abs_8043  (NL_grid/domain) : StorageName = "%SourceDataDir%/Overig/NZlijn_bereikbaarheid/diff_Spits_abs_8043.tif", StorageReadOnly = "true", StorageType = "gdal.grid";
 		attribute<int32>   diff_Spits_abs       (NL_grid/domain) : StorageName = "%SourceDataDir%/Overig/NZlijn_bereikbaarheid/diff_Spits_abs.tif", StorageReadOnly = "true", StorageType = "gdal.grid";
 		attribute<float32> diff_Spits_perc      (NL_grid/domain) : StorageName = "%SourceDataDir%/Overig/NZlijn_bereikbaarheid/diff_Spits_perc.tif", StorageReadOnly = "true", StorageType = "gdal.grid";
 	}
-
+	
 	#include <ARRA.dms>
 	#include <bag.dms>
 	

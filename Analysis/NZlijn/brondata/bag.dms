@@ -3,7 +3,8 @@ container BAG : using = "geography"
 	container Snapshots
 	{
 	
-		parameter<string> SnapshotDir := '%SourceDataDir%/BAG/snapshots.ext/YYYY01';
+		// parameter<string> SnapshotDir := '%SourceDataDir%/BAG/snapshots.ext/YYYY01';
+		parameter<string> SnapshotDir := '%SourceDataDir%/RSL/Vastgoed/YYYY01_RS';
 		
 		
 		container Panden :=
@@ -55,23 +56,24 @@ container BAG : using = "geography"
 				attribute<geography/rdc_mm>             pand_centroid := centroid_or_mid(geometry_mm);
 				attribute<uint32>                       ams_rel    := point_in_polygon(pand_centroid[geography/rdc], selectie_polygoon/polygon);
 				
-				container meta
-				{
-					attribute<string>        status              (..);
-					attribute<int32>         begindatum          (..);
-					attribute<int32>         documentdatum       (..);
-					attribute<string>        documentnummer      (..);
-					attribute<int32>         einddatum           (..);
-					attribute<bool>          is_correctie        (..);
-					attribute<bool>          is_inactief         (..);
-					attribute<bool>          is_onderzoek        (..);
-				}
+				attribute<string>        status;
+				// container meta
+				// {
+					// attribute<string>        status              (..);
+					// attribute<int32>         begindatum          (..);
+					// attribute<int32>         documentdatum       (..);
+					// attribute<string>        documentnummer      (..);
+					// attribute<int32>         einddatum           (..);
+					// attribute<bool>          is_correctie        (..);
+					// attribute<bool>          is_inactief         (..);
+					// attribute<bool>          is_onderzoek        (..);
+				// }
 			}
 			
 			unit<uint32> pand := subset(pand_src/X_ext < 1000000i && pand_src/Y_ext < 1000000i && IsDefined(pand_src/ams_rel)
-											&& 	(pand_src/meta/status == 'Pand in gebruik' 
-												|| pand_src/meta/status == 'Pand in gebruik (niet ingemeten)' 
-												|| pand_src/meta/status == 'Pand buiten gebruik'
+											&& 	(pand_src/status == 'Pand in gebruik' 
+												|| pand_src/status == 'Pand in gebruik (niet ingemeten)' 
+												|| pand_src/status == 'Pand buiten gebruik'
 												)
 										)
 			, DialogType = "Map"
@@ -190,8 +192,12 @@ container BAG : using = "geography"
 				attribute</typeringen/vbo_gebruiksdoel> gebruiksdoel_class := rlookup(gebruiksdoel, /typeringen/vbo_gebruiksdoel/name);
 				
 				
-				unit<uint32> src := subset(IsDefined(studyarea_rel) && (vbo/meta/status == 'Verblijfsobject buiten gebruik' || vbo/meta/status == 'Verblijfsobject in gebruik' || vbo/meta/status == 'Verblijfsobject in gebruik (niet ingemeten)'))
-				, 	FreeData = "False"
+				unit<uint32> src := subset(IsDefined(studyarea_rel) 
+												&& (vbo/status == 'Verblijfsobject buiten gebruik' 
+														|| vbo/status == 'Verblijfsobject in gebruik' 
+														|| vbo/status == 'Verblijfsobject in gebruik (niet ingemeten)'
+													)
+											)
 				{
 					attribute<geography/rdc_mm>                                        geometry_mm         := vbo/geometry_mm[nr_OrgEntity], DisableStorage = "True";
 					attribute<geography/rdc>                                           geometry            := geometry_mm[geography/rdc]; //, Storagename = "='%LocalDataProjDir%/OutputOri/BAG_vbo_2018_' +name+ '_opp.shp'";
@@ -200,7 +206,7 @@ container BAG : using = "geography"
 					attribute<int32>                                                   oppervlakte_trunc2   := oppervlakte < 500000i && oppervlakte != 99999i && oppervlakte != 9999i ? oppervlakte : 0i, DisableStorage = "True";
 					
 					attribute<string>                                                  identificatie       := vbo/identificatie[nr_OrgEntity];
-					attribute<uint32>                                                  begindatum          := vbo/meta/begindatum[nr_OrgEntity];
+					// attribute<uint32>                                                  begindatum          := vbo/begindatum[nr_OrgEntity];
 					attribute<string>                                                  nummeraanduiding_id := vbo/nummeraanduiding_id[nr_OrgEntity];
 					// attribute<uint32>                                                  pand_rel            := ='point_in_polygon(geometry_mm, panden/'+Jaar_str+'/pand/geometry_mm)';
 					attribute<string>                                                  pand_id             := vbo/pand_id[nr_OrgEntity];
@@ -260,12 +266,14 @@ container BAG : using = "geography"
 					attribute<float32>    diversity        (NL_grid/domain) := = 'add('+asList( + 'sqr(' + typeringen/vbo_gebruiksdoel/name + ')',',')+')';
 				}
 				
-				attribute<Typeringen/vbo_status>          status_rel              := rlookup(meta/status, Typeringen/vbo_status/label);
-				container meta
-				{
-					attribute<string>        status        (..);
-					attribute<uint32>        begindatum    (..);
-				}
+				attribute<Typeringen/vbo_status>          status_rel              := rlookup(status, Typeringen/vbo_status/label);
+				
+				attribute<string>        status        ;
+				// container meta
+				// {
+					// attribute<string>        status        (..);
+					// attribute<uint32>        begindatum    (..);
+				// }
 				
 				container GebruiksdoelSets :=
 					for_each_ne(
@@ -293,7 +301,7 @@ container BAG : using = "geography"
 						attribute<int32>                                                   oppervlakte_trunc   := oppervlakte < 1000i ? oppervlakte : 0i, DisableStorage = "True";
 						
 						attribute<string>                                                  identificatie       := vbo/identificatie[nr_OrgEntity];
-						attribute<uint32>                                                  begindatum          := vbo/meta/begindatum[nr_OrgEntity];
+						// attribute<uint32>                                                  begindatum          := vbo/meta/begindatum[nr_OrgEntity];
 						attribute<string>                                                  nummeraanduiding_id := vbo/nummeraanduiding_id[nr_OrgEntity];
 						attribute<string>                                                  PC6                 := ='rjoin(nummeraanduiding_id, /Brondata/BAG/Snapshots/Adressen/'+Jaar_str+'/adres/nummeraanduiding_id, /Brondata/BAG/Snapshots/Adressen/'+Jaar_str+'/adres/postcode)';
 
@@ -353,7 +361,7 @@ container BAG : using = "geography"
 				}
 				
 				unit<uint32> zonderwoonfunctie_enCBSStatus := 
-					subset(!vbo/gebruiksdoelen/woon && (vbo/meta/status == 'Verblijfsobject buiten gebruik' || vbo/meta/status == 'Verblijfsobject in gebruik' || vbo/meta/status == 'Verblijfsobject in gebruik (niet ingemeten)') && IsDefined(ams_rel))
+					subset(!vbo/gebruiksdoelen/woon && (vbo/status == 'Verblijfsobject buiten gebruik' || vbo/status == 'Verblijfsobject in gebruik' || vbo/status == 'Verblijfsobject in gebruik (niet ingemeten)') && IsDefined(ams_rel))
 				,	DialogType = "Map"
 				,	DialogData = "geometry_mm"
 				, 	FreeData = "False"

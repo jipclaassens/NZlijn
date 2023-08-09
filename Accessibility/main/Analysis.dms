@@ -6,12 +6,12 @@ container Analysis: Using = "Units;Classifications;geometries;sourceData/RegioIn
 		unit<uint32>      Orgs                              := /geometries/NL_grid/points_100m/Points_100m_Buurt;
 		
 		parameter<string> OrgSet                            := 'Point100m'; //'PC6sub_MRA' Buurtsub_MRA
-		parameter<uint32> Reistijd_grens                    := 45; //min
+		parameter<uint32> Reistijd_grens                    := 15; //min
 		parameter<string> LISA_locaties_schaal              := '100m';
 		parameter<string> StudyArea                         := 'Amsterdam';
 		parameter<string> DestSet_string                    := 'LISA'; //' ARRA_100m LISA_100m LISA_500m' 'dest_PC4selectie'
 		parameter<string> Arrival_or_Departure_at_time      := 'Departure'; 
-		parameter<string> WegingWachttijdThuisVoortransport := '0'; //0= geen wachttijd thuis meenemen, 1= wel wachttijd meenemen.
+		parameter<string> WegingWachttijdThuisVoortransport := '1'; //0= geen wachttijd thuis meenemen, 1= wel wachttijd meenemen.
 
 		unit<uint64> ReadReistijd_VoorOpening
 		: StorageName = "='%LocalDataDir%/NZLijn/OD_'+string(Reistijd_grens)+'min_W_OV_W_with_W_W_'+ModelParameters/Date_voorOpening+'_'+Arrival_or_Departure_at_time+'_ORG-'+Orgset+'_DEST-'+DestSet_string+'_SA-'+StudyArea+'_WT-'+string(WegingWachttijdThuisVoortransport)+'.gpkg'"

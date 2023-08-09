@@ -40,7 +40,9 @@ container DiD_Prijzen :=
 	// attribute<uint32>         pc6_rel                              (NVM_AMS) := NVM_AMS/pc6_rel;
 	
 	attribute<uint2>          HasEverHadAWoning                    (NVM_AMS) := /Analyse/HasWoning/HasWoning[NL_grid_domain_rel][uint2];
-	attribute<int32>          diff_Spits_abs                       (NVM_AMS) := /Brondata/Bereikbaarheid/diff_Spits_abs[NL_grid_domain_rel];
+	attribute<int32>          diff_Spits_abs_15min                 (NVM_AMS) := /Brondata/Bereikbaarheid/OD_15min_DiffPiekPerc_W_OV_W_with_W_W_ORG_Point100m_DEST_LISA_WT_0[NL_grid_domain_rel];
+	attribute<int32>          diff_Spits_abs_30min                 (NVM_AMS) := /Brondata/Bereikbaarheid/OD_30min_DiffPiekPerc_W_OV_W_with_W_W_ORG_Point100m_DEST_LISA_WT_0[NL_grid_domain_rel];
+	attribute<int32>          diff_Spits_abs_45min                 (NVM_AMS) := /Brondata/Bereikbaarheid/OD_45min_DiffPiekPerc_W_OV_W_with_W_W_ORG_Point100m_DEST_LISA_WT_0[NL_grid_domain_rel];
 
 	attribute<NL_grid/domain>       NL_grid_domain_rel                  (NVM_AMS) := geometry[Geography/NL_grid/domain], DisableStorage = "true";
 	attribute<NL_grid/domain_500m>  NL_grid_domain_500m_rel             (NVM_AMS) := geometry[Geography/NL_grid/domain_500m], DisableStorage = "true";

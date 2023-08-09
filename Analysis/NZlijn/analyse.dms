@@ -63,13 +63,17 @@ container Analyse: Using = "Eenheden;geography"
 		attribute<bool>   closer2depijp_then_europaplein      (NL_grid/domain) := Analyse/NetwerkDist_Points_to_NZ/NetwerkDist_perstation/Europaplein/Netwerk/OrgToDest/MakeOD_Time/grid     > Analyse/NetwerkDist_Points_to_NZ/NetwerkDist_perstation/DePijp/Netwerk/OrgToDest/MakeOD_Time/grid;
 		attribute<bool>   closer2europaplein_then_zuid        (NL_grid/domain) := Analyse/NetwerkDist_Points_to_NZ/NetwerkDist_perstation/StationZuid/Netwerk/OrgToDest/MakeOD_Time/grid     > Analyse/NetwerkDist_Points_to_NZ/NetwerkDist_perstation/Europaplein/Netwerk/OrgToDest/MakeOD_Time/grid;
 		
-		attribute<bool>   AccessibilityChangeAboveThreshold   (NL_grid/domain) := /Brondata/Bereikbaarheid/diff_Spits_abs_8043 >= Threshold_ToenameAantalBanen;
+		attribute<bool>   AccessibilityChangeAboveThreshold_15min   (NL_grid/domain) := Brondata/Bereikbaarheid/OD_15min_DiffPiekPerc_W_OV_W_with_W_W_ORG_Point100m_DEST_LISA_WT_0  >= Threshold_ToenameAantalBanen;
+		attribute<bool>   AccessibilityChangeAboveThreshold_30min   (NL_grid/domain) := Brondata/Bereikbaarheid/OD_30min_DiffPiekPerc_W_OV_W_with_W_W_ORG_Point100m_DEST_LISA_WT_0  >= Threshold_ToenameAantalBanen;
+		attribute<bool>   AccessibilityChangeAboveThreshold_45min   (NL_grid/domain) := Brondata/Bereikbaarheid/OD_45min_DiffPiekPerc_W_OV_W_with_W_W_ORG_Point100m_DEST_LISA_WT_0  >= Threshold_ToenameAantalBanen;
+		
+		attribute<bool>   AccessibilityChangeAboveThreshold         (NL_grid/domain) := AccessibilityChangeAboveThreshold_30min;
 		
 		container Set_TA12_CA_24_50000banen: FreeData = "false"
 		{
 			attribute<StationsXareas> Visualisation (NL_grid/domain) := ='switch(
 																			'+AsList('case('+StationsXareas/name+', StationsXareas/v/'+StationsXareas/name+')',',')+'
-																			, 0b/0b
+																			, (0b/0b)[StationsXareas]
 																		)';
 		
 			attribute<bool>   Noord_ta        (NL_grid/domain) := Disticts/TA_N_district/select;
@@ -168,25 +172,23 @@ container Analyse: Using = "Eenheden;geography"
 			
 			
 			
-			container Per_PC6 :=
-				for_each_nedv(
-					StationsXareas/name
-					, '../'+StationsXareas/name+'[NL_grid_domain_rel][uint2]'
-					, PC6
-					, uint2
-				)
-			{
-				attribute<string>         PC6_name           (PC6) := PC6/PC6;
-				attribute<uint32>         Buurt_rel          (PC6) := PC6/buurt_rel;
-				attribute<float32>        Count_App          (PC6) := Brondata/BAG/Snapshots/Vbos/Y202201/vbo/GebruiksdoelSets/woon/GebruiksdoelSet/app_perPC6;
-				attribute<float32>        Fractie_App        (PC6) := Brondata/BAG/Snapshots/Vbos/Y202201/vbo/GebruiksdoelSets/woon/GebruiksdoelSet/pr_app_perPC6;
-				attribute<float32>        Avg_opp_App        (PC6) := Brondata/BAG/Snapshots/Vbos/Y202201/vbo/GebruiksdoelSets/woon/GebruiksdoelSet/avg_opp_app_perPC6;
-				attribute<int16>          Median_Bouwjaar_App(PC6) := Brondata/BAG/Snapshots/Panden/Y202201/pand/median_bouwjaar_app_perPC6;
-				attribute<NL_grid/domain> NL_grid_domain_rel (PC6) := PC6/geometry[NL_grid/domain];
+			// container Per_PC6 :=
+				// for_each_nedv(
+					// StationsXareas/name
+					// , '../'+StationsXareas/name+'[NL_grid_domain_rel][uint2]'
+					// , PC6
+					// , uint2
+				// )
+			// {
+				// attribute<string>         PC6_name           (PC6) := PC6/PC6;
+				// attribute<uint32>         Buurt_rel          (PC6) := PC6/buurt_rel;
+				// attribute<float32>        Count_App          (PC6) := Brondata/BAG/Snapshots/Vbos/Y202201/vbo/GebruiksdoelSets/woon/GebruiksdoelSet/app_perPC6;
+				// attribute<float32>        Fractie_App        (PC6) := Brondata/BAG/Snapshots/Vbos/Y202201/vbo/GebruiksdoelSets/woon/GebruiksdoelSet/pr_app_perPC6;
+				// attribute<float32>        Avg_opp_App        (PC6) := Brondata/BAG/Snapshots/Vbos/Y202201/vbo/GebruiksdoelSets/woon/GebruiksdoelSet/avg_opp_app_perPC6;
+				// attribute<int16>          Median_Bouwjaar_App(PC6) := Brondata/BAG/Snapshots/Panden/Y202201/pand/median_bouwjaar_app_perPC6;
+				// attribute<NL_grid/domain> NL_grid_domain_rel (PC6) := PC6/geometry[NL_grid/domain];
 			
-			}
-			
-			
+			// }
 		}
 		
 		container Set_TA6_CA_12_50000banen
