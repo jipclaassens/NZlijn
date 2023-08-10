@@ -1,0 +1,12 @@
+Logboek NZ lijn
+
+20230809
+- WT 0 en 1 geven gelijk resultaten, klopt dat wel? Of is dat logisch?
+- sensitivity: 15min voornamelijk insignificant. Threshold verhogen?
+- sensitivity: 45min grotendeels gelijk, sommige insignificant
+- sensitivity: 30min bijna gelijk met oude resultaten. Waarom? model aanpassigen? BAG? 
+
+20230810
+- sensitivity: threshold verhogen heeft geen zin, want dat raak het veranderen van de areasize alweer kwijt.
+- resultaten zijn robuust over de 15m en 45m reistijden heen.
+- geupdatete paper weer opgestuurd naar Eric/Jan/Maureen

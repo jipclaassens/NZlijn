@@ -50,7 +50,7 @@ container Analyse: Using = "Eenheden;geography"
 			container V := for_each_nedv(name, String(ID(.))+'[..]', void, .);
 		}
 		// unit<uint32>       PC6                          := /Brondata/BAG/Snapshots/Adressen/Y202201/adres/PC6_AMS;
-		parameter<int32>   Threshold_ToenameAantalBanen := 50000i; //banen
+		parameter<int32>   Threshold_ToenameAantalBanen := 50000i; //banen   50000i
 		parameter<float32> treatment_size               := 12f;    //minuten
 		parameter<float32> control_size                 := 24f;    //minuten
 		parameter<float32> outercontrol_size            := 36f;    //minuten
