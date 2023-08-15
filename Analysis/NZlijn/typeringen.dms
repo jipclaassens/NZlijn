@@ -1,12 +1,5 @@
-container typeringen: isHidden = "True", using = "eenheden"
+container typeringen: using = "eenheden"
 {
-	unit<uint8> pand_status : nrofrows = 10
-	{
-		attribute<string>    label     : ['Bouw gestart','Bouwvergunning verleend','Niet gerealiseerd pand','Pand buiten gebruik','Pand gesloopt','Pand in gebruik','Pand in gebruik (niet ingemeten)','Sloopvergunning verleend','Pand ten onrechte opgevoerd','Verbouwing pand'], DialogType = "LabelText";
-		attribute<string>    name      := replace(label, ' ', '_', '-', '_', '(', '', ')', '');
-		container V := for_each_nedv(name, String(ID(.))+'[..]', void, .);
-	}
-	
 	unit<uint8> vbo_status : nrofrows = 8
 	{
 		attribute<string>    label     : ['Niet gerealiseerd verblijfsobject','Verblijfsobject buiten gebruik','Verblijfsobject gevormd','Verblijfsobject in gebruik','Verblijfsobject in gebruik (niet ingemeten)','Verblijfsobject ingetrokken','Verblijfsobject ten onrechte opgevoerd', 'Verbouwing verblijfsobject'], DialogType = "LabelText";
@@ -15,190 +8,15 @@ container typeringen: isHidden = "True", using = "eenheden"
 		attribute<bool>      IsIngetrokken : [FALSE, FALSE, FALSE, FALSE, FALSE, TRUE, TRUE, FALSE];
 		container V := for_each_nedv(name, String(ID(.))+'[..]', void, .);
 	}
-
-
-	unit<uint8> bbg_ek;
-	unit<uint8> gg_src: NrOfRows = 39
-	{
-		parameter<uint8> nrAttr := 4b;
-		unit<uint8> elem := range(uint8, 0b, nrAttr *#gg_src[uint8])
-		{
-			attribute<string> values: [ 
-			//'bbg_name','bbg_klasse','gg_10k_rel','onbebouwbaar'
-			 'OSA',                                    '0',    '0',  '1' 
-			,'Spoorwegen',                             '10',   '4',  '1' 
-			,'Hoofdweg',                               '11',   '4',  '1' 
-			,'Vliegveld',                              '12',   '4',  '1' 
-			,'Woongebied',                             '20',   '1',  '0' 
-			,'Detailhandel en horeca',                 '21',   '2',  '0'
-			,'Openbare voorzieningen',                 '22',   '2',  '0'
-			,'Sociaalculturele voorzieningen',         '23',   '2',  '0'
-			,'Bedrijfsterreinen',                      '24',   '2',  '0'
-			,'Stortplaatsen',                          '30',   '2',  '0'
-			,'Wrakkenopslagplaatsen',                  '31',   '2',  '0'
-			,'Begraafplaats',                          '32',   '2',  '0'
-			,'Delfstoffenwinning',                     '33',   '2',  '0'
-			,'Bouwterrein',                            '34',   '3',  '0'
-			,'Semiverhard overig terrein',             '35',   '2',  '0'
-			,'Parken en plantsoenen',                  '40',   '5',  '0'
-			,'Sportterreinen',                         '41',   '5',  '0'
-			,'Volkstuinen',                            '42',   '5',  '0'
-			,'Dagrecreatieve terreinen',               '43',   '2',  '0'
-			,'Verblijfsrecreatie',                     '44',   '2',  '0'
-			,'Glastuinbouw',                           '50',   '6',  '0'
-			,'Overig agrarisch gebruik',               '51',   '6',  '0'
-			,'Bos',                                    '60',   '7',  '0'
-			,'Droog natuurlijk terrein',               '61',   '7',  '0'
-			,'Nat natuurlijk terrein',                 '62',   '7',  '0'
-			,'IJsselmeerMarkermeer',                   '70',   '8',  '1' 
-			,'Afgesloten zeearm',                      '71',   '8',  '1' 
-			,'Rijn en Maas',                           '72',   '8',  '1' 
-			,'Randmeer',                               '73',   '8',  '1' 
-			,'Spaarbekkens',                           '74',   '8',  '1' 
-			,'Water met een recreatieve hoofdfunctie', '75',   '8',  '1' 
-			,'Water met delfstofwinningsfunctie',      '76',   '8',  '1' 
-			,'Vloei enof slibveld',                    '77',   '2',  '1' 
-			,'Overig binnenwater',                     '78',   '8',  '1' 
-			,'Waddenzee Eems Dollard',                 '80',   '9',  '1' 
-			,'Oosterschelde',                          '81',   '8',  '1' 
-			,'Westerschelde',                          '82',   '8',  '1' 
-			,'Noordzee',                               '83',   '9',  '1' 
-			,'Buitenland',                             '90',   '0',  '1' 
-			];
-		}
-		attribute<.> id:= id(.);
-
-		attribute<string> bbg_name    := elem/values[value(id * nrAttr + 0b, elem)];
-		attribute<bbg_ek> bbg_klasse  := value(elem/values[value(id * nrAttr + 1b, elem)], bbg_ek);
-		attribute<uint8>  gg_10k_rel  := uint8(elem/values[value(id * nrAttr + 2b, elem)]);
-		attribute<uint8>  onbebouwbaar:= uint8(elem/values[value(id * nrAttr + 3b, elem)]);
-
-		attribute<string> name        := replace(bbg_name, ' ', '_');
-		
-	}	
 	
-	unit<uint8> gg_10K: nrofrows = 10
-	{
-		attribute<string> label:    [
-		'OSA',//0
-		'residential',//1
-		'otherbuiltup',//2
-		'construction',//3
-		'infrastructure',//4
-		'urbangreen',//5
-		'agriculture',//6
-		'nature',//7
-		'water',//8
-		'exteriorwater'],//9
-		 
-		DialogType = "LabelText";
-		attribute<string> name := replace(label, ' ', '_');
-		container V := for_each_nedv(name, String(ID(.))+'[..]', void, .);
-		attribute<gg_3K> gg_3K_rel :[null,0,1,1,1,2,2,2,2,null];
-		attribute<uint32> BrushColor:  DialogType = "BrushColor",
-			[rgb(225,225,225),rgb(168,0,0),rgb(233,191,255),rgb(156,156,156),rgb(0,0,0),rgb(38,115,0),rgb(211,255,190),rgb(29,82,62),rgb(114,223,223),rgb(114,223,223)];	
-	}
+	#include <wegtype.dms>
 	
-	unit<uint8> gg_3K: nrofrows = 3
+	unit<uint8> seconden : nrofrows = 3
 	{
-		attribute<uint8> id := id(.);
-		attribute<string> label:    ['dens','grey','green'], DialogType = "LabelText";
-		attribute<string> name := replace(label, ' ', '_');
-		container V := for_each_nedv(name, String(ID(.))+'[..]', void, .);
-		attribute<uint32> BrushColor:  DialogType = "BrushColor",
-			[rgb(168,0,0),rgb(156,156,156),rgb(0, 200, 0)];	
-	}
-	
-	unit<uint8> type_woonpand_src: nrofrows = 6
-	{
-		attribute<string> label:    ['geen woonpand','vrijstaand','twee onder 1 kap','hoekwoning','tussenwoning','appartement'], DialogType = "LabelText";
-		attribute<string> name := replace(label, ' ', '_');
-		container V := for_each_nedv(name, String(ID(.))+'[..]', void, .);
-		attribute<type_woonpand> woonpand_rel :[0,1,2,3,3,4];
-		attribute<type_woonpand_2> woonpand_rel_2 :[0,1,1,1,1,2];
-	}
-
-	// unit<uint8> type_woonpand: nrofrows = 5
-	// {
-		// attribute<uint8>  ID := ID(.);
-		// attribute<string> label:    ['geen woonpand','vrijstaand','twee onder 1 kap','rijtjeswoning','appartement'], DialogType = "LabelText";
-		// attribute<string> name := replace(label, ' ', '_');
-		// container V := for_each_nedv(name, String(ID(.))+'[..]', void, .);
-		// attribute<uint32> BrushColor:  DialogType = "BrushColor",[rgb(255,255,255), rgb(  0,129,  0),rgb(  0,  0,255),rgb(255,220,  0),rgb(255,  0,  0)];
-	// }
-	
-	unit<uint8> WPSrc: nrofrows = 6
-	{
-		attribute<string>             label              :  ['geen woonpand','vrijstaand','twee onder 1 kap','hoekwoning','tussenwoning','appartement'], DialogType = "LabelText";
-		attribute<string>             name               := replace(label, ' ', '_');
-		attribute<WP>                 WP_rel             :  [0,1,2,3,3,4];
-		attribute<WP3>                WP3_rel            :  [0,1,1,1,1,2];
-		
-		container V := for_each_nedv(name, String(ID(.))+'[..]', void, .);
-	}
-	
-	unit<uint8> WP: nrofrows = 5
-	{
-		attribute<uint8>             id                  := id(.);
-		attribute<string>            label               :  ['geen woonpand','vrijstaand','twee onder 1 kap','rijtjeswoning','appartement'], DialogType = "LabelText";
-		attribute<string>            name_english        :  ['no_house','detached','semidetached','terraced','apartment'];
-		attribute<string>            name                := replace(label, ' ', '_');
-		attribute<uint32>            BrushColor          :  [rgb(255,255,255), rgb(204, 255, 153),rgb(204, 255,255),rgb(255, 204, 153),rgb(255, 204, 255)], DialogType = "BrushColor";
-		attribute<WP4>               WP4_rel             := invert(WP4/WP_rel);
-		
-		container V := for_each_nedv(name, String(ID(.))+'[..]', void, .);
-		
-		attribute<WP2>               WP2_rel             := union_data(., WP2/V/eengezins, WP2/V/eengezins, WP2/V/eengezins, WP2/V/eengezins, WP2/V/meergezins);
-		attribute<bool>              IsDetached          :  [false, true, false, false, false];
-		attribute<bool>              IsSemiDetached      :  [false, false, true, false, false];
-	}
-
-	unit<uint8> WP3: nrofrows = 3
-	{
-		attribute<string>            label               :  ['geen woonpand','eengezins','meergezins'], DialogType = "LabelText";
-		attribute<string>            name                := replace(label, ' ', '_');
-		attribute<WP2>               WP2_rel             := invert(WP2/WP3_rel);
-		
-		container V := for_each_nedv(name, String(ID(.))+'[..]', void, .);
-	}
-	
-	unit<uint8> WP2 := subset(id(WP3) <> WP3/V/geen_woonpand) 
-	{
-		attribute<WP3>               WP3_rel             := nr_OrgEntity;
-		attribute<string>            name                := WP3/name[WP3_rel];
-		attribute<string>            label               := WP3/label[WP3_rel], DialogType = "LabelText";
-		
-		container V := for_each_nedv(name, String(ID(.))+'[..]', void, .);
-	}
-	
-	unit<uint8> WP4 := subset(id(WP) <> WP/V/geen_woonpand) 
-	{
-		attribute<uint8>             id                  := id(.);
-		attribute<WP>                WP_rel              := nr_OrgEntity;
-		attribute<string>            name                := WP/name[WP_rel];
-		attribute<string>            abbrev              : ['vrij', 'Tweeo1', 'rij', 'app']; //BR@Jip, 20190110: graag deze abbreviation onnodig maken en verwijderen
-		attribute<string>            name_english        := WP/name_english[WP_rel];
-		attribute<string>            label               := WP/label[WP_rel], DialogType = "LabelText";
-		attribute<uint32>            BrushColor          := WP/BrushColor[WP_rel];
-		attribute<WP2>               WP2_rel             := union_data(., WP2/V/eengezins, WP2/V/eengezins, WP2/V/eengezins, WP2/V/meergezins);
-		attribute<bool>              IsDetached          : [true, false, false, false];
-		attribute<bool>              IsSemiDetached      : [false, true, false, false];
-		
-		container V := for_each_nedv(name, String(ID(.))+'[..]', void, .);
-	}
-
-	unit<uint8> vbo_gebruiksdoel: nrofrows = 11
-	{
-		attribute<uint8> ID := ID(.);
-		attribute<string> label:
-		[
-			'bijeenkomstfunctie','celfunctie','gezondheidszorgfunctie','industriefunctie','kantoorfunctie','logiesfunctie'
-			,'onderwijsfunctie','overige gebruiksfunctie','sportfunctie','winkelfunctie','woonfunctie'
-		];
-		attribute<string> name := replace(replace(label,' ','_'), 'functie','');
-		attribute<uint32> BrushColor:  DialogType = "BrushColor",[rgb(255,255,255), rgb(  0,129,  0),rgb(  0,  0,255),rgb(255,220,  0),rgb(255,  0,  0)];
-		
-		container V := for_each_nedv(name, String(ID(.))+'[..]', void, .);
+		attribute<string>   Label        :  ['treated', 'control', 'other'], DialogType = "LabelText";
+		attribute<uint32>   PenColor     := Brushcolor, DialogType = "PenColor";
+		attribute<uint32>   BrushColor   :  [rgb(200,0,0),rgb(0,200,0), rgb(128,128,128)] , DialogType = "BrushColor";
+		attribute<s>        ClassBreaks  :  [0,1080,3600], DialogType = "Classification";
 	}
 	
 	unit<uint32> all_metro_stations := /Brondata/Metrostations/All_stations/uq
@@ -225,6 +43,61 @@ container typeringen: isHidden = "True", using = "eenheden"
 		}
 	}
 	
+	unit<uint32> Kwartalen : nrofrows = 29
+	{
+		attribute<uint32> values       :     [201201 
+												// ,201204, 201207, 201210
+											, 201301 
+												// ,201304, 201307, 201310
+											, 201401, 201404, 201407, 201410
+											, 201501, 201504, 201507, 201510
+											, 201601, 201604, 201607, 201610
+											, 201701, 201704, 201707, 201710
+											, 201801, 201804, 201807, 201810
+											, 201901, 201904, 201907, 201910
+											, 202001
+											, 202101
+											, 202201
+											];
+		attribute<uint32> values_prev  := MakeDefined(rjoin(id(.) -1, id(.), values),201201);
+		attribute<string> name         := 'Y' + string(values);
+		attribute<string> name_prev    := 'Y' + string(values_prev);
+		attribute<string> name_triv    := right(name, 2) == '01' 
+											? left(name, 5) + '_Q4' 
+											: right(name, 2) == '04' 
+												? left(name, 5) + '_Q1' 
+												: right(name, 2) == '07' 
+													? left(name, 5) + '_Q2' 
+													: right(name, 2) == '10' 
+														? left(name, 5) + '_Q3' 
+														: name;
+		attribute<string> name_triv_prev   := rjoin(values_prev, values, name_triv);
+		attribute<string> name_triv_2prev  := rjoin(values_prev, values, name_triv_prev);
+		attribute<string> name_triv_3prev  := rjoin(values_prev, values, name_triv_2prev);
+		attribute<string> name_triv_4prev  := rjoin(values_prev, values, name_triv_3prev);
+	}
+	
+	unit<uint8> vbo_gebruiksdoel: nrofrows = 11
+	{
+		attribute<uint8> ID := ID(.);
+		attribute<string> label:
+		[
+			'bijeenkomstfunctie','celfunctie','gezondheidszorgfunctie','industriefunctie','kantoorfunctie','logiesfunctie'
+			,'onderwijsfunctie','overige gebruiksfunctie','sportfunctie','winkelfunctie','woonfunctie'
+		];
+		attribute<string> name := replace(replace(label,' ','_'), 'functie','');
+		attribute<uint32> BrushColor:  DialogType = "BrushColor",[rgb(255,255,255), rgb(  0,129,  0),rgb(  0,  0,255),rgb(255,220,  0),rgb(255,  0,  0)];
+		
+		container V := for_each_nedv(name, String(ID(.))+'[..]', void, .);
+	}
+	unit<uint32> jaren1222  := range(uint32, 2012, 2023)
+	{
+		attribute<uint32> values       := id(.);
+		attribute<uint32> values_prev  := values == 2012 ? 2012 : values - 1;
+		attribute<string> name         := replace(string(values), '201', 'Y201', '202', 'Y202');
+		
+		container V := for_each_nedv(name, String(ID(.))+'[..]', void, .);
+	}
 	unit<uint8> metro_stations: NrOfRows = 8 //17
 	{
 		parameter<uint8> nrAttr := 2b;
@@ -265,233 +138,8 @@ container typeringen: isHidden = "True", using = "eenheden"
 		
 		container V := for_each_nedv(name, String(ID(.))+'[..]', void, .);
 	}	
-	
-	unit<uint8> buffers: nrofrows = 6
-	{
-		attribute<uint8>  ID               := ID(.);
-		attribute<uint32> values           : [500, 1000, 1500, 2000, 2500, 3000];
-		// , 1200, 1400, 1600, 1800, 2000];
-		attribute<uint32> values_prev      := MakeDefined(values[id-1b],0);
-		attribute<string> name_rep         := replace(string(values), '00', '00m', '00m0', '000m');
-		attribute<string> name_rep_prev    := replace(string(values_prev), '00', '00m', '00m0', '000m');
-		attribute<string> name             := 'buf_' + string(values_prev) + '_' + name_rep;
-		attribute<string> name2            := 'buff_' + name_rep;
-		attribute<string> name2_prev       := 'buff_' + name_rep_prev;
-	}
-	
-	unit<uint32> metro_stations_buffers := combine(metro_stations, buffers)
-	{
-	attribute<string> metro_stations_name   := metro_stations/name[nr_1];
-	attribute<string> buffer_name           := buffers/name[nr_2];
-	attribute<string> name                  := metro_stations_name + '_' + buffer_name;
-	}
-	
-	#include <wegtype.dms>
-	
-	unit<uint8> wegtypegroep: nrofrows = 6
-	{
-		attribute<string> Label: DialogType = "LabelText", 
-			['voetpad','fietspad','weg','overig','in aanbouw','gesloten'];
-		attribute<uint32> PenColor: DialogType = "PenColor", 
-			[rgb(255,255,0),rgb(255,128,0),rgb(200,0,0),rgb(128,128,128),rgb(0,200,0),rgb(0,0,200)];
-		attribute<uint32> PenWidth: expr = "const(4,.,uint32)", DialogType = "PenWidth";
-	}
-	unit<int16> bouwjaren  : nrofrows = 9
-	{
-		attribute<string>   Label        :  ['<1600 - 1700', '1700 - 1800', '1800 - 1850', '1850 - 1900', '1900 - 1940' , '1940- 1960', '1960 - 1980', '1980 - 2000' , '> 2000'], DialogType = "LabelText";
-		attribute<uint32>   PenColor     := Brushcolor, DialogType = "PenColor";
-		attribute<uint32>   BrushColor   :  [rgb(200,100,  0),rgb(255,150,0),rgb(255,255,0),rgb(150,200,  0),rgb(0,150,0),rgb(0,200,150),rgb(0,150,150),rgb(0,100,200),rgb(200,50,255)] , DialogType = "BrushColor";
-		attribute<bj>       ClassBreaks  :  [0,1700,1800,1850,1900,1940,1960,1980,2000], DialogType = "Classification";
-	}
-	
-	unit<uint32> StudyAreaRef : nrofrows = 2
-	{
-		attribute<string> name      : ['Treated','Control'];
-	}
-	
-	unit<uint32> jaren  := range(uint32, 2000, 2023)
-	{
-		attribute<uint32> values       := id(.);
-		attribute<uint32> values_prev  := values == 2000 ? 2000 : values - 1;
-		attribute<string> name         := replace(string(values), '20', 'j20');
-	}
-	
-	unit<uint32> jaren8519  := range(uint32, 1985, 2020)
-	{
-		attribute<uint32> values       := id(.);
-		attribute<string> name         := 'Y' + string(values);
-	}
-	
-	unit<uint32> jaren0012  := range(uint32, 2000, 2013)
-	{
-		attribute<uint32> values       := id(.);
-		attribute<uint32> values_prev  := values == 2000 ? 2000 : values - 1;
-		attribute<string> name         := replace(string(values), '20', 'j20');
-	}
-	
-	unit<uint32> Kwartalen : nrofrows = 29
-	{
-		attribute<uint32> values       :     [201201 
-												// ,201204, 201207, 201210
-											, 201301 
-												// ,201304, 201307, 201310
-											, 201401, 201404, 201407, 201410
-											, 201501, 201504, 201507, 201510
-											, 201601, 201604, 201607, 201610
-											, 201701, 201704, 201707, 201710
-											, 201801, 201804, 201807, 201810
-											, 201901, 201904, 201907, 201910
-											, 202001
-											, 202101
-											, 202201
-											];
-		attribute<uint32> values_prev  := MakeDefined(rjoin(id(.) -1, id(.), values),201201);
-		attribute<string> name         := 'Y' + string(values);
-		attribute<string> name_prev    := 'Y' + string(values_prev);
-		attribute<string> name_triv    := right(name, 2) == '01' 
-											? left(name, 5) + '_Q4' 
-											: right(name, 2) == '04' 
-												? left(name, 5) + '_Q1' 
-												: right(name, 2) == '07' 
-													? left(name, 5) + '_Q2' 
-													: right(name, 2) == '10' 
-														? left(name, 5) + '_Q3' 
-														: name;
-		attribute<string> name_triv_prev   := rjoin(values_prev, values, name_triv);
-		attribute<string> name_triv_2prev  := rjoin(values_prev, values, name_triv_prev);
-		attribute<string> name_triv_3prev  := rjoin(values_prev, values, name_triv_2prev);
-		attribute<string> name_triv_4prev  := rjoin(values_prev, values, name_triv_3prev);
-	}
-	
-	unit<uint32> jaren1219  := range(uint32, 2012, 2020)
-	{
-		attribute<uint32> values       := id(.);
-		attribute<uint32> values_prev  := values == 2012 ? 2012 : values - 1;
-		attribute<string> name         := replace(string(values), '20', 'Y20');
-		
-		container V := for_each_nedv(name, String(ID(.))+'[..]', void, .);
-	}
-	unit<uint32> jaren1222  := range(uint32, 2012, 2023)
-	{
-		attribute<uint32> values       := id(.);
-		attribute<uint32> values_prev  := values == 2012 ? 2012 : values - 1;
-		attribute<string> name         := replace(string(values), '201', 'Y201', '202', 'Y202');
-		
-		container V := for_each_nedv(name, String(ID(.))+'[..]', void, .);
-	}
 
-	parameter<uint32> count_typen := count(Brondata/NoordZuidlijn/Rijksmonumenten/uq_type/id);
-	unit<uint32> Monument_typen  := range(uint32,0,count_typen)
-	{
-		attribute<string> values := Brondata/NoordZuidlijn/Rijksmonumenten/uq_type/values;
-	}
-	
-	unit<uint8> seconden : nrofrows = 3
-	{
-		// attribute<string>   Label        :  ['0-12 min', '12-24 min', '24-36 min', '36-60 min', 'meer dan 60 min'], DialogType = "LabelText";
-		// attribute<uint32>   PenColor     := Brushcolor, DialogType = "PenColor";
-		// attribute<uint32>   BrushColor   :  [rgb(255,255,0),rgb(255,128,0),rgb(200,0,0),rgb(128,128,128),rgb(0,200,0)] , DialogType = "BrushColor";
-		// attribute<s>        ClassBreaks  :  [0,720,1440,2160,3600], DialogType = "Classification";
-		
-		attribute<string>   Label        :  ['treated', 'control', 'other'], DialogType = "LabelText";
-		attribute<uint32>   PenColor     := Brushcolor, DialogType = "PenColor";
-		attribute<uint32>   BrushColor   :  [rgb(200,0,0),rgb(0,200,0), rgb(128,128,128)] , DialogType = "BrushColor";
-		// attribute<s>        ClassBreaks  :  [0,720,2160], DialogType = "Classification";
-		attribute<s>        ClassBreaks  :  [0,1080,3600], DialogType = "Classification";
-	}
-	
-	
-	unit<uint8> HGN_ek;
-	
-	unit<uint8> HGNclasses1900: NrOfRows = 10
-	{
-		parameter<uint8> nrAttr := 6b;
-		unit<uint8> elem := range(uint8, 0b, nrAttr *#HGNclasses1900[uint8])
-		{	
-			attribute<string> values: [ 
-			//'class_name','r', 'g', 'b', 'gg_10K'
-			 ' 1'  ,'Grasland',                       '233','245','190','6'
-			,' 2'  ,'Akker en kale grond',            '170','232',' 64','6'
-			,' 3'  ,'Heide',                          '254','100','165','7'
-			,' 4'  ,'Loofbos',                        '103','174','  0','7'
-			,' 5'  ,'Naaldbos',                       '103','174','  0','7'
-			,' 6'  ,'Bebouwing en wegen',             '254',' 60','  0','1'
-			,' 7'  ,'Water',                          '151','219','242','8'
-			,' 8'  ,'Rietmoeras',                     '105','213','180','7'
-			,' 9'  ,'Stuifduinen en zandplaten',      '254','247',' 94','7'
-			,' 0'  ,'Exterior',                       '200','200','200','0'
-			];
-		}
-		
-		attribute<.> id:= id(.);
-		
-		attribute<HGN_ek>       hgn             := value(uint8(elem/values[value(id * nrAttr + 0b, elem)]), HGN_ek);
-		attribute<string>       Label           := elem/values[value(id * nrAttr + 1b, elem)], DialogType = "LabelText";
-		attribute<string>       name            := replace(Label, ' ', '_');
-		attribute<uint8>        r               := uint8(elem/values[value(id * nrAttr + 2b, elem)]);
-		attribute<uint8>        g               := uint8(elem/values[value(id * nrAttr + 3b, elem)]);
-		attribute<uint8>        b               := uint8(elem/values[value(id * nrAttr + 4b, elem)]);
-		attribute<uint8>        gg_10K_rel      := uint8(elem/values[value(id * nrAttr + 5b, elem)]);
-		attribute<uint32>       BrushColor      := rgb(r, g, b), DialogType = "BrushColor";
-		attribute<uint32>       PenColor        := BrushColor, DialogType = "PenColor";
-		parameter<int16>        PenWidth        := 0[int16], DialogType = "penWidth";
-		attribute<uint32>       SymbolColor     := BrushColor, DialogType = "SymbolColor";
-	}
-	
-	unit<uint8> HouseCharacteristics : nrofrows = 10
-	{
-		attribute<string> name :
-		[
-			'size', 
-			'lotsize', 
-			'nrooms', 
-			'nbadk', 
-			'd_maintgood', 
-			'd_kk', 
-			'd_cv', 
-			'd_erfpacht', 
-			'd_isol_compl', 
-			'd_privpark'
-			// 'd_highrise'
-		];
-		
-		attribute<string> name2 := 'char_' + name;
-		attribute<string> label := name;
-	}
-	
-	unit<uint8> HouseCharacteristics_src : nrofrows = 16
-	{
-		attribute<string> name_src :
-		[
-			'lnsize', //
-			'lnlotsize', //
-			'nrooms', //
-			'nbadk', //
-			'd_cv', //
-			'd_maintgood', //
-			'd_isol_compl', //
-			'd_privpark', //
-			// 'd_highrise',//
-			'd_kk', //
-			'd_erfpacht', //
-			'd_semidetached',  //
-			'd_detached', //
-			'uai_new', //
-			// 'lnreistijd_100k_inw',//
-			// 'reistijd_station_2006_edit', //
-			// 'groennabij_2015',//
-			'bereikbaarheidpiekvoor',//
-			'2019.trans_year', //
-			'_cons' //
-		];
-		
-		attribute<string> name := replace(name_src, '2019.trans_year', 'y2019', '_cons', 'constant');
-	}
-	
-	unit<uint32> HouseTypeHouseChar := combine(WP4, HouseCharacteristics)
-	{
-		attribute<string> name           :=  WP + '_' + HouseChar;
-		attribute<string> WP             := rjoin(Nr_1, id(WP4), WP4/name);
-		attribute<string> HouseChar      := rjoin(Nr_2, id(HouseCharacteristics), HouseCharacteristics/name);
-	}
+
+
+
 }
