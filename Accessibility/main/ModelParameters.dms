@@ -1,6 +1,6 @@
 container ModelParameters : using = "units"
 {
-	parameter<string>   Onderzoeksmoment := 'NaOpeningOkt'; //'VoorOpening' 'NaOpeningJuli' 'NaOpeningOkt' 'NOVI'
+	parameter<string>   Onderzoeksmoment := 'VoorOpening'; //'VoorOpening' 'NaOpeningJuli' 'NaOpeningOkt' 'NOVI'
 	
 	
 	
@@ -47,17 +47,17 @@ container ModelParameters : using = "units"
 
 	parameter<m>        MaxTransferDistKm            := 500[m];                   //Maximale euclidische loopafstand tussen OV-haltes voor overstappen, in meters.
 	parameter<float32>  MaxODconn                    := 25f;                      //Maximum aantal haltes dat bij de org of de dest wordt gezocht
-	parameter<min_f>    MaxWalkingTime_Org2Stop      := 45[min_f];                //Maximum looptijd van org naar eerste halte, in seconden. x  MaxWalkingDistSelection_Org2Stop
-	parameter<min_f>    MaxWalkingTime_Stop2Dest     := 45[min_f];                //Maximum looptijd van de laatste stop naar dest, in seconden. x
-	parameter<min_f>    MaxBikingTime_Org2Stop       := 45[min_f];                //Maximum fietstijd van org naar eerste halte, in seconden. x
-	parameter<min_f>    MaxBikingTime_Stop2Dest      := 45[min_f];                //Maximum fietstijd van laatste halte naar dest, in seconden. x
-	parameter<min_f>    MaxWalkingTime_Org2Dest      := 45[min_f];                //Maximale looptijd wanneer er direct van org naar dest locatie wordt gelopen, in seconden.
-	parameter<min_f>    MaxBikingTime_Org2Dest       := 45[min_f];                //Maximale fietstijd wanneer er direct van org naar dest locatie wordt gefietst, in seconden.
-	parameter<min_f>    MaxOVTime                    := 45[min_f];                //Maximale reistijd met OV. Te gebruiken om de rekentijd te verkorten. LET OP: hierdoor worden mogelijk de verste locaties niet bereikt. Wannneer een distance decay wordt gebruikt is niet zo erg. Maar bij een volledige OD wel! 
-	parameter<min_f>    MaxCarTime                   := 45[min_f];                //Maximale reistijd met lopen/fiets/auto //120
+	parameter<min_f>    MaxWalkingTime_Org2Stop      := 15[min_f];                //Maximum looptijd van org naar eerste halte, in seconden. x  MaxWalkingDistSelection_Org2Stop
+	parameter<min_f>    MaxWalkingTime_Stop2Dest     := 15[min_f];                //Maximum looptijd van de laatste stop naar dest, in seconden. x
+	parameter<min_f>    MaxBikingTime_Org2Stop       := 15[min_f];                //Maximum fietstijd van org naar eerste halte, in seconden. x
+	parameter<min_f>    MaxBikingTime_Stop2Dest      := 15[min_f];                //Maximum fietstijd van laatste halte naar dest, in seconden. x
+	parameter<min_f>    MaxWalkingTime_Org2Dest      := 15[min_f];                //Maximale looptijd wanneer er direct van org naar dest locatie wordt gelopen, in seconden.
+	parameter<min_f>    MaxBikingTime_Org2Dest       := 15[min_f];                //Maximale fietstijd wanneer er direct van org naar dest locatie wordt gefietst, in seconden.
+	parameter<min_f>    MaxOVTime                    := 15[min_f];                //Maximale reistijd met OV. Te gebruiken om de rekentijd te verkorten. LET OP: hierdoor worden mogelijk de verste locaties niet bereikt. Wannneer een distance decay wordt gebruikt is niet zo erg. Maar bij een volledige OD wel! 
+	parameter<min_f>    MaxCarTime                   := 15[min_f];                //Maximale reistijd met lopen/fiets/auto //120
 	parameter<min_f>    OngelijkvloersPenalty        := 0[min_f];                 //Is er sprake van een halte waar je veel verticale afstand moet afleggen? Dan kun je daar een tijd penalty voor geven bij het overstappen, in seconden.
 
-	parameter<float32>  WegingWachttijdThuisVoortransport := 0f; //0= geen wachttijd thuis meenemen, 1= wel wachttijd meenemen.
+	parameter<float32>  WegingWachttijdThuisVoortransport := 1f; //0= geen wachttijd thuis meenemen, 1= wel wachttijd meenemen.
 
 	parameter<bool>     OSM_NL_prov             := FALSE;                        //OSM data NL in provincies opgesplitst?
 	parameter<km_hr>    WalkingSpeed_kmhr       := 4.8[km_hr];
