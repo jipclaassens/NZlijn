@@ -67,7 +67,7 @@ container Analyse: Using = "Eenheden;geography"
 		attribute<bool>   AccessibilityChangeAboveThreshold_30min   (NL_grid/domain) := Brondata/Bereikbaarheid/OD_30min_DiffPiekPerc_W_OV_W_with_W_W_ORG_Point100m_DEST_LISA_WT_0  >= Threshold_ToenameAantalBanen;
 		attribute<bool>   AccessibilityChangeAboveThreshold_45min   (NL_grid/domain) := Brondata/Bereikbaarheid/OD_45min_DiffPiekPerc_W_OV_W_with_W_W_ORG_Point100m_DEST_LISA_WT_0  >= Threshold_ToenameAantalBanen;
 		
-		attribute<bool>   AccessibilityChangeAboveThreshold         (NL_grid/domain) := AccessibilityChangeAboveThreshold_45min;
+		attribute<bool>   AccessibilityChangeAboveThreshold         (NL_grid/domain) := AccessibilityChangeAboveThreshold_30min;
 		
 		container Set_TA12_CA_24_50000banen: FreeData = "false"
 		{
@@ -121,7 +121,7 @@ container Analyse: Using = "Eenheden;geography"
 				}
 				unit<uint32> TA_V_district := district(Pre_Districts/TreatmentArea_Vijzelgracht)
 				{
-					attribute<bool> select (NL_grid/domain) := districts == 1;
+					attribute<bool> select (NL_grid/domain) := districts == 1 || districts == 2;
 				}
 				unit<uint32> TA_P_district := district(Pre_Districts/TreatmentArea_DePijp)
 				{
