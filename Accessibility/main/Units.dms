@@ -34,7 +34,7 @@ container Units
 	unit<uint32> Weekdays: NrOfRows = 7 
 	{
 		attribute<string> Name      :  ['monday','tuesday','wednesday','thursday','friday','saturday','sunday'];
-		attribute<.>      PrevRef   := MakeDefined(id(.) - 1, 6);
+		attribute<.>      PrevRef   := MakeDefined(sub_or_null(id(.),1), 6);
 		attribute<string> LabelText := Name, DialogData = "LabelText";
 	}
 	

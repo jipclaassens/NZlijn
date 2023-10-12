@@ -104,10 +104,10 @@ Template StaticNetsCreator_T : using = "geometries"
 			attribute<uint32>             nLeft              := StopsGrid/nLeft[from_GridId];
 			attribute<uint32>             first_trans        := TransferFromStops/first_transfer[from_trans_StopRef];
 			attribute<Directions>         quad               := switch( //top, right, bottom, left, middle
-																	 case(nTop > 0   	&& nTop    > (id(.) - first_trans), uint32(0)) 
-																	,case(nRight > 0 	&& nRight  > (id(.) - (first_trans + nTop)), uint32(1))
-																	,case(nBottom > 0 	&& nBottom > (id(.) - (first_trans + nRight + nTop)), uint32(2))
-																	,case(nLeft > 0 	&& nLeft   > (id(.) - (first_trans + nBottom + nRight + nTop)), uint32(3)) 
+																	 case(nTop > 0   	&& nTop    > (sub_or_null(id(.),first_trans)), uint32(0)) 
+																	,case(nRight > 0 	&& nRight  > (sub_or_null(id(.),(first_trans + nTop))), uint32(1))
+																	,case(nBottom > 0 	&& nBottom > (sub_or_null(id(.),(first_trans + nRight + nTop))), uint32(2))
+																	,case(nLeft > 0 	&& nLeft   > (sub_or_null(id(.),(first_trans + nBottom + nRight + nTop))), uint32(3)) 
 																	,4
 																)[Directions];
 			attribute<StopsGrid>          to_GridId     := (spoint(from_GridId)+Directions/point[quad])[StopsGrid];
@@ -144,7 +144,7 @@ Template StaticNetsCreator_T : using = "geometries"
 			attribute<ScheduledSpaceTimeEvents> SSTE_Ref          := rlookup(point(cumu_events, fromStop, upoint), ScheduledSpaceTimeEvents/unique_id);
 			attribute<Time>                     fromTime          := ScheduledSpaceTimeEvents/TimeRef[SSTE_Ref];
 			attribute<s_f>                      Duration          := NeedsTranferTimePenalty ? TransferPaths/minTransferTime[PathRef] + convert(ModelParameters/OngelijkvloersPenalty, s_f) : TransferPaths/minTransferTime[PathRef];
-			attribute<Time>                     toTime            := fromTime + Duration[Time] < #Time ? fromTime + Duration[Time] : fromTime + Duration[Time] -  #Time;
+			attribute<Time>                     toTime            := fromTime + Duration[Time] < #Time ? fromTime + Duration[Time] : fromTime + sub_or_null(Duration[Time], #Time);
 			attribute<string>                   LabelText         := 'Transfer: ' + Time/LabelText[fromTime] + ' @ ' + Stops/Name[fromStop] + ' to ' + Time/LabelText[toTime] + ' @ ' + Stops/Name[toStop], DialogType = "LabelText";
 		}
 	}

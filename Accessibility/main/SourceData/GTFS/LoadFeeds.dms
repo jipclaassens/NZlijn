@@ -239,7 +239,7 @@ container LoadFeeds : using = "classifications"
 			attribute<uint32> 		hour:		expr = "uint32(substr(TimesString, 0, hour_sep))";
 			attribute<uint32>		min:		expr = "uint32(substr(TimesString, hour_sep + 1, sec_sep - hour_sep - 1))";
 			attribute<uint32>		sec:		expr = "uint32(substr(TimesString, sec_sep + 1, 2))";
-			attribute<uint32>		hoursyst:	expr = "hour <= max(Time/Hour) ? hour : hour - max(Time/Hour)";
+			attribute<uint32>		hoursyst:	expr = "hour <= max(Time/Hour) ? hour : sub_or_null(hour,max(Time/Hour))";
 			attribute<Time>			TimeRef:	expr = "((hoursyst * 60 * 60) + (min * 60) + sec)[Time]";
 		}
 	}
