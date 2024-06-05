@@ -144,7 +144,7 @@ Template StaticNetsCreator_T : using = "geometries"
 			attribute<ScheduledSpaceTimeEvents> SSTE_Ref          := rlookup(point(cumu_events, fromStop, upoint), ScheduledSpaceTimeEvents/unique_id);
 			attribute<Time>                     fromTime          := ScheduledSpaceTimeEvents/TimeRef[SSTE_Ref];
 			attribute<s_f>                      Duration          := NeedsTranferTimePenalty ? TransferPaths/minTransferTime[PathRef] + convert(ModelParameters/OngelijkvloersPenalty, s_f) : TransferPaths/minTransferTime[PathRef];
-			attribute<Time>                     toTime            := fromTime + Duration[Time] < #Time ? fromTime + Duration[Time] : fromTime + sub_or_null(Duration[Time], #Time);
+			attribute<Time>                     toTime            := fromTime + Duration[Time] < #Time ? fromTime + Duration[Time] : sub_or_null(fromTime + Duration[Time],#Time);
 			attribute<string>                   LabelText         := 'Transfer: ' + Time/LabelText[fromTime] + ' @ ' + Stops/Name[fromStop] + ' to ' + Time/LabelText[toTime] + ' @ ' + Stops/Name[toStop], DialogType = "LabelText";
 		}
 	}
@@ -211,7 +211,9 @@ Template StaticNetsCreator_T : using = "geometries"
 			attribute<rdc>          ToPoint   := Stops/Point[ToStop];
 			attribute<Time>         FromTime  := TimeRef;
 			attribute<Time>         ToTime    := TimeRef[NextMoment];
-			attribute<s_f>          Duration  := FromTime <= ToTime ? float32(ToTime - FromTime)[s_f] : float32((ToTime + #Time) - FromTime)[s_f]; // duration in seconds
+			attribute<s_f>          Duration       := FromTime <= ToTime 
+														? float32(sub_or_null(ToTime,FromTime))[s_f] 
+														: float32(sub_or_null(ToTime + #Time,FromTime))[s_f]; // duration in seconds
 			attribute<string>       LabelText := 'Waiting at stop: ' + Stops/Name[FromStop] + ' from ' + Time/LabelText[FromTime] + ' to ' + Time/LabelText[ToTime], DialogType = "LabelText";
 		}
 		unit<uint32> NodeSet:= unique(doubledLinks/MomentXPlace), DialogData = "Place", DialogType = "map"

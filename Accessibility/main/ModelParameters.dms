@@ -1,6 +1,6 @@
 container ModelParameters : using = "units"
 {
-	parameter<string>   Onderzoeksmoment := 'VoorOpening'; //'VoorOpening' 'NaOpeningJuli' 'NaOpeningOkt' 'NOVI'
+	parameter<string>   Onderzoeksmoment := 'NaOpeningOkt'; //'VoorOpening' 'NaOpeningJuli' 'NaOpeningOkt' 'NOVI'
 	
 	
 	

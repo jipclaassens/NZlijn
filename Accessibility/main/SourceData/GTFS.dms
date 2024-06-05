@@ -1,5 +1,6 @@
 container GTFS : using = "geometries"
 {
 	#include<LoadFeeds.dms>
+	#include<LoadFeeds_pre.dms>
 	#include<StudyAreaFeeds.dms>
 }

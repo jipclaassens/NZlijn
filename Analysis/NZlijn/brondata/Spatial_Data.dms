@@ -1,0 +1,83 @@
+container Spatial_data
+{
+	container OSM
+	{	
+		unit<uint32> wegen 
+		:	StorageName     = "%SourceDataDir%/OSM/20200117/netherlands-latest-free.shp/gis_osm_roads_free_1.shp"
+		,	StorageType     = "gdal.vect"
+		,	StorageReadOnly = "True"
+		,	DialogType = "Map"
+		,	DialogData = "geometry_rd"	
+		, syncmode = "none"			
+		{
+			attribute<fpoint> 	         geometry (arc);	
+			attribute<geography/rdc>    geometry_rd (arc)   := LatLongWgs842RD(geometry, fpoint)[geography/rdc];
+			attribute<string>            fclass;
+			attribute<uint32>            id                  := id(.);
+		
+			unit<uint32>                 arcpoints           := Sequence2points(geometry_rd), syncmode = "none"
+			{
+				attribute<selectie_polygoon>            arcpoints_sg_rel    := point_in_polygon(arcpoints/point, selectie_polygoon/Polygon);
+				attribute<bool>                         point_in_sel        := IsDefined(arcpoints_sg_rel);
+			}
+			
+			attribute<bool>                             road_in_sel         := any(arcpoints/point_in_sel, arcpoints/sequencenr);
+		}
+
+		unit<uint32> Wegen_Amsterdam_Creator := subset(wegen/road_in_sel)
+		,   StorageName = "%LocalDataDir%/NZlijn/Wegen_Amsterdam.new.fss"
+		,	DialogType = "Map"
+		,	DialogData = "geometry"	
+		{
+			attribute<geography/rdc>              geometry (arc) := wegen/geometry_rd[nr_OrgEntity];
+			attribute<string>                      fclass         := wegen/fclass[nr_OrgEntity];
+		}
+		
+		unit<uint32> Wegen_Amsterdam
+		:	StorageName = "%LocalDataDir%/NZlijn/Wegen_Amsterdam.fss"
+		,	DialogType = "Map"
+		,	DialogData = "geometry"	
+		,	StorageReadOnly = "True"
+		{
+			attribute<geography/rdc>              geometry (arc);
+			attribute<string>                      fclass;
+			
+			attribute<m>                           lengte               := arc_length(geometry, m);
+			attribute<string>                      type                 := fclass;
+
+			attribute<typeringen/wegtype>          wegtype              := rlookup(type, typeringen/wegtype/name);   
+			attribute<typeringen/wegtypegroep>     wegtypegroep         := typeringen/wegtype/wegtypegroepnr[wegtype];
+
+			attribute<bool>                        isPartOfCarNetwork   := typeringen/wegtype/IsPartOfCarNetwork[wegtype];
+			attribute<bool>                        isPartOfTruckNetwork := typeringen/wegtype/isPartOfTruckNetwork[wegtype];
+
+			attribute<bool>                        isPartOfBikeNetwork  := typeringen/wegtype/IsPartOfBikeNetwork[wegtype];
+			attribute<bool>                        isPartOfPedestrianNetwork:= typeringen/wegtype/IsPartOfPedestrianNetwork[wegtype];
+
+			attribute<bool>                        isMotorWay           := (type = 'motorway' || type = 'motorway_link');
+			attribute<bool>                        isMotorWayLink       :=  type = 'motorway_link';
+			attribute<bool>                        isMajor              := type = 'primary_link' || type = 'secondary_link' || type = 'secondary' || type = 'primary';
+			attribute<bool>                        isStreet             := !isMotorWay && !isMajor;
+			
+			unit<uint32> Motorways := subset(isMotorWay)
+			,	StorageName = "%LocalDataDir%/NZlijn/Motorway_Amsterdam.fss"
+			{
+				attribute<geography/rdc>     geometry (arc)                    := ../geometry[nr_OrgEntity];
+				container                    point_rel_info_sgpoints           := connect_info(geometry, sg_points/geometry);
+				attribute<m> 		         Dist2sgpoints (sg_points)         := point_rel_info_sgpoints/dist[m];
+				container                    point_rel_info_nvm                := connect_info(geometry, NVM/Subset_Amsterdam/geometry);
+				attribute<m> 		         Dist2nvm (NVM/Subset_Amsterdam)   := point_rel_info_nvm/dist[m];
+			}
+			unit<uint32> MotorwayLinks := subset(isMotorWayLink)
+			{
+				attribute<geography/rdc>     geometry (arc)                    := ../geometry[nr_OrgEntity];
+				container                    point_rel_info_sgpoints           := connect_info(geometry, sg_points/geometry);
+				attribute<m> 		         Dist2sgpoints (sg_points)         := point_rel_info_sgpoints/dist[m];
+				container                    point_rel_info_nvm                := connect_info(geometry, NVM/Subset_Amsterdam/geometry);
+				attribute<m> 		         Dist2nvm (NVM/Subset_Amsterdam)   := point_rel_info_nvm/dist[m];
+			}
+		}
+		
+		#include <../NetworkPreperation.dms>
+	}
+}

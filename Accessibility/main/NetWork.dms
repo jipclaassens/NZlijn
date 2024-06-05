@@ -77,9 +77,9 @@ container NetworkAnalyses : using = "units;ModelParameters;Classifications;geome
 				unit<uint32> OD_path := RoadNets_Org2Stop_W/Network/ODMatrix;
 				unit<uint32> AB := join_equal_values_uint32(OD_path/EindRef, ScheduledSpaceTimeEvents/stopRef)
 				{
-					attribute<Stops>                      Stop_rel          := nr_X_rel;
-					attribute<OD_path>                    OD_rel            := nr_1_rel;
-					attribute<ScheduledSpaceTimeEvents>   SSTE_rel          := nr_2_rel;
+					attribute<Stops>                      Stop_rel          := X_rel;
+					attribute<OD_path>                    OD_rel            := first_rel;
+					attribute<ScheduledSpaceTimeEvents>   SSTE_rel          := second_rel;
 					
 					attribute<allLinks/Places>            Place_rel         := stops/PlaceRef[Stop_rel];
 					attribute<Org>                        Org_rel           := OD_path/StartRef[OD_rel];
@@ -87,9 +87,9 @@ container NetworkAnalyses : using = "units;ModelParameters;Classifications;geome
 					
 					attribute<Time>                       Duration_Walk     := OD_path/Duration[OD_rel];
 					attribute<m>                          Distance          := OD_path/Distance[OD_rel];
-					attribute<Time>                       FromTime_Walk     := toTime_Walk[int32] - Duration_Walk[int32] > 0i
-																				? toTime_Walk - Duration_Walk 
-																				: (toTime_Walk[int32] - Duration_Walk[int32] + (#Time / 2)[int32])[uint32];
+					attribute<Time>                       FromTime_Walk     := sub_or_null(toTime_Walk[int32], Duration_Walk[int32]) > 0i
+																				? sub_or_null(toTime_Walk, Duration_Walk)
+																				: (sub_or_null(toTime_Walk[int32], Duration_Walk[int32]) + (#Time / 2)[int32])[uint32];
 					attribute<Time>                       toTime_Walk       := ScheduledSpaceTimeEvents/TimeRef[SSTE_rel];
 					attribute<string>                     LabelText         := OD_path/labeltext[OD_rel], DialogType = "LabelText";
 					
@@ -108,9 +108,9 @@ container NetworkAnalyses : using = "units;ModelParameters;Classifications;geome
 				unit<uint32> OD_path := RoadNets_Stop2Dest_W/Network/ODMatrix;
 				unit<uint32> AB := join_equal_values_uint32(OD_path/StartRef, ScheduledSpaceTimeEvents/stopRef)
 				{
-					attribute<Stops>                      Stop_rel          := nr_X_rel;
-					attribute<OD_path>                    OD_rel            := nr_1_rel;
-					attribute<ScheduledSpaceTimeEvents>   SSTE_rel          := nr_2_rel;
+					attribute<Stops>                      Stop_rel          := X_rel;
+					attribute<OD_path>                    OD_rel            := first_rel;
+					attribute<ScheduledSpaceTimeEvents>   SSTE_rel          := second_rel;
 					
 					attribute<allLinks/Places>            Place_rel         := stops/PlaceRef[Stop_rel];
 					attribute<Dest>                       Dest_rel          := OD_path/EindRef[OD_rel];
@@ -122,7 +122,7 @@ container NetworkAnalyses : using = "units;ModelParameters;Classifications;geome
 					attribute<m>                          Distance          := OD_path/Distance[OD_rel];
 					attribute<Time>                       FromTime_Walk     := ScheduledSpaceTimeEvents/TimeRef[SSTE_rel];
 					attribute<Time>                       ToTime_Walk       := FromTime_Walk + Duration_Walk > #Time
-																				? FromTime_Walk + Duration_Walk - #Time
+																				? sub_or_null(FromTime_Walk + Duration_Walk, #Time)
 																				: FromTime_Walk + Duration_Walk;
 					attribute<string>                     LabelText         := OD_path/labeltext[OD_rel], DialogType = "LabelText";
 					
@@ -260,32 +260,45 @@ container NetworkAnalyses : using = "units;ModelParameters;Classifications;geome
 				attribute<Time>                       Duration_withWaiting       := =ModelParameters/Arrival_or_Departure_at_time == 'Arrival' ? 'Duration_with_WaitingAtDest' : 'Duration_with_WaitingAtOrg';
 			}
 		}
-
+		
 		unit<uint32> StaticNet_subset_debug := Static_net
 		{
-			attribute<bool>   IsSub_from := =ModelParameters/Arrival_or_Departure_at_time == 'Arrival' ? 'FromTime > (inTime - convert(ModelParameters/MaxOVTime, s_f)[Time] - convert(ModelParameters/MaxWalkingTime_Org2Stop , s_f)[Time])' : 'FromTime >= inTime' ;
-			attribute<bool>   IsSub_to   := =ModelParameters/Arrival_or_Departure_at_time == 'Arrival' ? 'ToTime <= inTime' : 'ToTime   < (inTime + convert(ModelParameters/MaxOVTime, s_f)[Time] + convert(ModelParameters/MaxWalkingTime_Org2Stop , s_f)[Time])' ;
+			attribute<bool>   IsSub_from := FromTime >= inTime ;
+			attribute<bool>   IsSub_to   := ToTime   < (inTime + (convert(ModelParameters/MaxOVTime, s_f)[Time] * 2));
 			attribute<bool>   IsSub_dur  := duration <= convert(ModelParameters/MaxOVTime , s_f) * 2f;
 		}
 	
-		unit<uint32> StaticNet_subset := subset(StaticNet_subset_debug/IsSub_from && StaticNet_subset_debug/IsSub_to && StaticNet_subset_debug/IsSub_dur)
-		{
-			attribute<rdc>       geometry (arc) := Static_net/line[nr_OrgEntity];
-			attribute<Places>    FromPlace      := Static_net/FromPlace[nr_OrgEntity];
-			attribute<Places>    ToPlace        := Static_net/ToPlace[nr_OrgEntity];
-			attribute<rdc>       FromPoint      := Static_net/FromPoint[nr_OrgEntity];
-			attribute<rdc>       ToPoint        := Static_net/ToPoint[nr_OrgEntity];
-			attribute<string>    LabelText      := Static_net/LabelText[nr_OrgEntity];
-			attribute<Time>      FromTime       := Static_net/FromTime[nr_OrgEntity];
-			attribute<Time>      ToTime         := Static_net/ToTime[nr_OrgEntity];
-			attribute<s_f>       Duration       := Static_net/Duration[nr_OrgEntity];
-			attribute<LinkTypes> LinkType       := Static_net/LinkType[nr_OrgEntity];
-			attribute<NodeSet>   F1             := Static_net/F1[nr_OrgEntity];
-			attribute<NodeSet>   F2             := Static_net/F2[nr_OrgEntity];
-			attribute<uint32>    TripRef        := Static_net/TripRef[nr_OrgEntity];
-			attribute<string>    RouteName      := Static_net/RouteName[nr_OrgEntity];
-			attribute<Classifications/ModesList/List_selectie>    Mode        := Static_net/Mode[nr_OrgEntity];
-		}
+		unit<uint32> StaticNet_subset := select_with_attr_by_cond(NetworkAnalyses/Setup/StaticNets/Static_Net, StaticNet_subset_debug/IsSub_from && StaticNet_subset_debug/IsSub_to && StaticNet_subset_debug/IsSub_dur);
+
+		// unit<uint32> StaticNet_subset_debug := Static_net
+		// {
+			// attribute<bool>   IsSub_from := =ModelParameters/Arrival_or_Departure_at_time == 'Arrival' 
+												// ? 'FromTime > (inTime - convert(ModelParameters/MaxOVTime, s_f)[Time] - convert(ModelParameters/MaxWalkingTime_Org2Stop , s_f)[Time])' 
+												// : 'FromTime >= inTime' ;
+			// attribute<bool>   IsSub_to   := =ModelParameters/Arrival_or_Departure_at_time == 'Arrival' 
+												// ? 'ToTime <= inTime' 
+												// : 'ToTime   < (inTime + convert(ModelParameters/MaxOVTime, s_f)[Time] + convert(ModelParameters/MaxWalkingTime_Org2Stop , s_f)[Time])' ;
+			// attribute<bool>   IsSub_dur  := duration <= convert(ModelParameters/MaxOVTime , s_f) * 2f;
+		// }
+	
+		// unit<uint32> StaticNet_subset := subset(StaticNet_subset_debug/IsSub_from && StaticNet_subset_debug/IsSub_to && StaticNet_subset_debug/IsSub_dur)
+		// {
+			// attribute<rdc>       geometry (arc) := Static_net/line[nr_OrgEntity];
+			// attribute<Places>    FromPlace      := Static_net/FromPlace[nr_OrgEntity];
+			// attribute<Places>    ToPlace        := Static_net/ToPlace[nr_OrgEntity];
+			// attribute<rdc>       FromPoint      := Static_net/FromPoint[nr_OrgEntity];
+			// attribute<rdc>       ToPoint        := Static_net/ToPoint[nr_OrgEntity];
+			// attribute<string>    LabelText      := Static_net/LabelText[nr_OrgEntity];
+			// attribute<Time>      FromTime       := Static_net/FromTime[nr_OrgEntity];
+			// attribute<Time>      ToTime         := Static_net/ToTime[nr_OrgEntity];
+			// attribute<s_f>       Duration       := Static_net/Duration[nr_OrgEntity];
+			// attribute<LinkTypes> LinkType       := Static_net/LinkType[nr_OrgEntity];
+			// attribute<NodeSet>   F1             := Static_net/F1[nr_OrgEntity];
+			// attribute<NodeSet>   F2             := Static_net/F2[nr_OrgEntity];
+			// attribute<uint32>    TripRef        := Static_net/TripRef[nr_OrgEntity];
+			// attribute<string>    RouteName      := Static_net/RouteName[nr_OrgEntity];
+			// attribute<Classifications/ModesList/List_selectie>    Mode        := Static_net/Mode[nr_OrgEntity];
+		// }
 		
 		unit<uint64> OD_traveltime_W_OV_W_cut := 
 			dijkstra_m64('directed;startPoint(Node_rel,impedance,OrgZone_rel);endPoint(Node_rel,impedance,DstZone_rel);cut(OrgZone_max_imp);od:OrgZone_rel,DstZone_rel'

@@ -110,9 +110,12 @@ container OrgToDest: IsHidden = "True"
 				, nr_destNode
 			);
 		
-		attribute<float32>          impedance_org (orgDomain)                 := impedance_OD[nr_orgNode];
-		attribute<bool>             impedance_org_600s (orgDomain) := impedance_org <= 600f; //Ad hoc
-		attribute<s>          grid          (Geography/NL_grid/Domain)  := mean(impedance_OD, NodeSet/NL_grid_domain_rel)[s]; //, StorageName = "%LocalDataDir%/Output/Reistijd100kInw.tif";
-		attribute<s>          grid_500m          (Geography/NL_grid/Domain_500m)  := mean(impedance_OD, NodeSet/NL_grid_domain_500m_rel)[s]; //, StorageName = "%LocalDataDir%/Output/Reistijd100kInw.tif";
+		attribute<float32>          impedance_org                     (orgDomain) := impedance_OD[nr_orgNode];
+		attribute<s>                MakeGrid           (Geography/NL_grid/Domain) := mean(impedance_OD, NodeSet/NL_grid_domain_rel)[s], StorageName = "='%LocalDataProjDir%/Temp/Reistijd_'+station_name+'.tif'";
+		attribute<s>                grid               (Geography/NL_grid/Domain) : StorageName = "=PropValue(MakeGrid, 'StorageName')", StorageReadOnly = "true";
+		attribute<s>                Potential_sum      (Geography/NL_grid/Domain) := potential(grid, Distmatrices_100m/pot100m/binair);
+		attribute<float32>          Potential_count    (Geography/NL_grid/Domain) := const(9f, Geography/NL_grid/Domain);
+		
+		attribute<s>                Potential          (Geography/NL_grid/Domain) := Potential_sum / Potential_count;
 	}
 }

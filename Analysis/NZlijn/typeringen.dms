@@ -16,7 +16,7 @@ container typeringen: using = "eenheden"
 		attribute<string>   Label        :  ['treated', 'control', 'other'], DialogType = "LabelText";
 		attribute<uint32>   PenColor     := Brushcolor, DialogType = "PenColor";
 		attribute<uint32>   BrushColor   :  [rgb(200,0,0),rgb(0,200,0), rgb(128,128,128)] , DialogType = "BrushColor";
-		attribute<s>        ClassBreaks  :  [0,1080,3600], DialogType = "Classification";
+		// attribute<s>        ClassBreaks  :  [0,1080,3600], DialogType = "Classification";
 	}
 	
 	unit<uint32> all_metro_stations := /Brondata/Metrostations/All_stations/uq

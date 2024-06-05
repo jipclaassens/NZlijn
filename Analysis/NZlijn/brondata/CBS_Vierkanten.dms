@@ -1,0 +1,50 @@
+container CBS_vierkanten
+{
+	unit<uint32> VierkantJaren := range(uint32, 2000, 2023)
+	{
+		attribute<uint32> jaar := id(.);
+		attribute<string> name := 'Y'+string(jaar);
+		attribute<bool>   HasDataYears := jaar != 2013 && jaar != 2014;
+		
+		unit<uint32> sub := select_with_attr_by_cond(., HasDataYears);
+	}
+	container Read_Vierkanten :=
+		for_each_ne(
+			VierkantJaren/sub/name
+			, 'Read_Vierkanten_gpkg_T('+quote(string(VierkantJaren/sub/jaar))+')'
+		);
+		
+	container Vierkanten_src :=
+		for_each_nedv(
+			VierkantJaren/sub/name
+			, 'float32(Read_Vierkanten/'+VierkantJaren/sub/name+'/gpkg/vierkant_100m_'+string(VierkantJaren/sub/jaar)+'/aantal_woningen)[poly2grid(Read_Vierkanten/'+VierkantJaren/sub/name+'/gpkg/vierkant_100m_'+string(VierkantJaren/sub/jaar)+'/geometry, NL_grid/domain)][nrwonha]'
+			, NL_grid/domain
+			, nrwonha
+		);
+		
+	container Vierkanten :=
+		for_each_nedv(
+			VierkantJaren/sub/name
+			, 'Vierkanten_src/'+VierkantJaren/sub/name+' != -99998f && Vierkanten_src/'+VierkantJaren/sub/name+' != -99997f ? Vierkanten_src/'+VierkantJaren/sub/name+' : 0f'
+			, NL_grid/domain
+			, nrwonha
+		)
+	{
+		attribute<nrwonha> Y2013 (NL_grid/domain) := Y2012 + ((Y2015 - Y2012) / 3f);
+		attribute<nrwonha> Y2014 (NL_grid/domain) := Y2013 + ((Y2015 - Y2012) / 3f);
+		
+		attribute<nrwonha> new (NL_grid/domain) := Y2015 - Y2012;
+	}
+
+	Template Read_Vierkanten_gpkg_T
+	{
+		parameter<string> jaar;
+		//
+		container gpkg
+		:	StorageName     = "='%SourceDataDir%/CBS/cbs_vk100_'+jaar+'_vol.gpkg'"
+		, 	StorageType     = "gdal.vect"
+		,	StorageReadOnly = "True"
+		,	SyncMode        = "alltables"
+		,	DialogData      = "rdc";
+	}
+}

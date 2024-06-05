@@ -10,6 +10,17 @@ container geography: isHidden = "True", using = "eenheden"
 	
 	#include <ngr_layer.dms>
 	
+	unit<uint8> Matrix : nrofrows = 7
+	{
+		attribute<m> Size : [25, 50, 100, 150, 200, 300, 500];
+		attribute<string> name := 'pot'+string(size)+'m';
+	}
+	
+	container Distmatrices_25m  := for_each_nex(Matrix/name, 'Distmatrices/Impl_25m/'+Matrix/name+'/PotRange', spoint);
+	container Distmatrices_100m := for_each_nex(Matrix/name, 'Distmatrices/Impl_100m/'+Matrix/name+'/PotRange', spoint);
+	
+	#include<Distmatrices.dms>
+	
 	container potentialen: using = "eenheden"
 	{
 		unit<uint32> Dist2Range;

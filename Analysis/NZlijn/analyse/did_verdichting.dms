@@ -1,411 +1,71 @@
 container DiD_Verdichting := 
 	for_each_nedv(
 		typeringen/all_metro_stations/NZ_stations/var_name
-		, 'Analyse/NetwerkDist_Points_to_NZ/NetwerkDist_perstation/'+string(typeringen/all_metro_stations/NZ_stations/name)+'/Netwerk/OrgToDest/MakeOD_Time/grid[geography/sg_points/NL_grid_domain_rel]'
+		, 'Analyse/NetwerkDist_Points_to_NZ/NetwerkDist_perstation/'+string(typeringen/all_metro_stations/NZ_stations/name)+'/Netwerk/OrgToDest/MakeOD_Time/potential[geography/sg_points/NL_grid_domain_rel]'
 		, sg_points
 		, s
-	), using = "eenheden", FreeData = "False"
+	), using = "eenheden;brondata", FreeData = "False"
 {
-	attribute<uint32>                identificatie      (sg_points)   := sg_points/id;
-	attribute<float32>               x_coord            (sg_points)   := sg_points/x;
-	attribute<float32>               y_coord            (sg_points)   := sg_points/y;
-	// attribute<string>                PC4                (sg_points)   := rjoin(sg_points/pc4_rel, id(brondata/regios/postcode_gebieden/postcode4), brondata/regios/postcode_gebieden/postcode4/name);
+	attribute<uint32>           identificatie        (sg_points) := sg_points/id;
+	attribute<float32>          x_coord              (sg_points) := sg_points/x;
+	attribute<float32>          y_coord              (sg_points) := sg_points/y;
 	
-	attribute<nrwonha>               won2000            (sg_points)   := Brondata/CBS_vierkanten/woningen2000[sg_points/NL_grid_domain_rel];
-	attribute<nrwonha>               won2001            (sg_points)   := Brondata/CBS_vierkanten/woningen2001[sg_points/NL_grid_domain_rel];
-	attribute<nrwonha>               won2002            (sg_points)   := Brondata/CBS_vierkanten/woningen2002[sg_points/NL_grid_domain_rel];
-	attribute<nrwonha>               won2003            (sg_points)   := Brondata/CBS_vierkanten/woningen2003[sg_points/NL_grid_domain_rel];
-	attribute<nrwonha>               won2004            (sg_points)   := Brondata/CBS_vierkanten/woningen2004[sg_points/NL_grid_domain_rel];
-	attribute<nrwonha>               won2005            (sg_points)   := Brondata/CBS_vierkanten/woningen2005[sg_points/NL_grid_domain_rel];
-	attribute<nrwonha>               won2006            (sg_points)   := Brondata/CBS_vierkanten/woningen2006[sg_points/NL_grid_domain_rel];
-	attribute<nrwonha>               won2007            (sg_points)   := Brondata/CBS_vierkanten/woningen2007[sg_points/NL_grid_domain_rel];
-	attribute<nrwonha>               won2008            (sg_points)   := Brondata/CBS_vierkanten/woningen2008[sg_points/NL_grid_domain_rel];
-	attribute<nrwonha>               won2009            (sg_points)   := Brondata/CBS_vierkanten/woningen2009[sg_points/NL_grid_domain_rel];
-	attribute<nrwonha>               won2010            (sg_points)   := Brondata/CBS_vierkanten/woningen2010[sg_points/NL_grid_domain_rel];
-	attribute<nrwonha>               won2011            (sg_points)   := Brondata/CBS_vierkanten/woningen2011[sg_points/NL_grid_domain_rel];
-	attribute<nrwonha>               won2012_v          (sg_points)   := Brondata/CBS_vierkanten/woningen2012[sg_points/NL_grid_domain_rel];
-	attribute<nrwonha>               won2012_b          (sg_points)   := value(Brondata/BAG/Snapshots/Vbos/Y201201/vbo/GebruiksdoelSets/woon/GebruiksdoelSet/count_ha, nrwonha)[sg_points/NL_grid_domain_rel];
-	attribute<nrwonha>               won2012            (sg_points)   := switch(
-																				case(won2012_v > 0f && won2012_b > 0f, (won2012_v + won2012_b) / 2f)
-																				,case(won2012_v > 0f && won2012_b == 0f, won2012_v)
-																				,case(won2012_v == 0f && won2012_b > 0f, won2012_b)
-																				,case(won2012_v == 0f && won2012_b == 0f, won2012_b)
-																				,0f
-																			);
-	attribute<nrwonha>               won2013            (sg_points)   := value(Brondata/BAG/Snapshots/Vbos/Y201301/vbo/GebruiksdoelSets/woon/GebruiksdoelSet/count_ha, nrwonha)[sg_points/NL_grid_domain_rel];
-	attribute<nrwonha>               won2014            (sg_points)   := value(Brondata/BAG/Snapshots/Vbos/Y201401/vbo/GebruiksdoelSets/woon/GebruiksdoelSet/count_ha, nrwonha)[sg_points/NL_grid_domain_rel];
-	attribute<nrwonha>               won2015            (sg_points)   := value(Brondata/BAG/Snapshots/Vbos/Y201501/vbo/GebruiksdoelSets/woon/GebruiksdoelSet/count_ha, nrwonha)[sg_points/NL_grid_domain_rel];
-	attribute<nrwonha>               won2016            (sg_points)   := value(Brondata/BAG/Snapshots/Vbos/Y201601/vbo/GebruiksdoelSets/woon/GebruiksdoelSet/count_ha, nrwonha)[sg_points/NL_grid_domain_rel];
-	attribute<nrwonha>               won2017            (sg_points)   := value(Brondata/BAG/Snapshots/Vbos/Y201701/vbo/GebruiksdoelSets/woon/GebruiksdoelSet/count_ha, nrwonha)[sg_points/NL_grid_domain_rel];
-	attribute<nrwonha>               won2018            (sg_points)   := value(Brondata/BAG/Snapshots/Vbos/Y201801/vbo/GebruiksdoelSets/woon/GebruiksdoelSet/count_ha, nrwonha)[sg_points/NL_grid_domain_rel];
-	attribute<nrwonha>               won2019            (sg_points)   := value(Brondata/BAG/Snapshots/Vbos/Y201901/vbo/GebruiksdoelSets/woon/GebruiksdoelSet/count_ha, nrwonha)[sg_points/NL_grid_domain_rel];
-	attribute<nrwonha>               won2020            (sg_points)   := value(Brondata/BAG/Snapshots/Vbos/Y202001/vbo/GebruiksdoelSets/woon/GebruiksdoelSet/count_ha, nrwonha)[sg_points/NL_grid_domain_rel];
-	attribute<nrwonha>               won2021            (sg_points)   := value(Brondata/BAG/Snapshots/Vbos/Y202101/vbo/GebruiksdoelSets/woon/GebruiksdoelSet/count_ha, nrwonha)[sg_points/NL_grid_domain_rel];
-	attribute<nrwonha>               won2022            (sg_points)   := value(Brondata/BAG/Snapshots/Vbos/Y202201/vbo/GebruiksdoelSets/woon/GebruiksdoelSet/count_ha, nrwonha)[sg_points/NL_grid_domain_rel];
+	attribute<nrwonha>          won2000              (sg_points) := CBS_vierkanten/Vierkanten/Y2000[sg_points/NL_grid_domain_rel];
+	attribute<nrwonha>          won2001              (sg_points) := CBS_vierkanten/Vierkanten/Y2001[sg_points/NL_grid_domain_rel];
+	attribute<nrwonha>          won2002              (sg_points) := CBS_vierkanten/Vierkanten/Y2002[sg_points/NL_grid_domain_rel];
+	attribute<nrwonha>          won2003              (sg_points) := CBS_vierkanten/Vierkanten/Y2003[sg_points/NL_grid_domain_rel];
+	attribute<nrwonha>          won2004              (sg_points) := CBS_vierkanten/Vierkanten/Y2004[sg_points/NL_grid_domain_rel];
+	attribute<nrwonha>          won2005              (sg_points) := CBS_vierkanten/Vierkanten/Y2005[sg_points/NL_grid_domain_rel];
+	attribute<nrwonha>          won2006              (sg_points) := CBS_vierkanten/Vierkanten/Y2006[sg_points/NL_grid_domain_rel];
+	attribute<nrwonha>          won2007              (sg_points) := CBS_vierkanten/Vierkanten/Y2007[sg_points/NL_grid_domain_rel];
+	attribute<nrwonha>          won2008              (sg_points) := CBS_vierkanten/Vierkanten/Y2008[sg_points/NL_grid_domain_rel];
+	attribute<nrwonha>          won2009              (sg_points) := CBS_vierkanten/Vierkanten/Y2009[sg_points/NL_grid_domain_rel];
+	attribute<nrwonha>          won2010              (sg_points) := CBS_vierkanten/Vierkanten/Y2010[sg_points/NL_grid_domain_rel];
+	attribute<nrwonha>          won2011              (sg_points) := CBS_vierkanten/Vierkanten/Y2011[sg_points/NL_grid_domain_rel];
+	attribute<nrwonha>          won2012              (sg_points) := CBS_vierkanten/Vierkanten/Y2012[sg_points/NL_grid_domain_rel];
+	attribute<nrwonha>          won2013              (sg_points) := CBS_vierkanten/Vierkanten/Y2013[sg_points/NL_grid_domain_rel];
+	attribute<nrwonha>          won2014              (sg_points) := CBS_vierkanten/Vierkanten/Y2014[sg_points/NL_grid_domain_rel];
+	attribute<nrwonha>          won2015              (sg_points) := CBS_vierkanten/Vierkanten/Y2015[sg_points/NL_grid_domain_rel];
+	attribute<nrwonha>          won2016              (sg_points) := CBS_vierkanten/Vierkanten/Y2016[sg_points/NL_grid_domain_rel];
+	attribute<nrwonha>          won2017              (sg_points) := CBS_vierkanten/Vierkanten/Y2017[sg_points/NL_grid_domain_rel];
+	attribute<nrwonha>          won2018              (sg_points) := CBS_vierkanten/Vierkanten/Y2018[sg_points/NL_grid_domain_rel];
+	attribute<nrwonha>          won2019              (sg_points) := CBS_vierkanten/Vierkanten/Y2019[sg_points/NL_grid_domain_rel];
+	attribute<nrwonha>          won2020              (sg_points) := CBS_vierkanten/Vierkanten/Y2020[sg_points/NL_grid_domain_rel];
+	attribute<nrwonha>          won2021              (sg_points) := CBS_vierkanten/Vierkanten/Y2021[sg_points/NL_grid_domain_rel];
+	attribute<nrwonha>          won2022              (sg_points) := CBS_vierkanten/Vierkanten/Y2022[sg_points/NL_grid_domain_rel];
 	
-	// attribute<int32>                 wonopp2012         (sg_points)   := Brondata/BAG/Snapshots/Vbos/Y201201/vbo/GebruiksdoelSets/woon/GebruiksdoelSet/sum_opp_ha[sg_points/NL_grid_domain_rel];
-	// attribute<int32>                 wonopp2013         (sg_points)   := Brondata/BAG/Snapshots/Vbos/Y201301/vbo/GebruiksdoelSets/woon/GebruiksdoelSet/sum_opp_ha[sg_points/NL_grid_domain_rel];
-	// attribute<int32>                 wonopp2014         (sg_points)   := Brondata/BAG/Snapshots/Vbos/Y201401/vbo/GebruiksdoelSets/woon/GebruiksdoelSet/sum_opp_ha[sg_points/NL_grid_domain_rel];
-	// attribute<int32>                 wonopp2015         (sg_points)   := Brondata/BAG/Snapshots/Vbos/Y201501/vbo/GebruiksdoelSets/woon/GebruiksdoelSet/sum_opp_ha[sg_points/NL_grid_domain_rel];
-	// attribute<int32>                 wonopp2016         (sg_points)   := Brondata/BAG/Snapshots/Vbos/Y201601/vbo/GebruiksdoelSets/woon/GebruiksdoelSet/sum_opp_ha[sg_points/NL_grid_domain_rel];
-	// attribute<int32>                 wonopp2017         (sg_points)   := Brondata/BAG/Snapshots/Vbos/Y201701/vbo/GebruiksdoelSets/woon/GebruiksdoelSet/sum_opp_ha[sg_points/NL_grid_domain_rel];
-	// attribute<int32>                 wonopp2018         (sg_points)   := Brondata/BAG/Snapshots/Vbos/Y201801/vbo/GebruiksdoelSets/woon/GebruiksdoelSet/sum_opp_ha[sg_points/NL_grid_domain_rel];
-	// attribute<int32>                 wonopp2019         (sg_points)   := Brondata/BAG/Snapshots/Vbos/Y201901/vbo/GebruiksdoelSets/woon/GebruiksdoelSet/sum_opp_ha[sg_points/NL_grid_domain_rel];
-	// attribute<int32>                 wonopp2020         (sg_points)   := Brondata/BAG/Snapshots/Vbos/Y202001/vbo/GebruiksdoelSets/woon/GebruiksdoelSet/sum_opp_ha[sg_points/NL_grid_domain_rel];
-	// attribute<int32>                 wonopp2021         (sg_points)   := Brondata/BAG/Snapshots/Vbos/Y202101/vbo/GebruiksdoelSets/woon/GebruiksdoelSet/sum_opp_ha[sg_points/NL_grid_domain_rel];
-	// attribute<int32>                 wonopp2022         (sg_points)   := Brondata/BAG/Snapshots/Vbos/Y202201/vbo/GebruiksdoelSets/woon/GebruiksdoelSet/sum_opp_ha[sg_points/NL_grid_domain_rel];
+	attribute<regios/gemeente>  gemeente_rel         (sg_points) := point_in_polygon(sg_points/geometry, regios/gemeente/Geometry);
+	attribute<bool>             amsterdam_rel        (sg_points) := gemeente_name = 'Amsterdam';
+	attribute<string>           gemeente_name        (sg_points) := regios/gemeente/statnaam[gemeente_rel];
+	attribute<regios/buurt>     buurt_rel            (sg_points) := point_in_polygon(sg_points/geometry, regios/buurt/Geometry);
 	
-	attribute<Brondata/regios/gemeente>                gemeente_rel       (sg_points)   := point_in_polygon(sg_points/geometry, /Brondata/regios/gemeente/Geometry);
-	attribute<bool>                  amsterdam_rel      (sg_points)   := gemeente_name = 'Amsterdam';
-	attribute<string>                gemeente_name      (sg_points)   := Brondata/regios/gemeente/statnaam[gemeente_rel];
-	attribute<Brondata/regios/buurt>                buurt_rel          (sg_points)   := point_in_polygon(sg_points/geometry, /Brondata/regios/buurt/Geometry);
-	// attribute<uint32>                pc6_rel            (sg_points)   := point_in_polygon(sg_points/geometry, /Brondata/Regios/Postcode_gebieden/Postcode6_areas/Geometry);
-	
-	// attribute<string>                buurt_name         (sg_points)   := rjoin(buurt_rel, id(Brondata/regios/buurten/src_2016), Brondata/regios/buurten/src_2016/BU_NAAM);
-	// attribute<string>                buurt_code         (sg_points)   := rjoin(buurt_rel, id(Brondata/regios/buurten/src_2016), Brondata/regios/buurten/src_2016/BU_CODE);
-	// attribute<uint32>                wijk_rel           (sg_points)   := point_in_polygon(sg_points/geometry, /Brondata/regios/wijken/src_2016/Geometry);
-	// attribute<string>                wijk_name          (sg_points)   := rjoin(wijk_rel, id(Brondata/regios/wijken/src_2016), Brondata/regios/wijken/src_2016/WK_NAAM);	
-	// attribute<uint32>                stadsdeel_rel      (sg_points)   := point_in_polygon(sg_points/geometry, Brondata/Regios/Stadsdelen/Geometry);
-	// attribute<string>                stadsdeel_name     (sg_points)   := rjoin(stadsdeel_rel, id(Brondata/Regios/Stadsdelen), Brondata/Regios/Stadsdelen/Stadsdeeln);
-	
-	attribute<uint2>          HasEverHadAWoning                    (sg_points) := /Analyse/HasWoning/HasWoning[NL_grid_domain_rel][uint2];
-	attribute<int32>          diff_Spits_abs                       (sg_points) := /Brondata/Bereikbaarheid/diff_Spits_abs[NL_grid_domain_rel];
+	attribute<uint2>            HasEverHadAWoning    (sg_points) := /Analyse/HasWoning/HasWoning[NL_grid_domain_rel][uint2];
+	attribute<int32>            diff_Spits_abs_15min (sg_points) := Bereikbaarheid/AccessibilityChange_15min_smoothed[NL_grid_domain_rel];
+	attribute<int32>            diff_Spits_abs_30min (sg_points) := Bereikbaarheid/AccessibilityChange_30min_smoothed[NL_grid_domain_rel];
+	attribute<int32>            diff_Spits_abs_45min (sg_points) := Bereikbaarheid/AccessibilityChange_45min_smoothed[NL_grid_domain_rel];
+	attribute<NL_grid/domain>   NL_grid_domain_rel   (sg_points) := sg_points/Geometry [Geography/NL_grid/domain], DisableStorage = "true";
+	 
+	attribute<uint2>            noord_ta             (sg_points) := ='/Analyse/TreatmentControlAreas/'+ta_ca_areas+'/noord_ta[NL_grid_domain_rel][uint2]';
+	attribute<uint2>            noord_ca             (sg_points) := ='/Analyse/TreatmentControlAreas/'+ta_ca_areas+'/noord_ca[NL_grid_domain_rel][uint2]';
 
-	attribute<NL_grid/domain>       NL_grid_domain_rel                  (sg_points) := sg_points/Geometry [Geography/NL_grid/domain], DisableStorage = "true";
-	// attribute<NL_grid/domain_500m>  NL_grid_domain_500m_rel             (sg_points) := sg_points/Geometry [Geography/NL_grid/domain_500m], DisableStorage = "true";
-	
-	// attribute<uint32> count_noord_ta (NL_grid/domain) := /Analyse/TreatmentControlAreas/TreatmentArea_Noord ? count(price, NL_grid_domain_rel) : 0;
-	
-	attribute<uint2>          noord_ta                  (sg_points) := /Analyse/TreatmentControlAreas/Set_TA12_CA_24_50000banen/noord_ta[NL_grid_domain_rel][uint2];
-	attribute<uint2>          noord_ca                  (sg_points) := /Analyse/TreatmentControlAreas/Set_TA12_CA_24_50000banen/noord_ca[NL_grid_domain_rel][uint2];
+	attribute<uint2>            noorderpark_ta       (sg_points) := ='/Analyse/TreatmentControlAreas/'+ta_ca_areas+'/noorderpark_ta[NL_grid_domain_rel][uint2]';
+	attribute<uint2>            noorderpark_ca       (sg_points) := ='/Analyse/TreatmentControlAreas/'+ta_ca_areas+'/noorderpark_ca[NL_grid_domain_rel][uint2]';
 
-	attribute<uint2>          noorderpark_ta            (sg_points) := /Analyse/TreatmentControlAreas/Set_TA12_CA_24_50000banen/noorderpark_ta[NL_grid_domain_rel][uint2];
-	attribute<uint2>          noorderpark_ca            (sg_points) := /Analyse/TreatmentControlAreas/Set_TA12_CA_24_50000banen/noorderpark_ca[NL_grid_domain_rel][uint2];
+	attribute<uint2>            centraal_ta          (sg_points) := ='/Analyse/TreatmentControlAreas/'+ta_ca_areas+'/centraal_ta[NL_grid_domain_rel][uint2]';
+	attribute<uint2>            centraal_ca          (sg_points) := ='/Analyse/TreatmentControlAreas/'+ta_ca_areas+'/centraal_ca[NL_grid_domain_rel][uint2]';
 
-	attribute<uint2>          centraal_ta               (sg_points) := /Analyse/TreatmentControlAreas/Set_TA12_CA_24_50000banen/centraal_ta[NL_grid_domain_rel][uint2];
-	attribute<uint2>          centraal_ca               (sg_points) := /Analyse/TreatmentControlAreas/Set_TA12_CA_24_50000banen/centraal_ca[NL_grid_domain_rel][uint2];
+	attribute<uint2>            rokin_ta             (sg_points) := ='/Analyse/TreatmentControlAreas/'+ta_ca_areas+'/rokin_ta[NL_grid_domain_rel][uint2]';
+	attribute<uint2>            rokin_ca             (sg_points) := ='/Analyse/TreatmentControlAreas/'+ta_ca_areas+'/rokin_ca[NL_grid_domain_rel][uint2]';
 
-	attribute<uint2>          rokin_ta                  (sg_points) := /Analyse/TreatmentControlAreas/Set_TA12_CA_24_50000banen/rokin_ta[NL_grid_domain_rel][uint2];
-	attribute<uint2>          rokin_ca                  (sg_points) := /Analyse/TreatmentControlAreas/Set_TA12_CA_24_50000banen/rokin_ca[NL_grid_domain_rel][uint2];
+	attribute<uint2>            vijzelgracht_ta      (sg_points) := ='/Analyse/TreatmentControlAreas/'+ta_ca_areas+'/vijzelgracht_ta[NL_grid_domain_rel][uint2]';
+	attribute<uint2>            vijzelgracht_ca      (sg_points) := ='/Analyse/TreatmentControlAreas/'+ta_ca_areas+'/vijzelgracht_ca[NL_grid_domain_rel][uint2]';
 
-	attribute<uint2>          vijzelgracht_ta           (sg_points) := /Analyse/TreatmentControlAreas/Set_TA12_CA_24_50000banen/vijzelgracht_ta[NL_grid_domain_rel][uint2];
-	attribute<uint2>          vijzelgracht_ca           (sg_points) := /Analyse/TreatmentControlAreas/Set_TA12_CA_24_50000banen/vijzelgracht_ca[NL_grid_domain_rel][uint2];
+	attribute<uint2>            depijp_ta            (sg_points) := ='/Analyse/TreatmentControlAreas/'+ta_ca_areas+'/depijp_ta[NL_grid_domain_rel][uint2]';
+	attribute<uint2>            depijp_ca            (sg_points) := ='/Analyse/TreatmentControlAreas/'+ta_ca_areas+'/depijp_ca[NL_grid_domain_rel][uint2]';
 
-	attribute<uint2>          depijp_ta                 (sg_points) := /Analyse/TreatmentControlAreas/Set_TA12_CA_24_50000banen/depijp_ta[NL_grid_domain_rel][uint2];
-	attribute<uint2>          depijp_ca                 (sg_points) := /Analyse/TreatmentControlAreas/Set_TA12_CA_24_50000banen/depijp_ca[NL_grid_domain_rel][uint2];
+	attribute<uint2>            europaplein_ta       (sg_points) := ='/Analyse/TreatmentControlAreas/'+ta_ca_areas+'/europaplein_ta[NL_grid_domain_rel][uint2]';
+	attribute<uint2>            europaplein_ca       (sg_points) := ='/Analyse/TreatmentControlAreas/'+ta_ca_areas+'/europaplein_ca[NL_grid_domain_rel][uint2]';
 
-	attribute<uint2>          europaplein_ta            (sg_points) := /Analyse/TreatmentControlAreas/Set_TA12_CA_24_50000banen/europaplein_ta[NL_grid_domain_rel][uint2];
-	attribute<uint2>          europaplein_ca            (sg_points) := /Analyse/TreatmentControlAreas/Set_TA12_CA_24_50000banen/europaplein_ca[NL_grid_domain_rel][uint2];
-
-	attribute<uint2>          zuid_ta                   (sg_points) := /Analyse/TreatmentControlAreas/Set_TA12_CA_24_50000banen/zuid_ta[NL_grid_domain_rel][uint2];
-	attribute<uint2>          zuid_ca                   (sg_points) := /Analyse/TreatmentControlAreas/Set_TA12_CA_24_50000banen/zuid_ca[NL_grid_domain_rel][uint2];
-	
-/* 	container averages_houses
-	{
-		container mean_TA_transposed :=
-			for_each_nedv(
-				typeringen/metro_stations/name_compact
-				, 'union_data(typeringen/jaren, '
-							+replace(
-								 AsItemList('PerStation/@ST@/mean_TA/'+typeringen/jaren/name)
-							,'@ST@', typeringen/metro_stations/name_compact)+')'
-				, typeringen/jaren
-				, float32
-			)
-		{
-			attribute<float32> Amsterdam    (typeringen/jaren) := ='union_data(typeringen/jaren, '+AsItemList('PerStation/Amsterdam/mean/'+typeringen/jaren/name)+')';
-			// attribute<float32> All_stations (typeringen/jaren) := ='union_data(typeringen/jaren, '+AsItemList('PerStation/All_stations/mean_0_12min/'+typeringen/jaren/name)+')';
-		}
-		
-		
-		container mean_CA_transposed :=
-			for_each_nedv(
-				typeringen/metro_stations/name_compact
-				, 'union_data(typeringen/jaren, '
-							+replace(
-								 AsItemList('PerStation/@ST@/mean_CA/'+typeringen/jaren/name)
-							,'@ST@', typeringen/metro_stations/name_compact)+')'
-				, typeringen/jaren
-				, float32
-			)
-		{
-			// attribute<float32> All_stations (typeringen/jaren) := ='union_data(typeringen/jaren, '+AsItemList('PerStation/All_stations/mean_12_36min/'+typeringen/jaren/name)+')';
-		}
-		
-		container mean_TA_withzeros_transposed :=
-			for_each_nedv(
-				typeringen/metro_stations/name_compact
-				, 'union_data(typeringen/jaren, '
-							+replace(
-								 AsItemList('PerStation/@ST@/mean_TA_withzeros/'+typeringen/jaren/name)
-							,'@ST@', typeringen/metro_stations/name_compact)+')'
-				, typeringen/jaren
-				, float32
-			)
-		{
-			attribute<float32> Amsterdam    (typeringen/jaren) := ='union_data(typeringen/jaren, '+AsItemList('PerStation/Amsterdam/mean_withzeros/'+typeringen/jaren/name)+')';
-			// attribute<float32> All_stations (typeringen/jaren) := ='union_data(typeringen/jaren, '+AsItemList('PerStation/All_stations/mean_0_12min_withzeros/'+typeringen/jaren/name)+')';
-		}
-		
-		
-		container mean_CA_withzeros_transposed :=
-			for_each_nedv(
-				typeringen/metro_stations/name_compact
-				, 'union_data(typeringen/jaren, '
-							+replace(
-								 AsItemList('PerStation/@ST@/mean_CA_withzeros/'+typeringen/jaren/name)
-							,'@ST@', typeringen/metro_stations/name_compact)+')'
-				, typeringen/jaren
-				, float32
-			)
-		{
-			// attribute<float32> All_stations (typeringen/jaren) := ='union_data(typeringen/jaren, '+AsItemList('PerStation/All_stations/mean_12_36min_withzeros/'+typeringen/jaren/name)+')';
-		}
-		
-		// container mean_0_12min_transposed :=
-			// for_each_nedv(
-				// typeringen/metro_stations/name
-				// , 'union_data(typeringen/jaren, '
-							// +replace(
-								 // AsItemList('PerStation/@ST@/mean_0_12min/'+typeringen/jaren/name)
-							// ,'@ST@', typeringen/metro_stations/Name)+')'
-				// , typeringen/jaren
-				// , float32
-			// )
-		// {
-			// attribute<float32> Amsterdam    (typeringen/jaren) := ='union_data(typeringen/jaren, '+AsItemList('PerStation/Amsterdam/mean/'+typeringen/jaren/name)+')';
-			// attribute<float32> All_stations (typeringen/jaren) := ='union_data(typeringen/jaren, '+AsItemList('PerStation/All_stations/mean_0_12min/'+typeringen/jaren/name)+')';
-		// }
-		
-		
-		// container mean_12_36min_transposed :=
-			// for_each_nedv(
-				// typeringen/metro_stations/name
-				// , 'union_data(typeringen/jaren, '
-							// +replace(
-								 // AsItemList('PerStation/@ST@/mean_12_36min/'+typeringen/jaren/name)
-							// ,'@ST@', typeringen/metro_stations/Name)+')'
-				// , typeringen/jaren
-				// , float32
-			// )
-		// {
-			// attribute<float32> All_stations (typeringen/jaren) := ='union_data(typeringen/jaren, '+AsItemList('PerStation/All_stations/mean_12_36min/'+typeringen/jaren/name)+')';
-		// }
-		
-		// container mean_0_12min_withzeros_transposed :=
-			// for_each_nedv(
-				// typeringen/metro_stations/name
-				// , 'union_data(typeringen/jaren, '
-							// +replace(
-								 // AsItemList('PerStation/@ST@/mean_0_12min_withzeros/'+typeringen/jaren/name)
-							// ,'@ST@', typeringen/metro_stations/Name)+')'
-				// , typeringen/jaren
-				// , float32
-			// )
-		// {
-			// attribute<float32> Amsterdam    (typeringen/jaren) := ='union_data(typeringen/jaren, '+AsItemList('PerStation/Amsterdam/mean_withzeros/'+typeringen/jaren/name)+')';
-			// attribute<float32> All_stations (typeringen/jaren) := ='union_data(typeringen/jaren, '+AsItemList('PerStation/All_stations/mean_0_12min_withzeros/'+typeringen/jaren/name)+')';
-		// }
-		
-		
-		// container mean_12_36min_withzeros_transposed :=
-			// for_each_nedv(
-				// typeringen/metro_stations/name
-				// , 'union_data(typeringen/jaren, '
-							// +replace(
-								 // AsItemList('PerStation/@ST@/mean_12_36min_withzeros/'+typeringen/jaren/name)
-							// ,'@ST@', typeringen/metro_stations/Name)+')'
-				// , typeringen/jaren
-				// , float32
-			// )
-		// {
-			// attribute<float32> All_stations (typeringen/jaren) := ='union_data(typeringen/jaren, '+AsItemList('PerStation/All_stations/mean_12_36min_withzeros/'+typeringen/jaren/name)+')';
-		// }
-		
-		
-		container PerStation := 
-			for_each_ne(
-				typeringen/metro_stations/name_compact
-				, 'PerStation_T('+quote(typeringen/metro_stations/name_compact)+')'
-			)
-		{
-			container Amsterdam 
-			{
-				container mean :=
-					for_each_nedv(
-						typeringen/jaren/name
-						, 'mean(IsDefined(DiD_Verdichting/Amsterdam_rel) ? won'+string(typeringen/jaren/values)+' > 0f ? won'+string(typeringen/jaren/values)+' : 0f/0f  : (0/0)[float32])'
-						, void
-						, float32
-					);
-				container mean_withzeros :=
-					for_each_nedv(
-						typeringen/jaren/name
-						, 'mean(IsDefined(DiD_Verdichting/Amsterdam_rel) ? won'+string(typeringen/jaren/values)+' : (0/0)[float32])'
-						, void
-						, float32
-					);
-			}
-			// container All_stations 
-			// {
-				// container mean_TA :=
-					// for_each_nedv(
-						// typeringen/jaren/name
-						// , 'mean(/Analyse/NetwerkDist_Points_to_NZ/NetwerkDist_perstation/NZ_treated[geography/sg_points/NL_grid_domain_rel] ? won'+string(typeringen/jaren/values)+' > 0f ? won'+string(typeringen/jaren/values)+' : 0f/0f  : (0/0)[float32])'
-						// , void
-						// , float32
-					// );
-				// container mean_CA :=
-					// for_each_nedv(
-						// typeringen/jaren/name
-						// , 'mean(/Analyse/NetwerkDist_Points_to_NZ/NetwerkDist_perstation/NZ_control[geography/sg_points/NL_grid_domain_rel] ? won'+string(typeringen/jaren/values)+' > 0f ? won'+string(typeringen/jaren/values)+' : 0f/0f  : (0/0)[float32])'
-						// , void
-						// , float32
-					// );
-				// container mean_TA_withzeros :=
-					// for_each_nedv(
-						// typeringen/jaren/name
-						// , 'mean(/Analyse/NetwerkDist_Points_to_NZ/NetwerkDist_perstation/NZ_treated[geography/sg_points/NL_grid_domain_rel] ? won'+string(typeringen/jaren/values)+' : (0/0)[float32])'
-						// , void
-						// , float32
-					// );
-				// container mean_CA_withzeros :=
-					// for_each_nedv(
-						// typeringen/jaren/name
-						// , 'mean(/Analyse/NetwerkDist_Points_to_NZ/NetwerkDist_perstation/NZ_control[geography/sg_points/NL_grid_domain_rel] ? won'+string(typeringen/jaren/values)+' : (0/0)[float32])'
-						// , void
-						// , float32
-					// );
-			// }
-		}
-		
-		Template PerStation_T
-		{
-			///
-			parameter<string> StationNaam;
-			///
-		
-			container mean_TA :=
-				for_each_nedv(
-					typeringen/jaren/name
-					, 'mean('+StationNaam+'_TA == 1[uint2] ? won'+string(typeringen/jaren/values)+' > 0f ? won'+string(typeringen/jaren/values)+' : 0f/0f  : (0/0)[float32])'
-					, void
-					, float32
-				);
-				
-			container mean_CA :=
-				for_each_nedv(
-					typeringen/jaren/name
-					, 'mean('+StationNaam+'_CA == 1[uint2] ? won'+string(typeringen/jaren/values)+' > 0f ? won'+string(typeringen/jaren/values)+' : 0f/0f  : (0/0)[float32])'
-					, void
-					, float32
-				);
-				
-			container mean_TA_withzeros :=
-				for_each_nedv(
-					typeringen/jaren/name
-					, 'mean('+StationNaam+'_TA == 1[uint2]  ? won'+string(typeringen/jaren/values)+' : (0/0)[float32])'
-					, void
-					, float32
-				);
-				
-			container mean_CA_withzeros :=
-				for_each_nedv(
-					typeringen/jaren/name
-					, 'mean('+StationNaam+'_CA == 1[uint2] ? won'+string(typeringen/jaren/values)+' : (0/0)[float32])'
-					, void
-					, float32
-				);
-				
-			// container mean_0_12min :=
-				// for_each_nedv(
-					// typeringen/jaren/name
-					// , 'mean((station_'+StationNaam+'_reistijd <= (12f*60f)) ? won'+string(typeringen/jaren/values)+' > 0f ? won'+string(typeringen/jaren/values)+' : 0f/0f  : (0/0)[float32])'
-					// , void
-					// , float32
-				// );
-				
-			// container mean_12_36min :=
-				// for_each_nedv(
-					// typeringen/jaren/name
-					// , 'mean(station_'+StationNaam+'_reistijd <= (36f*60f) && station_'+StationNaam+'_reistijd > (12f*60f) ? won'+string(typeringen/jaren/values)+' > 0f ? won'+string(typeringen/jaren/values)+' : 0f/0f  : (0/0)[float32])'
-					// , void
-					// , float32
-				// );
-				
-			// container mean_0_12min_withzeros :=
-				// for_each_nedv(
-					// typeringen/jaren/name
-					// , 'mean((station_'+StationNaam+'_reistijd <= (12f*60f)) ? won'+string(typeringen/jaren/values)+' : (0/0)[float32])'
-					// , void
-					// , float32
-				// );
-				
-			// container mean_12_36min_withzeros :=
-				// for_each_nedv(
-					// typeringen/jaren/name
-					// , 'mean(station_'+StationNaam+'_reistijd <= (36f*60f) && station_'+StationNaam+'_reistijd > (12f*60f) ? won'+string(typeringen/jaren/values)+' : (0/0)[float32])'
-					// , void
-					// , float32
-				// );
-		}
-		
-		// container mean_amsterdam :=
-			// for_each_nedv(
-				// typeringen/jaren/name
-				// , 'mean(Analyse/Regressie/Other/Studiegebied[float32] == 1f ? won'+ string(typeringen/jaren/values) +': (0/0)[float32])'
-				// , void
-				// , float32
-			// );
-		
-		// container mean_0_12min_noord :=
-			// for_each_nedv(
-				// typeringen/jaren/name
-				// , 'mean((Station_Noord_0_12min[float32] == 1f || Station_Noorderpark_0_12min[float32] == 1f) ? won'+ string(typeringen/jaren/values) +': (0/0)[float32])'
-				// , void
-				// , float32
-			// );
-			
-		// container mean_12_36min_noord :=
-			// for_each_nedv(
-				// typeringen/jaren/name
-				// , 'mean((Station_Noord_control[float32] == 1f || Station_Noorderpark_control[float32] == 1f) ? won'+ string(typeringen/jaren/values) +': (0/0)[float32])'
-				// , void
-				// , float32
-			// );
-			
-		// container mean_0_12min_bestaand :=
-			// for_each_nedv(
-				// typeringen/jaren/name
-				// , 'mean((Station_Centraal_0_12min[float32] == 1f || Station_Zuid_0_12min[float32] == 1f) ? won'+ string(typeringen/jaren/values) +': (0/0)[float32])'
-				// , void
-				// , float32
-			// );
-			
-		// container mean_12_36min_bestaand :=
-			// for_each_nedv(
-				// typeringen/jaren/name
-				// , 'mean((Station_Centraal_control[float32] == 1f || Station_Zuid_control[float32] == 1f) ? won'+ string(typeringen/jaren/values) +': (0/0)[float32])'
-				// , void
-				// , float32
-			// );
-			
-		// container mean_0_12min_centrum :=
-			// for_each_nedv(
-				// typeringen/jaren/name
-				// , 'mean((Station_Rokin_0_12min[float32] == 1f || Station_Vijzelgracht_0_12min[float32] == 1f || Station_De_Pijp_0_12min[float32] == 1f || Station_Europaplein_0_12min[float32] == 1f) ? won'+ string(typeringen/jaren/values) +': (0/0)[float32])'
-				// , void
-				// , float32
-			// );
-			
-		// container mean_12_36min_centrum :=
-			// for_each_nedv(
-				// typeringen/jaren/name
-				// , 'mean((Station_Rokin_control[float32] == 1f || Station_Vijzelgracht_control[float32] == 1f || Station_De_Pijp_control[float32] == 1f || Station_Europaplein_control[float32] == 1f) ? won'+ string(typeringen/jaren/values) +': (0/0)[float32])'
-				// , void
-				// , float32
-			// );
-	}
- */
-
+	attribute<uint2>            zuid_ta              (sg_points) := ='/Analyse/TreatmentControlAreas/'+ta_ca_areas+'/zuid_ta[NL_grid_domain_rel][uint2]';
+	attribute<uint2>            zuid_ca              (sg_points) := ='/Analyse/TreatmentControlAreas/'+ta_ca_areas+'/zuid_ca[NL_grid_domain_rel][uint2]';
 }

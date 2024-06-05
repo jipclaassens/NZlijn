@@ -9,7 +9,7 @@ container eenheden
 	unit<float32>   	nrwonha        	:= nrwoningen / ha;
 	unit<float32>   	eur;
 	
-	unit<float32>       s               := baseunit('s', float32)   , label = "second", cdf = "typeringen/seconden/ClassBreaks";
+	unit<float32>       s               := baseunit('s', float32)   , label = "second"; //, cdf = "typeringen/seconden/ClassBreaks";
 	unit<float32>       min             := 60.0 * s                 , label = "minute";
 	unit<float32>       hr              := 60.0 * min               , label = "hour";
 
