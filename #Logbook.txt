@@ -10,3 +10,14 @@ Logboek NZ lijn
 - sensitivity: threshold verhogen heeft geen zin, want dat raak het veranderen van de areasize alweer kwijt.
 - resultaten zijn robuust over de 15m en 45m reistijden heen.
 - geupdatete paper weer opgestuurd naar Eric/Jan/Maureen
+
+20240529
+- in overleg met Eric de treatment/control areas flink aangepast. smoothing op reistijden en op bereikbare banen.
+	hierdoor 'rustiger' beeld. Daarnaast de selectie aangepast 
+- Zuid en Centraal halen we uit de analyse. Want het was al goed bereikbaar, het had al een metrostation. Het treatmentgebied is daarom moeilijk uit te leggen. 
+	En het treatment gebied bij centraal (haarlemmerbuurt) komt nu door buslijnen en niet direct door NZL. Oftewel, in de bepaling treatment gebieden pas, 
+	noemen we dat uit de accessibilty analyse naar voren komt dat, blablaba.
+- Daarnaast heb je het fliebeltje bij Vijzelgracht. Die zouden we wegkunnen halen en dan dus al control aanwijzen. Maar dat is discutabel en maakt automatisch het 
+	DiD effect voor Vijzelgracht kleiner.
+- Alternatief is een zuiverdere maat voor control aanwijzen door 'grijs' gebied buiten beschouwing te laten. Bijvoorbeeld een toename van het aantal banen tussen 
+	de 10k en 50k niet als control te laten tellen.

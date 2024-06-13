@@ -2,36 +2,13 @@ heads/main
 On branch main
 Your branch is up to date with 'origin/main'.
 
+Changes to be committed:
+  (use "git restore --staged <file>..." to unstage)
+	modified:   Analysis/NZlijn/brondata/bag.dms
+
 Changes not staged for commit:
   (use "git add <file>..." to update what will be committed)
   (use "git restore <file>..." to discard changes in working directory)
-	modified:   Accessibility/main/Analysis.dms
-	modified:   Accessibility/main/ModelParameters.dms
-	modified:   Accessibility/main/NetWork.dms
-	modified:   Accessibility/main/SourceData/GTFS.dms
-	modified:   Accessibility/main/Templates/StaticNetsCreator.dms
-	modified:   Analysis/NZlijn.dms
-	modified:   Analysis/NZlijn/analyse.dms
-	modified:   Analysis/NZlijn/analyse/Location_2_location.dms
-	modified:   Analysis/NZlijn/analyse/did_prijzen.dms
-	modified:   Analysis/NZlijn/analyse/did_verdichting.dms
-	modified:   Analysis/NZlijn/brondata.dms
-	modified:   Analysis/NZlijn/eenheden.dms
-	modified:   Analysis/NZlijn/geography.dms
-	modified:   Analysis/NZlijn/rekenschemas/netwerk/OrgToDest.dms
-	modified:   Analysis/NZlijn/typeringen.dms
+	modified:   git.txt
 
-Untracked files:
-  (use "git add <file>..." to include in what will be committed)
-	Accessibility/main/SourceData/GTFS/LoadFeeds_pre.dms
-	Analysis/NZlijn/brondata/CBS_Vierkanten.dms
-	Analysis/NZlijn/brondata/Metrostations.dms
-	Analysis/NZlijn/brondata/NVM.dms
-	Analysis/NZlijn/brondata/Regios.dms
-	Analysis/NZlijn/brondata/Spatial_Data.dms
-	Analysis/NZlijn/brondata/WatsonHolmes.dms
-	Analysis/NZlijn/geography/Distmatrices.dms
-	git.txt
-
-no changes added to commit (use "git add" and/or "git commit -a")
-81f5447e9dd6e32c0bc77fdd6f00c7dffb97af52
+4dcd506c084c0be133a227cbfa76e199a3edb86c

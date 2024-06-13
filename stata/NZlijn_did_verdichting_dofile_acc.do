@@ -1,21 +1,24 @@
 capture log close
-cd "D:\OneDrive\OneDrive - Objectvision\VU\Projects\202110-NZpaper"
+cd "D:\OneDrive\OneDrive - Objectvision\VU\Projects\202110-NZpaper\"
 log using Temp/nzlijn_did_verdichting_log.txt, text replace
 
+global filedate = 20240530
+global acc_range = 30
+global TAsize = 12
+global CAsize = 24
 
 ///////////////////////////////////////
-**# /////DATA PREPAREREN
+**# DATA PREPAREREN
 ///////////////////////////////////////
 
-import delimited C:\GeoDMS\LocalData\NZlijn\Results\nzlijn\Analyse_DiD_Verdichting_20221101_12_24min.csv, delimiter(";") clear   
+import delimited data/DiD_Verdichting_${acc_range}min_${TAsize}_${CAsize}min_${filedate}.csv, delimiter(";") clear   
 
 save Temp\DMS_verdichting_raw.dta, replace
-
 use Temp\DMS_verdichting_raw.dta, clear
 
-drop x_coord y_coord pc4 nl_grid_domain_rel
+drop x_coord y_coord nl_grid_domain_rel
 
-local replaceNullList = "pc6_rel diff_spits_abs"
+local replaceNullList = "gemeente_rel buurt_rel"
 foreach x of local replaceNullList{
 	replace `x' = "" if `x' == "null"
 	destring `x', replace
@@ -127,8 +130,7 @@ foreach s of local stations{
 		
 		
 		areg lnwon treated treattime did i.year if ca == 1, r absorb(buurt_rel)
-		outreg2 using output/verdichting/did_windows_indiv_AccBased_buurt_12_24min_8043, excel cttop (`s', `d') label dec(3) addtext (Year FE, Yes, Neighbourhood FE, Yes) keep(treat* did*) 
-
+		outreg2 using output/verdichting/did_windows_indiv_AccBased_${acc_range}min_buurt_${TAsize}_${CAsize}min_${filedate}, excel cttop (`s', `d') label dec(3) addtext (Year FE, Yes, Neighbourhood FE, Yes) keep(treat* did*) 
 		
 		drop did* treated treattime* ca
 	}
