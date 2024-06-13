@@ -4,7 +4,7 @@ container BAG : using = "geography"
 	{
 	
 		// parameter<string> SnapshotDir := '%SourceDataDir%/BAG/snapshots.ext/YYYY01';
-		parameter<string> SnapshotDir := '%SourceDataDir%/RSL/Vastgoed/YYYY01_RS';
+		parameter<string> SnapshotDir := '%SourceDataDir%/RSOpen/Vastgoed/YYYY01_RS';
 		
 		
 		container Panden :=
