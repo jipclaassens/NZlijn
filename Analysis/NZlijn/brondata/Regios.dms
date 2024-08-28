@@ -58,4 +58,47 @@ container Regios
 
 		container V := for_each_nedv(name, 'value('+string(id(.))+', ..)', void, .);
 	}
+	
+	unit<uint32> Postcode6 
+	:	StorageName     = "%SourceDataDir%/CBS/PC6_shape.shp"
+	,	StorageType     = "gdal.vect"
+	,	StorageReadOnly = "True"
+	{
+		attribute<geography/rdc>   	geometry  (polygon) ;
+		attribute<string>           		label                      	:= POSTCODE ;
+		attribute<Postcode6>         	grid      (NL_grid/domain) 	:= poly2grid(geometry, NL_grid/domain);
+	}
+	
+	unit<uint32> Postcode6_areas 
+	:	StorageName     = "%SourceDataDir%/CBS/pc6_tm2019_shp/pc6_xy_tm2020_areas.fss"
+	,	StorageReadOnly = "True"
+	{
+		attribute<geography/rdc>       geometry  (poly);
+		attribute<geography/rdc>       centroid;
+		attribute<string>               label;
+		attribute<uint32>               Amsterdam_rel;
+		
+		attribute<.>                    grid      (NL_grid/domain) 	:= poly2grid(geometry, NL_grid/domain);
+		
+		unit<uint32> MRA := subset(IsDefined(Amsterdam_rel))
+		{
+			attribute<geography/rdc>       geometry  (poly) := ../geometry[nr_OrgEntity];
+			attribute<geography/rdc>       centroid         := ../centroid[nr_OrgEntity];
+			attribute<Buurten/src_2021>    buurt_rel        := point_in_polygon(centroid, Buurten/src_2021/geometry);
+			attribute<string>              label            := ../label[nr_OrgEntity], DialogType = "LabelText";
+		}
+	}	
+	unit<uint32> Stadsdelen
+	:  StorageName = "%ProjDir%/Data/stadsdelen_2010.shp"
+	,  StorageType = "gdal.vect"
+	,	StorageReadOnly = "True"
+	{
+		attribute<geography/rdc> 	geometry (polygon);	
+		attribute<stadsdelen>       NL_grid_domain_rel  (NL_grid/domain)         := poly2grid(geometry, NL_grid/domain);
+		attribute<string>           Stadsdeeln;
+		attribute<uint8>            sdnummer;
+		attribute<uint32>            Stadsdeelnummer                                 := sdnummer[uint32];
+		attribute<uint32>           point_rel   (sg_points)   := point_in_polygon(sg_points/Geometry, geometry);
+	}
+ 
 }

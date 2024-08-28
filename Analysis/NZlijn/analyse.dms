@@ -24,7 +24,7 @@ container Analyse: Using = "Eenheden;geography;modelparameters"
 			container V := for_each_nedv(name, String(ID(.))+'[..]', void, .);
 		}
 		
-		
+		unit<uint32>       PC6                          := /Brondata/BAG/Snapshots/Adressen/Y202401/adres/PC6_AMS;
 		attribute<bool>   closer2noord_then_noorderpark       (NL_grid/domain) := Analyse/NetwerkDist_Points_to_NZ/NetwerkDist_perstation/Noorderpark/Netwerk/OrgToDest/MakeOD_Time/potential     > Analyse/NetwerkDist_Points_to_NZ/NetwerkDist_perstation/Noord/Netwerk/OrgToDest/MakeOD_Time/potential;
 		attribute<bool>   closer2noorderpark_then_centraal    (NL_grid/domain) := Analyse/NetwerkDist_Points_to_NZ/NetwerkDist_perstation/StationCentraal/Netwerk/OrgToDest/MakeOD_Time/potential > Analyse/NetwerkDist_Points_to_NZ/NetwerkDist_perstation/Noorderpark/Netwerk/OrgToDest/MakeOD_Time/potential;
 		attribute<bool>   closer2centraal_then_rokin          (NL_grid/domain) := Analyse/NetwerkDist_Points_to_NZ/NetwerkDist_perstation/Rokin/Netwerk/OrgToDest/MakeOD_Time/potential           > Analyse/NetwerkDist_Points_to_NZ/NetwerkDist_perstation/StationCentraal/Netwerk/OrgToDest/MakeOD_Time/potential;
@@ -138,6 +138,23 @@ container Analyse: Using = "Eenheden;geography;modelparameters"
 				{
 					attribute<bool> select (NL_grid/domain) := districts == 1 ;
 				}
+			}
+			
+			container Per_PC6 :=
+				for_each_nedv(
+					StationsXareas/name
+					, '../'+StationsXareas/name+'[NL_grid_domain_rel][uint2]'
+					, PC6
+					, uint2
+				)
+			{
+				attribute<string>         PC6_name           (PC6) := PC6/PC6;
+				attribute<uint32>         Buurt_22_rel          (PC6) := PC6/buurt_rel;
+				attribute<float32>        Count_App          (PC6) := Brondata/BAG/Snapshots/Vbos/Y202201/vbo/GebruiksdoelSets/woon/GebruiksdoelSet/app_perPC6;
+				attribute<float32>        Fractie_App        (PC6) := Brondata/BAG/Snapshots/Vbos/Y202201/vbo/GebruiksdoelSets/woon/GebruiksdoelSet/pr_app_perPC6;
+				attribute<float32>        Avg_opp_App        (PC6) := Brondata/BAG/Snapshots/Vbos/Y202201/vbo/GebruiksdoelSets/woon/GebruiksdoelSet/avg_opp_app_perPC6;
+				attribute<int16>          Median_Bouwjaar_App(PC6) := Brondata/BAG/Snapshots/Panden/Y202201/pand/median_bouwjaar_app_perPC6;
+				attribute<NL_grid/domain> NL_grid_domain_rel (PC6) := PC6/geometry[NL_grid/domain];
 			}
 		}
 		

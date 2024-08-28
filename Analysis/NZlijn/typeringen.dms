@@ -43,7 +43,7 @@ container typeringen: using = "eenheden"
 		}
 	}
 	
-	unit<uint32> Kwartalen : nrofrows = 29
+	unit<uint32> Kwartalen : nrofrows = 31
 	{
 		attribute<uint32> values       :     [201201 
 												// ,201204, 201207, 201210
@@ -58,6 +58,8 @@ container typeringen: using = "eenheden"
 											, 202001
 											, 202101
 											, 202201
+											, 202301
+											, 202401
 											];
 		attribute<uint32> values_prev  := MakeDefined(rjoin(id(.) -1, id(.), values),201201);
 		attribute<string> name         := 'Y' + string(values);
@@ -138,8 +140,46 @@ container typeringen: using = "eenheden"
 		
 		container V := for_each_nedv(name, String(ID(.))+'[..]', void, .);
 	}	
-
-
+	
+	unit<uint8> WPSrc: nrofrows = 6
+	{
+		attribute<string>             label              :  ['geen woonpand','vrijstaand','twee onder 1 kap','hoekwoning','tussenwoning','appartement'], DialogType = "LabelText";
+		attribute<string>             name               := replace(label, ' ', '_');
+		attribute<WP>                 WP_rel             :  [0,1,2,3,3,4];
+		attribute<WP3>                WP3_rel            :  [0,1,1,1,1,2];
+		
+		container V := for_each_nedv(name, String(ID(.))+'[..]', void, .);
+	}
+	
+	unit<uint8> WP: nrofrows = 5
+	{
+		attribute<uint8>             id                  := id(.);
+		attribute<string>            label               :  ['geen woonpand','vrijstaand','twee onder 1 kap','rijtjeswoning','appartement'], DialogType = "LabelText";
+		attribute<string>            name_english        :  ['no_house','detached','semidetached','terraced','apartment'];
+		attribute<string>            name                := replace(label, ' ', '_');
+		attribute<uint32>            BrushColor          :  [rgb(255,255,255), rgb(204, 255, 153),rgb(204, 255,255),rgb(255, 204, 153),rgb(255, 204, 255)], DialogType = "BrushColor";
+		attribute<WP4>               WP4_rel             := invert(WP4/WP_rel);
+		
+		container V := for_each_nedv(name, String(ID(.))+'[..]', void, .);
+		
+		attribute<bool>              IsDetached          :  [false, true, false, false, false];
+		attribute<bool>              IsSemiDetached      :  [false, false, true, false, false];
+	}
+	
+	unit<uint8> WP4 := subset(id(WP) <> WP/V/geen_woonpand) 
+	{
+		attribute<uint8>             id                  := id(.);
+		attribute<WP>                WP_rel              := nr_OrgEntity;
+		attribute<string>            name                := WP/name[WP_rel];
+		attribute<string>            abbrev              : ['vrij', 'Tweeo1', 'rij', 'app']; //BR@Jip, 20190110: graag deze abbreviation onnodig maken en verwijderen
+		attribute<string>            name_english        := WP/name_english[WP_rel];
+		attribute<string>            label               := WP/label[WP_rel], DialogType = "LabelText";
+		attribute<uint32>            BrushColor          := WP/BrushColor[WP_rel];
+		attribute<bool>              IsDetached          : [true, false, false, false];
+		attribute<bool>              IsSemiDetached      : [false, true, false, false];
+		
+		container V := for_each_nedv(name, String(ID(.))+'[..]', void, .);
+	}
 
 
 }
