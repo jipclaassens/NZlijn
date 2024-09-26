@@ -1,6 +1,6 @@
 container CBS_vierkanten
 {
-	unit<uint32> VierkantJaren := range(uint32, 2000, 2023)
+	unit<uint32> VierkantJaren := range(uint32, 2000, 2024)
 	{
 		attribute<uint32> jaar := id(.);
 		attribute<string> name := 'Y'+string(jaar);
@@ -45,6 +45,9 @@ container CBS_vierkanten
 		, 	StorageType     = "gdal.vect"
 		,	StorageReadOnly = "True"
 		,	SyncMode        = "alltables"
-		,	DialogData      = "rdc";
+		,	DialogData      = "rdc"
+		{
+			unit<uint32> vierkant_100m_2023 := cbs_vk100_2023;
+		}
 	}
 }

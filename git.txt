@@ -2,18 +2,16 @@ heads/main
 On branch main
 Your branch is up to date with 'origin/main'.
 
+Changes to be committed:
+  (use "git restore --staged <file>..." to unstage)
+	modified:   Analysis/NZlijn/analyse/did_verdichting.dms
+	modified:   Analysis/NZlijn/brondata/CBS_Vierkanten.dms
+	modified:   Analysis/NZlijn/brondata/Regios.dms
+	modified:   git.txt
+
 Changes not staged for commit:
   (use "git add <file>..." to update what will be committed)
   (use "git restore <file>..." to discard changes in working directory)
-	modified:   Analysis/NZlijn/analyse.dms
-	modified:   Analysis/NZlijn/brondata/Regios.dms
-	modified:   Analysis/NZlijn/brondata/bag.dms
-	modified:   Analysis/NZlijn/typeringen.dms
 	modified:   git.txt
 
-Untracked files:
-  (use "git add <file>..." to include in what will be committed)
-	stata/Wachttijden2017-22.do
-
-no changes added to commit (use "git add" and/or "git commit -a")
-f8c4dcf5301bc02dd0a1531b9663dc67984d07c2
+32eedd24dad90b49bae1a332f9ac0fd91d3ff0f8
