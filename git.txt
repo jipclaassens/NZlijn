@@ -5,10 +5,10 @@ Your branch is up to date with 'origin/main'.
 Changes not staged for commit:
   (use "git add <file>..." to update what will be committed)
   (use "git restore <file>..." to discard changes in working directory)
+	modified:   Analysis/NZlijn.dms
+	modified:   Analysis/NZlijn/analyse.dms
 	modified:   Analysis/NZlijn/analyse/did_prijzen.dms
-	modified:   Analysis/NZlijn/brondata/NVM.dms
-	modified:   Analysis/NZlijn/geography.dms
 	modified:   git.txt
 
 no changes added to commit (use "git add" and/or "git commit -a")
-32eedd24dad90b49bae1a332f9ac0fd91d3ff0f8
+f2e3c45c610a9d5a635f545ea72aec18b21b770f

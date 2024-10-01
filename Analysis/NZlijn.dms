@@ -2,12 +2,22 @@ container NZlijn_Analysis
 {
 	container ModelParameters
 	{
-		parameter<string>  ta_ca_areas                  := 'Set_TA'+string(treatment_size)+'_CA_'+string(control_size)+'_'+string(Threshold_ToenameAantalBanen)+'banen_in'+string(AccessibilityThreshold)+'min';
-		parameter<float32> treatment_size               := 12f;
-		parameter<float32> control_size                 := 24f;
+		parameter<string>  ta_ca_areas                  := 'Set_TA'+string(treatment_size)+'_CA'+string(control_size)+'_'+string(Threshold_ToenameAantalBanen)+'banen_in'+string(AccessibilityThreshold)+'min';
 		
-		parameter<int32>   Threshold_ToenameAantalBanen := 50000i; //banen   50000i
-		parameter<int32>   AccessibilityThreshold       := 30i;    //aantal banen bereikbaar binnen X minuten
+		// parameter<float32> treatment_size               := 6f;
+		// parameter<float32> control_size                 := 12f;
+		// parameter<float32> treatment_size               := 12f;
+		// parameter<float32> control_size                 := 24f;
+		parameter<float32> treatment_size               := 24f;
+		parameter<float32> control_size                 := 36f;
+		
+		// parameter<int32>   Threshold_ToenameAantalBanen := 25000i; //banen   50000i
+		// parameter<int32>   Threshold_ToenameAantalBanen := 50000i; //banen   50000i
+		parameter<int32>   Threshold_ToenameAantalBanen := 75000i; //banen   50000i
+		
+		// parameter<int32>   AccessibilityThreshold       := 15i;    //aantal banen bereikbaar binnen X minuten
+		// parameter<int32>   AccessibilityThreshold       := 30i;    //aantal banen bereikbaar binnen X minuten
+		parameter<int32>   AccessibilityThreshold       := 45i;    //aantal banen bereikbaar binnen X minuten
 	}
 	
 	

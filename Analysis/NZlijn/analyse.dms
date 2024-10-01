@@ -24,7 +24,7 @@ container Analyse: Using = "Eenheden;geography;modelparameters"
 			container V := for_each_nedv(name, String(ID(.))+'[..]', void, .);
 		}
 		
-		unit<uint32>       PC6                          := /Brondata/BAG/Snapshots/Adressen/Y202401/adres/PC6_AMS;
+		unit<uint32>      PC6                                                  := /Brondata/BAG/Snapshots/Adressen/Y202401/adres/PC6_AMS;
 		attribute<bool>   closer2noord_then_noorderpark       (NL_grid/domain) := Analyse/NetwerkDist_Points_to_NZ/NetwerkDist_perstation/Noorderpark/Netwerk/OrgToDest/MakeOD_Time/potential     > Analyse/NetwerkDist_Points_to_NZ/NetwerkDist_perstation/Noord/Netwerk/OrgToDest/MakeOD_Time/potential;
 		attribute<bool>   closer2noorderpark_then_centraal    (NL_grid/domain) := Analyse/NetwerkDist_Points_to_NZ/NetwerkDist_perstation/StationCentraal/Netwerk/OrgToDest/MakeOD_Time/potential > Analyse/NetwerkDist_Points_to_NZ/NetwerkDist_perstation/Noorderpark/Netwerk/OrgToDest/MakeOD_Time/potential;
 		attribute<bool>   closer2centraal_then_rokin          (NL_grid/domain) := Analyse/NetwerkDist_Points_to_NZ/NetwerkDist_perstation/Rokin/Netwerk/OrgToDest/MakeOD_Time/potential           > Analyse/NetwerkDist_Points_to_NZ/NetwerkDist_perstation/StationCentraal/Netwerk/OrgToDest/MakeOD_Time/potential;
@@ -39,248 +39,455 @@ container Analyse: Using = "Eenheden;geography;modelparameters"
 		
 		attribute<bool>   AccessibilityChangeAboveThreshold         (NL_grid/domain) := ='AccessibilityChangeAboveThreshold_'+string(AccessibilityThreshold)+'min';
 		
-		container Set_TA12_CA_24_50000banen_in30min
-		{
-			attribute<StationsXareas> Visualisation (NL_grid/domain) := ='switch(
-																			'+AsList('case('+StationsXareas/name+', StationsXareas/v/'+StationsXareas/name+')',',')+'
-																			, (0b/0b)[StationsXareas]
-																		)';
-		
-			attribute<bool>   Noord_ta        (NL_grid/domain) := Disticts/TA_N_district/select;
-			attribute<bool>   Noord_ca        (NL_grid/domain) := Disticts/CA_N_district/select;
-			
-			attribute<bool>   Noorderpark_ta  (NL_grid/domain) := Disticts/TA_NP_district/select;
-			attribute<bool>   Noorderpark_ca  (NL_grid/domain) := Disticts/CA_NP_district/select;
-			
-			attribute<bool>   Centraal_ta     (NL_grid/domain) := Disticts/TA_C_district/select;
-			attribute<bool>   Centraal_ca     (NL_grid/domain) := Disticts/CA_C_district/select;
-			
-			attribute<bool>   Rokin_ta        (NL_grid/domain) := Disticts/TA_R_district/select;
-			attribute<bool>   Rokin_ca        (NL_grid/domain) := Disticts/CA_R_district/select;
-			
-			attribute<bool>   Vijzelgracht_ta (NL_grid/domain) := Disticts/TA_V_district/select;
-			attribute<bool>   Vijzelgracht_ca (NL_grid/domain) := Disticts/CA_V_district/select;
-					
-			attribute<bool>   DePijp_ta       (NL_grid/domain) := Disticts/TA_P_district/select;
-			attribute<bool>   DePijp_ca       (NL_grid/domain) := Disticts/CA_P_district/select;
-					
-			attribute<bool>   Europaplein_ta  (NL_grid/domain) := Disticts/TA_E_district/select;
-			attribute<bool>   Europaplein_ca  (NL_grid/domain) := Disticts/CA_E_district/select;
-					
-			attribute<bool>   Zuid_ta         (NL_grid/domain) := Disticts/TA_Z_district/select;
-			attribute<bool>   Zuid_ca         (NL_grid/domain) := Disticts/CA_Z_district/select;
-			
+		attribute<StationsXareas> Visualisation (NL_grid/domain) := ='switch(
+																		'+AsList('case(Result/'+StationsXareas/name+', StationsXareas/v/'+StationsXareas/name+')',',')+'
+																		, (0b/0b)[StationsXareas]
+																	)';
+	
+		container Result := 
+			for_each_nedv(
+				StationsXareas/name
+				, 'Districts/'+StationsXareas/name+'/area/select'
+				, NL_grid/domain
+				, bool
+			);
 
-			container Disticts
-			{
-				unit<uint32> TA_N_district    := district(Pre_Districts/TreatmentArea_Noord)
-				{
-					attribute<bool> select (NL_grid/domain) := districts != 0 && districts != 3;
-				}
-				unit<uint32> TA_NP_district    := district(Pre_Districts/TreatmentArea_Noorderpark)
-				{
-					attribute<bool> select (NL_grid/domain) := districts == 1;
-				}
-				unit<uint32> TA_C_district := district(Pre_Districts/TreatmentArea_Centraal)
-				{
-					attribute<bool> select (NL_grid/domain) := districts >= 1;
-				}
-				unit<uint32> TA_R_district := district(Pre_Districts/TreatmentArea_Rokin)
-				{
-					attribute<bool> select (NL_grid/domain) := districts == 1;
-				}
-				unit<uint32> TA_V_district := district(Pre_Districts/TreatmentArea_Vijzelgracht)
-				{
-					attribute<bool> select (NL_grid/domain) := districts == 1 || districts == 2;
-				}
-				unit<uint32> TA_P_district := district(Pre_Districts/TreatmentArea_DePijp)
-				{
-					attribute<bool> select (NL_grid/domain) := districts == 1 || districts == 2;
-				}
-				unit<uint32> TA_E_district := district(Pre_Districts/TreatmentArea_Europaplein)
-				{
-					attribute<bool> select (NL_grid/domain) := districts == 1;
-				}
-				unit<uint32> TA_Z_district := district(Pre_Districts/TreatmentArea_Zuid)
-				{
-					attribute<bool> select (NL_grid/domain) := districts >= 1;
-				}
+		container Districts :=
+			for_each_ne(
+				StationsXareas/name
+				, ta_ca_areas+'('+quote(StationsXareas/name)+')'
+			);
 			
-				unit<uint32> CA_N_district    := district(Pre_Districts/ControlArea_Noord)
-				{
-					attribute<bool> select (NL_grid/domain) := districts == 1 ||  districts == 3;
-				}
-				unit<uint32> CA_NP_district    := district(Pre_Districts/ControlArea_Noorderpark)
-				{
-					attribute<bool> select (NL_grid/domain) := districts == 1 ;
-				}
-				unit<uint32> CA_C_district := district(Pre_Districts/ControlArea_Centraal)
-				{
-					attribute<bool> select (NL_grid/domain) := districts == 1;
-				}
-				unit<uint32> CA_R_district := district(Pre_Districts/ControlArea_Rokin)
-				{
-					attribute<bool> select (NL_grid/domain) := districts == 1 ;
-				}
-				unit<uint32> CA_V_district := district(Pre_Districts/ControlArea_Vijzelgracht)
-				{
-					attribute<bool> select (NL_grid/domain) := districts == 1;
-				}
-				unit<uint32> CA_P_district := district(Pre_Districts/ControlArea_DePijp)
-				{
-					attribute<bool> select (NL_grid/domain) := districts >= 1;
-				}
-				unit<uint32> CA_E_district := district(Pre_Districts/ControlArea_Europaplein)
-				{
-					attribute<bool> select (NL_grid/domain) := districts >= 1;
-				}
-				unit<uint32> CA_Z_district := district(Pre_Districts/ControlArea_Zuid)
-				{
-					attribute<bool> select (NL_grid/domain) := districts == 1 ;
-				}
+		container Per_PC6 :=
+			for_each_nedv(
+				StationsXareas/name
+				, 'Result/'+StationsXareas/name+'[NL_grid_domain_rel][uint2]'
+				, PC6
+				, uint2
+			)
+		{
+			attribute<string>         PC6_name           (PC6) := PC6/PC6;
+			attribute<uint32>         Buurt_22_rel       (PC6) := PC6/buurt_rel;
+			attribute<float32>        Count_App          (PC6) := Brondata/BAG/Snapshots/Vbos/Y202201/vbo/GebruiksdoelSets/woon/GebruiksdoelSet/app_perPC6;
+			attribute<float32>        Fractie_App        (PC6) := Brondata/BAG/Snapshots/Vbos/Y202201/vbo/GebruiksdoelSets/woon/GebruiksdoelSet/pr_app_perPC6;
+			attribute<float32>        Avg_opp_App        (PC6) := Brondata/BAG/Snapshots/Vbos/Y202201/vbo/GebruiksdoelSets/woon/GebruiksdoelSet/avg_opp_app_perPC6;
+			attribute<int16>          Median_Bouwjaar_App(PC6) := Brondata/BAG/Snapshots/Panden/Y202201/pand/median_bouwjaar_app_perPC6;
+			attribute<NL_grid/domain> NL_grid_domain_rel (PC6) := PC6/geometry[NL_grid/domain];
+		}
+		
+		//////////////////////////////////// 25.0000 BANEN THRESHOLD ////////////////////////////////////
+		
+		Template Set_TA6_CA12_25000banen_in15min //checked
+		{
+			parameter<string> name;
+			///
+			unit<uint32> area    := ='district(Pre_Districts/'+name+')'
+			{
+				attribute<bool> select (NL_grid/domain) := districts == 1;
 			}
-			
-			container Per_PC6 :=
-				for_each_nedv(
-					StationsXareas/name
-					, '../'+StationsXareas/name+'[NL_grid_domain_rel][uint2]'
-					, PC6
-					, uint2
-				)
+		}
+		Template Set_TA6_CA12_25000banen_in30min //checked
+		{
+			parameter<string> name;
+			///
+			unit<uint32> area    := ='district(Pre_Districts/'+name+')'
 			{
-				attribute<string>         PC6_name           (PC6) := PC6/PC6;
-				attribute<uint32>         Buurt_22_rel          (PC6) := PC6/buurt_rel;
-				attribute<float32>        Count_App          (PC6) := Brondata/BAG/Snapshots/Vbos/Y202201/vbo/GebruiksdoelSets/woon/GebruiksdoelSet/app_perPC6;
-				attribute<float32>        Fractie_App        (PC6) := Brondata/BAG/Snapshots/Vbos/Y202201/vbo/GebruiksdoelSets/woon/GebruiksdoelSet/pr_app_perPC6;
-				attribute<float32>        Avg_opp_App        (PC6) := Brondata/BAG/Snapshots/Vbos/Y202201/vbo/GebruiksdoelSets/woon/GebruiksdoelSet/avg_opp_app_perPC6;
-				attribute<int16>          Median_Bouwjaar_App(PC6) := Brondata/BAG/Snapshots/Panden/Y202201/pand/median_bouwjaar_app_perPC6;
-				attribute<NL_grid/domain> NL_grid_domain_rel (PC6) := PC6/geometry[NL_grid/domain];
+				attribute<bool> select (NL_grid/domain) := districts == 1;
+			}
+		}
+		Template Set_TA6_CA12_25000banen_in45min //checked
+		{
+			parameter<string> name;
+			///
+			unit<uint32> area    := ='district(Pre_Districts/'+name+')'
+			{
+				attribute<bool> select (NL_grid/domain) := districts == 1;
 			}
 		}
 		
-		container Set_TA6_CA_12_50000banen
+		Template Set_TA12_CA24_25000banen_in15min //checked
 		{
-			attribute<bool>   TreatmentArea_Noord        (NL_grid/domain) := Disticts/TA_N_district/select;
-			attribute<bool>   ControlArea_Noord          (NL_grid/domain) := Disticts/CA_N_district/select;
-			
-			attribute<bool>   TreatmentArea_Noorderpark  (NL_grid/domain) := Disticts/TA_NP_district/select;
-			attribute<bool>   ControlArea_Noorderpark    (NL_grid/domain) := Disticts/CA_NP_district/select;
-			
-			attribute<bool>   TreatmentArea_Centraal     (NL_grid/domain) := Disticts/TA_C_district/select;
-			attribute<bool>   ControlArea_Centraal       (NL_grid/domain) := Disticts/CA_C_district/select;
-			
-			attribute<bool>   TreatmentArea_Rokin        (NL_grid/domain) := Disticts/TA_R_district/select;
-			attribute<bool>   ControlArea_Rokin          (NL_grid/domain) := Disticts/CA_R_district/select;
-			
-			attribute<bool>   TreatmentArea_Vijzelgracht (NL_grid/domain) := Disticts/TA_V_district/select;
-			attribute<bool>   ControlArea_Vijzelgracht   (NL_grid/domain) := Disticts/CA_V_district/select;
-					
-			attribute<bool>   TreatmentArea_DePijp       (NL_grid/domain) := Disticts/TA_P_district/select;
-			attribute<bool>   ControlArea_DePijp         (NL_grid/domain) := Disticts/CA_P_district/select;
-					
-			attribute<bool>   TreatmentArea_Europaplein  (NL_grid/domain) := Disticts/TA_E_district/select;
-			attribute<bool>   ControlArea_Europaplein    (NL_grid/domain) := Disticts/CA_E_district/select;
-					
-			attribute<bool>   TreatmentArea_Zuid         (NL_grid/domain) := Disticts/TA_Z_district/select;
-			attribute<bool>   ControlArea_Zuid           (NL_grid/domain) := Disticts/CA_Z_district/select;
-			
-
-			container Disticts
+			parameter<string> name;
+			///
+			unit<uint32> area    := ='district(Pre_Districts/'+name+')'
 			{
-				unit<uint32> TA_N_district    := district(Pre_Districts/TreatmentArea_Noord)
-				{
-					attribute<bool> select (NL_grid/domain) := districts != 0 && districts != 3;
-				}
-				unit<uint32> TA_NP_district    := district(Pre_Districts/TreatmentArea_Noorderpark)
-				{
-					attribute<bool> select (NL_grid/domain) := districts == 1;
-				}
-				unit<uint32> TA_C_district := district(Pre_Districts/TreatmentArea_Centraal)
-				{
-					attribute<bool> select (NL_grid/domain) := districts == 2;
-				}
-				unit<uint32> TA_R_district := district(Pre_Districts/TreatmentArea_Rokin)
-				{
-					attribute<bool> select (NL_grid/domain) := districts == 1 || districts == 2;
-				}
-				unit<uint32> TA_V_district := district(Pre_Districts/TreatmentArea_Vijzelgracht)
-				{
-					attribute<bool> select (NL_grid/domain) := districts == 1;
-				}
-				unit<uint32> TA_P_district := district(Pre_Districts/TreatmentArea_DePijp)
-				{
-					attribute<bool> select (NL_grid/domain) := districts == 1 || districts == 3;
-				}
-				unit<uint32> TA_E_district := district(Pre_Districts/TreatmentArea_Europaplein)
-				{
-					attribute<bool> select (NL_grid/domain) := districts == 1;
-				}
-				unit<uint32> TA_Z_district := district(Pre_Districts/TreatmentArea_Zuid)
-				{
-					attribute<bool> select (NL_grid/domain) := districts >= 2;
-				}
-			
-				unit<uint32> CA_N_district    := district(Pre_Districts/ControlArea_Noord)
-				{
-					attribute<bool> select (NL_grid/domain) := districts != 0;
-				}
-				unit<uint32> CA_NP_district    := district(Pre_Districts/ControlArea_Noorderpark)
-				{
-					attribute<bool> select (NL_grid/domain) := districts == 1;
-				}
-				unit<uint32> CA_C_district := district(Pre_Districts/ControlArea_Centraal)
-				{
-					attribute<bool> select (NL_grid/domain) := districts != 0 && districts != 3;
-				}
-				unit<uint32> CA_R_district := district(Pre_Districts/ControlArea_Rokin)
-				{
-					attribute<bool> select (NL_grid/domain) := districts == 1;
-				}
-				unit<uint32> CA_V_district := district(Pre_Districts/ControlArea_Vijzelgracht)
-				{
-					attribute<bool> select (NL_grid/domain) := districts == 1;
-				}
-				unit<uint32> CA_P_district := district(Pre_Districts/ControlArea_DePijp)
-				{
-					attribute<bool> select (NL_grid/domain) := districts == 1 || districts == 3;
-				}
-				unit<uint32> CA_E_district := district(Pre_Districts/ControlArea_Europaplein)
-				{
-					attribute<bool> select (NL_grid/domain) := districts == 1;
-				}
-				unit<uint32> CA_Z_district := district(Pre_Districts/ControlArea_Zuid)
-				{
-					attribute<bool> select (NL_grid/domain) := districts != 0 && districts != 3 && districts != 4 && districts != 5 && districts != 6 && districts != 7;
-				}
+				attribute<bool> select (NL_grid/domain) := switch(
+															  case(lowercase(name) == 'vijzelgracht_ca', districts >= 1)
+															, case(lowercase(name) == 'europaplein_ca', europaplein_ta/area/Districts == 2 || Districts > 0)
+															, case(lowercase(name) == 'zuid_ta', Districts == 2)
+															, case(lowercase(name) == 'zuid_ca', zuid_ta/area/Districts == 1 || Districts == 1)
+															, case(lowercase(name) == 'noord_ca', Districts == 1 || districts == 3)
+															, case(lowercase(name) == 'depijp_ca', Districts > 0)
+															, case(lowercase(name) == 'centraal_ta', Districts > 0)
+															, districts == 1
+															);
 			}
 		}
+		
+		Template Set_TA12_CA24_25000banen_in30min //checked
+		{
+			parameter<string> name;
+			///
+			unit<uint32> area    := ='district(Pre_Districts/'+name+')'
+			{
+				attribute<bool> select (NL_grid/domain) := switch(
+															  case(lowercase(name) == 'noord_ca', Districts == 1 || districts == 3)
+															, case(lowercase(name) == 'centraal_ca', Districts > 0)
+															, case(lowercase(name) == 'rokin_ca', Districts > 0)
+															, case(lowercase(name) == 'vijzelgracht_ca', districts >= 1)
+															, case(lowercase(name) == 'depijp_ca', Districts > 0)
+															, case(lowercase(name) == 'europaplein_ca', Districts > 0)
+															, districts == 1
+															);
+			}
+		}
+		
+		
+		Template Set_TA12_CA24_25000banen_in45min //checked
+		{
+			parameter<string> name;
+			///
+			unit<uint32> area    := ='district(Pre_Districts/'+name+')'
+			{
+				attribute<bool> select (NL_grid/domain) := switch(
+															  case(lowercase(name) == 'noord_ca', Districts == 1 || districts == 3)
+															, case(lowercase(name) == 'rokin_ta', Districts == 2)
+															, case(lowercase(name) == 'rokin_ca', rokin_ta/area/Districts == 1 || Districts > 0)
+															, case(lowercase(name) == 'depijp_ca', Districts > 0)
+															, case(lowercase(name) == 'vijzelgracht_ca', Districts > 0)
+															, case(lowercase(name) == 'europaplein_ca', Districts > 0)
+															, case(lowercase(name) == 'zuid_ca', Districts > 0)
+															, districts == 1
+															);
+			}
+		}
+		
+		Template Set_TA24_CA36_25000banen_in15min //checked
+		{
+			parameter<string> name;
+			///
+			unit<uint32> area    := ='district(Pre_Districts/'+name+')'
+			{
+				attribute<bool> select (NL_grid/domain) := districts == 1;
+			}
+		}
+		Template Set_TA24_CA36_25000banen_in30min //checked
+		{
+			parameter<string> name;
+			///
+			unit<uint32> area    := ='district(Pre_Districts/'+name+')'
+			{
+				attribute<bool> select (NL_grid/domain) := switch(
+															 case(lowercase(name) == 'noord_ca', Districts > 0)
+															, case(lowercase(name) == 'noorderpark_ca', Districts > 0)
+															, case(lowercase(name) == 'centraal_ca', centraal_ta/area/Districts >= 2 || Districts > 0)
+															, case(lowercase(name) == 'rokin_ta', Districts == 2)
+															, case(lowercase(name) == 'rokin_ca', rokin_ta/area/Districts == 1 || Districts == 1 || Districts == 2 || Districts == 3 || Districts == 4)
+															, case(lowercase(name) == 'vijzelgracht_ta', Districts == 2)
+															, case(lowercase(name) == 'vijzelgracht_ca', vijzelgracht_ta/area/Districts == 1 || rokin_ca/area/Districts == 5 || Districts > 0)
+															, case(lowercase(name) == 'depijp_ca', Districts > 0)
+															, case(lowercase(name) == 'europaplein_ta', Districts > 0)
+															, case(lowercase(name) == 'europaplein_ca', Districts == 1 || Districts == 2)
+															, case(lowercase(name) == 'zuid_ta', Districts == 3)
+															, districts == 1
+															);
+			}
+		}
+		Template Set_TA24_CA36_25000banen_in45min //checked
+		{
+			parameter<string> name;
+			///
+			unit<uint32> area    := ='district(Pre_Districts/'+name+')'
+			{
+				attribute<bool> select (NL_grid/domain) := switch(
+															 case(lowercase(name) == 'noord_ca', Districts > 0)
+															, case(lowercase(name) == 'noorderpark_ca', Districts > 0)
+															, case(lowercase(name) == 'centraal_ca', centraal_ta/area/Districts >= 2 || Districts > 0)
+															, case(lowercase(name) == 'rokin_ta', Districts == 3)
+															, case(lowercase(name) == 'rokin_ca', rokin_ta/area/Districts == 1 || Districts == 1 || Districts ==  2)
+															, case(lowercase(name) == 'vijzelgracht_ca', rokin_ca/area/Districts == 3 || Districts > 0)
+															, case(lowercase(name) == 'depijp_ca', Districts > 0)
+															, case(lowercase(name) == 'europaplein_ca', Districts > 0)
+															, case(lowercase(name) == 'zuid_ca', Districts == 1 || Districts == 3)
+															, districts == 1
+															);
+			}
+		}
+		
+		//////////////////////////////////// 50.0000 BANEN THRESHOLD ////////////////////////////////////
+		
+		Template Set_TA6_CA12_50000banen_in15min //checked
+		{
+			parameter<string> name;
+			///
+			unit<uint32> area    := ='district(Pre_Districts/'+name+')'
+			{
+				attribute<bool> select (NL_grid/domain) := districts == 1;
+			}
+		}
+		Template Set_TA6_CA12_50000banen_in30min //checked
+		{
+			parameter<string> name;
+			///
+			unit<uint32> area    := ='district(Pre_Districts/'+name+')'
+			{
+				attribute<bool> select (NL_grid/domain) := districts == 1;
+			}
+		}
+		Template Set_TA6_CA12_50000banen_in45min //checked
+		{
+			parameter<string> name;
+			///
+			unit<uint32> area    := ='district(Pre_Districts/'+name+')'
+			{
+				attribute<bool> select (NL_grid/domain) := districts == 1;
+			}
+		}
+		
+		Template Set_TA12_CA24_50000banen_in15min //checked
+		{
+			parameter<string> name;
+			///
+			unit<uint32> area    := ='district(Pre_Districts/'+name+')'
+			{
+				attribute<bool> select (NL_grid/domain) := switch(
+															  case(lowercase(name) == 'vijzelgracht_ca', districts >= 1)
+															, case(lowercase(name) == 'europaplein_ca', europaplein_ta/area/Districts == 2 || Districts > 0)
+															, case(lowercase(name) == 'zuid_ta', Districts == 2)
+															, case(lowercase(name) == 'zuid_ca', zuid_ta/area/Districts == 1 || Districts == 1)
+															, case(lowercase(name) == 'noord_ca', Districts == 1 || districts == 3)
+															, case(lowercase(name) == 'depijp_ca', Districts > 0)
+															, case(lowercase(name) == 'centraal_ta', Districts > 0)
+															, districts == 1
+															);
+			}
+		}
+		
+		Template Set_TA12_CA24_50000banen_in30min //checked
+		{
+			parameter<string> name;
+			///
+			unit<uint32> area    := ='district(Pre_Districts/'+name+')'
+			{
+				attribute<bool> select (NL_grid/domain) := switch(
+															  case(lowercase(name) == 'vijzelgracht_ca', districts >= 1)
+															, case(lowercase(name) == 'europaplein_ca', europaplein_ta/area/Districts == 2 || Districts > 0)
+															, case(lowercase(name) == 'zuid_ta', Districts == 2)
+															, case(lowercase(name) == 'zuid_ca', zuid_ta/area/Districts == 1 || Districts == 1)
+															, case(lowercase(name) == 'noord_ca', Districts == 1 || districts == 3)
+															, case(lowercase(name) == 'depijp_ca', Districts > 0)
+															, case(lowercase(name) == 'centraal_ta', Districts > 0)
+															, districts == 1
+															);
+			}
+		}
+		
+		
+		Template Set_TA12_CA24_50000banen_in45min //checked
+		{
+			parameter<string> name;
+			///
+			unit<uint32> area    := ='district(Pre_Districts/'+name+')'
+			{
+				attribute<bool> select (NL_grid/domain) := switch(
+															  case(lowercase(name) == 'depijp_ca', Districts > 0)
+															, case(lowercase(name) == 'noord_ca', Districts == 1 || districts == 3)
+															, case(lowercase(name) == 'vijzelgracht_ca', Districts > 0)
+															, case(lowercase(name) == 'europaplein_ca', Districts > 0)
+															, districts == 1
+															);
+			}
+		}
+		
+		
+		Template Set_TA24_CA36_50000banen_in15min //checked
+		{
+			parameter<string> name;
+			///
+			unit<uint32> area    := ='district(Pre_Districts/'+name+')'
+			{
+				attribute<bool> select (NL_grid/domain) := districts == 1;
+			}
+		}
+		Template Set_TA24_CA36_50000banen_in30min //checked
+		{
+			parameter<string> name;
+			///
+			unit<uint32> area    := ='district(Pre_Districts/'+name+')'
+			{
+				attribute<bool> select (NL_grid/domain) := switch(
+															 case(lowercase(name) == 'noord_ca', Districts > 0)
+															, case(lowercase(name) == 'noorderpark_ca', Districts > 0)
+															, case(lowercase(name) == 'centraal_ca', centraal_ta/area/Districts >= 2 || Districts > 0)
+															, case(lowercase(name) == 'vijzelgracht_ca', rokin_ca/area/Districts == 3 || Districts > 0)
+															, case(lowercase(name) == 'depijp_ca', Districts > 0)
+															, case(lowercase(name) == 'zuid_ta', Districts == 2)
+															, case(lowercase(name) == 'zuid_ca', zuid_ta/area/Districts == 1 || Districts == 1 || Districts == 3)
+															, districts == 1
+															);
+			}
+		}
+		Template Set_TA24_CA36_50000banen_in45min //checked
+		{
+			parameter<string> name;
+			///
+			unit<uint32> area    := ='district(Pre_Districts/'+name+')'
+			{
+				attribute<bool> select (NL_grid/domain) := switch(
+															 case(lowercase(name) == 'noord_ca', Districts > 0)
+															, case(lowercase(name) == 'noorderpark_ca', Districts > 0)
+															, case(lowercase(name) == 'centraal_ca', centraal_ta/area/Districts >= 2 || Districts > 0)
+															, case(lowercase(name) == 'rokin_ta', Districts == 3)
+															, case(lowercase(name) == 'rokin_ca', rokin_ta/area/Districts == 1 || Districts == 1 || Districts ==  2)
+															, case(lowercase(name) == 'vijzelgracht_ca', rokin_ca/area/Districts == 3 || Districts > 0)
+															, case(lowercase(name) == 'depijp_ca', Districts > 0)
+															, case(lowercase(name) == 'europaplein_ca', Districts > 0)
+															, districts == 1
+															);
+			}
+		}
+		
+		//////////////////////////////////// 75.0000 BANEN THRESHOLD ////////////////////////////////////
+		
+		Template Set_TA6_CA12_75000banen_in15min //checked
+		{
+			parameter<string> name;
+			///
+			unit<uint32> area    := ='district(Pre_Districts/'+name+')'
+			{
+				attribute<bool> select (NL_grid/domain) := districts == 1;
+			}
+		}
+		Template Set_TA6_CA12_75000banen_in30min //checked
+		{
+			parameter<string> name;
+			///
+			unit<uint32> area    := ='district(Pre_Districts/'+name+')'
+			{
+				attribute<bool> select (NL_grid/domain) := districts == 1;
+			}
+		}
+		Template Set_TA6_CA12_75000banen_in45min //checked
+		{
+			parameter<string> name;
+			///
+			unit<uint32> area    := ='district(Pre_Districts/'+name+')'
+			{
+				attribute<bool> select (NL_grid/domain) := districts == 1;
+			}
+		}
+		
+		Template Set_TA12_CA24_75000banen_in15min //checked
+		{
+			parameter<string> name;
+			///
+			unit<uint32> area    := ='district(Pre_Districts/'+name+')'
+			{
+				attribute<bool> select (NL_grid/domain) := districts == 1;
+			}
+		}
+		
+		Template Set_TA12_CA24_75000banen_in30min //checked
+		{
+			parameter<string> name;
+			///
+			unit<uint32> area    := ='district(Pre_Districts/'+name+')'
+			{
+				attribute<bool> select (NL_grid/domain) := switch(
+															 case(lowercase(name) == 'noord_ca', Districts > 0)
+															, case(lowercase(name) == 'europaplein_ca', Districts > 0)
+															, districts == 1
+															);
+			}
+		}
+		
+		
+		Template Set_TA12_CA24_75000banen_in45min //checked
+		{
+			parameter<string> name;
+			///
+			unit<uint32> area    := ='district(Pre_Districts/'+name+')'
+			{
+				attribute<bool> select (NL_grid/domain) := switch(
+															 case(lowercase(name) == 'noord_ca', Districts > 0)
+															, case(lowercase(name) == 'depijp_ca', Districts > 0)
+															, districts == 1
+															);
+			}
+		}
+		
+		Template Set_TA24_CA36_75000banen_in15min //checked
+		{
+			parameter<string> name;
+			///
+			unit<uint32> area    := ='district(Pre_Districts/'+name+')'
+			{
+				attribute<bool> select (NL_grid/domain) := districts == 1;
+			}
+		}
+		Template Set_TA24_CA36_75000banen_in30min //checked
+		{
+			parameter<string> name;
+			///
+			unit<uint32> area    := ='district(Pre_Districts/'+name+')'
+			{
+				attribute<bool> select (NL_grid/domain) := switch(
+															 case(lowercase(name) == 'noord_ca', Districts > 0)
+															, case(lowercase(name) == 'noorderpark_ca', Districts > 0)
+															, case(lowercase(name) == 'centraal_ca', centraal_ta/area/Districts >= 2 || Districts > 0)
+															, districts == 1
+															);
+			}
+		}
+		Template Set_TA24_CA36_75000banen_in45min //checked
+		{
+			parameter<string> name;
+			///
+			unit<uint32> area    := ='district(Pre_Districts/'+name+')'
+			{
+				attribute<bool> select (NL_grid/domain) := switch(
+															 case(lowercase(name) == 'noord_ca', Districts > 0)
+															, case(lowercase(name) == 'noorderpark_ta', Districts > 0)
+															, case(lowercase(name) == 'noorderpark_ca', Districts > 0)
+															, case(lowercase(name) == 'centraal_ca', centraal_ta/area/Districts >= 2 || Districts > 0)
+															, case(lowercase(name) == 'depijp_ca', Districts > 0)
+															, districts == 1
+															);
+			}
+		}
+		
+		
+		
+		
+		
+		
 		
 		
 		container Pre_Districts
 		{
-			attribute<bool>   TreatmentArea_Noord        (NL_grid/domain) := AccessibilityChangeAboveThreshold  && TreatmentArea_src/Noord                                              && closer2noord_then_noorderpark;
-			attribute<bool>   ControlArea_Noord          (NL_grid/domain) := (!AccessibilityChangeAboveThreshold || ControlArea_src/Noord)           && ControlArea_src/Noord           && closer2noord_then_noorderpark    && !TreatmentArea_Noord;
+			attribute<bool>   Noord_TA          (NL_grid/domain) := AccessibilityChangeAboveThreshold  && TreatmentArea_src/Noord                                              && closer2noord_then_noorderpark;
+			attribute<bool>   Noord_CA          (NL_grid/domain) := (!AccessibilityChangeAboveThreshold || ControlArea_src/Noord)           && ControlArea_src/Noord           && closer2noord_then_noorderpark    && !Noord_TA;
 			
-			attribute<bool>   TreatmentArea_Noorderpark  (NL_grid/domain) := AccessibilityChangeAboveThreshold  && TreatmentArea_src/Noorderpark                                        && closer2noorderpark_then_centraal && !closer2noord_then_noorderpark; 
-			attribute<bool>   ControlArea_Noorderpark    (NL_grid/domain) := (!AccessibilityChangeAboveThreshold || ControlArea_src/Noorderpark)     && ControlArea_src/Noorderpark     && closer2noorderpark_then_centraal && !closer2noord_then_noorderpark    && !TreatmentArea_Noorderpark;
+			attribute<bool>   Noorderpark_TA    (NL_grid/domain) := AccessibilityChangeAboveThreshold  && TreatmentArea_src/Noorderpark                                        && closer2noorderpark_then_centraal && !closer2noord_then_noorderpark; 
+			attribute<bool>   Noorderpark_CA    (NL_grid/domain) := (!AccessibilityChangeAboveThreshold || ControlArea_src/Noorderpark)     && ControlArea_src/Noorderpark     && closer2noorderpark_then_centraal && !closer2noord_then_noorderpark    && !Noorderpark_TA;
 			
-			attribute<bool>   TreatmentArea_Centraal     (NL_grid/domain) := AccessibilityChangeAboveThreshold  && TreatmentArea_src/StationCentraal                                    && closer2centraal_then_rokin       && !closer2noorderpark_then_centraal; 
-			attribute<bool>   ControlArea_Centraal       (NL_grid/domain) := (!AccessibilityChangeAboveThreshold || ControlArea_src/StationCentraal) && ControlArea_src/StationCentraal && closer2centraal_then_rokin       && !closer2noorderpark_then_centraal && !TreatmentArea_Centraal && !ControlArea_Vijzelgracht && !ControlArea_DePijp;
+			attribute<bool>   Centraal_TA       (NL_grid/domain) := AccessibilityChangeAboveThreshold  && TreatmentArea_src/StationCentraal                                    && closer2centraal_then_rokin       && !closer2noorderpark_then_centraal; 
+			attribute<bool>   Centraal_CA       (NL_grid/domain) := (!AccessibilityChangeAboveThreshold || ControlArea_src/StationCentraal) && ControlArea_src/StationCentraal && closer2centraal_then_rokin       && !closer2noorderpark_then_centraal && !Centraal_TA && !Vijzelgracht_CA && !DePijp_CA;
 			
-			attribute<bool>   TreatmentArea_Rokin        (NL_grid/domain) := AccessibilityChangeAboveThreshold  && TreatmentArea_src/Rokin                                              && closer2rokin_then_vijzel         && !closer2centraal_then_rokin; 
-			attribute<bool>   ControlArea_Rokin          (NL_grid/domain) := (!AccessibilityChangeAboveThreshold || ControlArea_src/Rokin)           && ControlArea_src/Rokin           && closer2rokin_then_vijzel         && !closer2centraal_then_rokin       && !TreatmentArea_Rokin;
+			attribute<bool>   Rokin_TA          (NL_grid/domain) := AccessibilityChangeAboveThreshold  && TreatmentArea_src/Rokin                                              && closer2rokin_then_vijzel         && !closer2centraal_then_rokin; 
+			attribute<bool>   Rokin_CA          (NL_grid/domain) := (!AccessibilityChangeAboveThreshold || ControlArea_src/Rokin)           && ControlArea_src/Rokin           && closer2rokin_then_vijzel         && !closer2centraal_then_rokin       && !Rokin_TA;
 			
-			attribute<bool>   TreatmentArea_Vijzelgracht (NL_grid/domain) := AccessibilityChangeAboveThreshold  && TreatmentArea_src/Vijzelgracht                                       && closer2vijzel_then_depijp        && !closer2rokin_then_vijzel; 
-			attribute<bool>   ControlArea_Vijzelgracht   (NL_grid/domain) := (!AccessibilityChangeAboveThreshold || ControlArea_src/Vijzelgracht)    && ControlArea_src/Vijzelgracht    && closer2vijzel_then_depijp        && !closer2rokin_then_vijzel         && !TreatmentArea_Vijzelgracht;
+			attribute<bool>   Vijzelgracht_TA   (NL_grid/domain) := AccessibilityChangeAboveThreshold  && TreatmentArea_src/Vijzelgracht                                       && closer2vijzel_then_depijp        && !closer2rokin_then_vijzel; 
+			attribute<bool>   Vijzelgracht_CA   (NL_grid/domain) := (!AccessibilityChangeAboveThreshold || ControlArea_src/Vijzelgracht)    && ControlArea_src/Vijzelgracht    && closer2vijzel_then_depijp        && !closer2rokin_then_vijzel         && !Vijzelgracht_TA;
 					
-			attribute<bool>   TreatmentArea_DePijp       (NL_grid/domain) := AccessibilityChangeAboveThreshold  && TreatmentArea_src/DePijp                                             && closer2depijp_then_europaplein   && !closer2vijzel_then_depijp; 
-			attribute<bool>   ControlArea_DePijp         (NL_grid/domain) := (!AccessibilityChangeAboveThreshold || ControlArea_src/DePijp)          && ControlArea_src/DePijp          && closer2depijp_then_europaplein   && !closer2vijzel_then_depijp        && !TreatmentArea_DePijp;
+			attribute<bool>   DePijp_TA         (NL_grid/domain) := AccessibilityChangeAboveThreshold  && TreatmentArea_src/DePijp                                             && closer2depijp_then_europaplein   && !closer2vijzel_then_depijp; 
+			attribute<bool>   DePijp_CA         (NL_grid/domain) := (!AccessibilityChangeAboveThreshold || ControlArea_src/DePijp)          && ControlArea_src/DePijp          && closer2depijp_then_europaplein   && !closer2vijzel_then_depijp        && !DePijp_TA;
 					
-			attribute<bool>   TreatmentArea_Europaplein  (NL_grid/domain) := AccessibilityChangeAboveThreshold  && TreatmentArea_src/Europaplein                                        && closer2europaplein_then_zuid     && !closer2depijp_then_europaplein; 
-			attribute<bool>   ControlArea_Europaplein    (NL_grid/domain) := (!AccessibilityChangeAboveThreshold || ControlArea_src/Europaplein)     && ControlArea_src/Europaplein     && closer2europaplein_then_zuid     && !closer2depijp_then_europaplein  && !TreatmentArea_Europaplein;
+			attribute<bool>   EuropaPlein_TA    (NL_grid/domain) := AccessibilityChangeAboveThreshold  && TreatmentArea_src/Europaplein                                        && closer2europaplein_then_zuid     && !closer2depijp_then_europaplein; 
+			attribute<bool>   Europaplein_CA    (NL_grid/domain) := (!AccessibilityChangeAboveThreshold || ControlArea_src/Europaplein)     && ControlArea_src/Europaplein     && closer2europaplein_then_zuid     && !closer2depijp_then_europaplein  && !EuropaPlein_TA;
 					
-			attribute<bool>   TreatmentArea_Zuid         (NL_grid/domain) := AccessibilityChangeAboveThreshold  && TreatmentArea_src/StationZuid                                                                            && !closer2europaplein_then_zuid; 
-			attribute<bool>   ControlArea_Zuid           (NL_grid/domain) := (!AccessibilityChangeAboveThreshold || ControlArea_src/StationZuid)     && ControlArea_src/StationZuid                                         && !closer2europaplein_then_zuid    && !TreatmentArea_Zuid               && !ControlArea_Vijzelgracht && !ControlArea_DePijp;
+			attribute<bool>   Zuid_TA           (NL_grid/domain) := AccessibilityChangeAboveThreshold  && TreatmentArea_src/StationZuid                                                                            && !closer2europaplein_then_zuid; 
+			attribute<bool>   Zuid_CA           (NL_grid/domain) := (!AccessibilityChangeAboveThreshold || ControlArea_src/StationZuid)     && ControlArea_src/StationZuid                                         && !closer2europaplein_then_zuid    && !Zuid_TA               && !Europaplein_CA && !DePijp_CA;
 		}
 	
 		container TreatmentArea0 := 
