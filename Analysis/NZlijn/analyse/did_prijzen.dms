@@ -23,6 +23,7 @@ container DiD_Prijzen :=
 	attribute<jaar>           trans_year                           (NVM_AMS) := NVM_AMS/trans_year;
 	attribute<jaar>           trans_month                          (NVM_AMS) := NVM_AMS/trans_month;
 	attribute<jaar>           bouwjaar                             (NVM_AMS) := NVM_AMS/bouwjaar;
+	attribute<jaar>           bouwjaar_baggeom                     (NVM_AMS) := NVM_AMS/bouwjaar_baggeom;
 	// attribute<jaar>           bouwjaar_augm                        (NVM_AMS) := NVM_AMS/bouwjaar_augm;
 	attribute<uint32>         nrooms                               (NVM_AMS) := NVM_AMS/nrooms;
 	// attribute<uint32>         nbathrooms                           (NVM_AMS) := NVM_AMS/nbathrooms;

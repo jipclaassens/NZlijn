@@ -1,5 +1,6 @@
 capture log close
-cd "D:\OneDrive\OneDrive - Objectvision\VU\Projects\202110-NZpaper\"
+// cd "D:\OneDrive\OneDrive - Objectvision\VU\Projects\202110-NZpaper\" //LAPTOP
+cd "C:\Users\Jip Claassens\OneDrive - Objectvision\VU\Projects\202110-NZpaper" //OVSRV06
 log using temp\nzlijn_did_prijzen_log.txt, text replace
 
 global filedate = 20240926 // 20240926  20240530
@@ -21,7 +22,7 @@ use data/DMS_did_prijzen_raw.dta, clear
 
 drop geometry nl_grid_domain*
 
-local replaceNullList = "lotsize bouwjaar buurt_rel"
+local replaceNullList = "lotsize bouwjaar bouwjaar_bag buurt_rel"
 foreach x of local replaceNullList{
 	replace `x' = "" if `x' == "null"
 	destring `x', replace
@@ -40,8 +41,10 @@ replace amsterdam_rel = 1 if gemeente_name == "'Amsterdam'"
 
 replace bouwjaar = . if bouwjaar == 0 | bouwjaar == 9999
 replace bouwjaar = 1600 if bouwjaar < 1600 & bouwjaar != .
-// replace bouwjaar_augm = . if bouwjaar_augm == 0 | bouwjaar_augm == 9999
-// replace bouwjaar_augm = 1600 if bouwjaar_augm < 1600 & bouwjaar_augm != .
+replace bouwjaar_baggeom = . if bouwjaar_baggeom == 0 | bouwjaar_baggeom == 9999
+replace bouwjaar_baggeom = 1600 if bouwjaar_baggeom < 1600 & bouwjaar_baggeom != .
+replace bouwjaar = bouwjaar_baggeom if bouwjaar == .
+drop bouwjaar_baggeom
 
 // g age = trans_year - bouwjaar_augm
 // g age = trans_year - bouwjaar
@@ -140,7 +143,8 @@ foreach s of local stations{
 	replace all_ca = 1 if `s'_ca == 1
 }
 
-local stations "noord noorderpark centraal rokin vijzelgracht depijp europaplein zuid all"
+local stations "noorderpark"
+// local stations "noord noorderpark centraal rokin vijzelgracht depijp europaplein zuid all"
 foreach s of local stations{ 
 // 	local dates "22042003 01082009 08072016 21072018"
 	local dates "21072018"
@@ -152,12 +156,11 @@ foreach s of local stations{
 		g ca = `s'_ca + `s'_ta
 		
 		areg lnprice treated treattime did lnsize nrooms d_maintgood i.building_type b1.construction_period i.trans_year i.trans_month if ca == 1, r absorb(buurt_rel)
-		outreg2 using output/prijzen/did_windows_indiv_AccBased_${acc_range}min_buurt_${TAsize}_${CAsize}min_${filedate}, excel cttop (`s', `d') label dec(3) addtext (Year FE, Yes, Month FE, Yes, Neighbourhood FE, Yes) keep(treat* did*)  
+// 		outreg2 using output/prijzen/did_windows_indiv_AccBased_${acc_range}min_buurt_${TAsize}_${CAsize}min_${filedate}, excel cttop (`s', `d') label dec(3) addtext (Year FE, Yes, Month FE, Yes, Neighbourhood FE, Yes) keep(treat* did*)  
 		
-		drop did* treated treattime* ca
+// 		drop did* treated treattime* ca
 	}
 }
-
 
 ///zonder property chars
 local stations "noord"
@@ -179,18 +182,50 @@ foreach s of local stations{
 
 
 //descriptives
-estpost sum price trans_year trans_month  size nrooms nbath bouwjaar_augm d_maintgood d_central d_kk d_isol_compl d_erfpacht d_privpark d_ap d_ter d_sem d_det d_constr* tt_*  
+estpost sum price trans_year trans_month  size nrooms bouwjaar d_maintgood d_ap d_ter d_sem d_det d_constr* tt_*  
 esttab using output/sum_prijzen_${acc_range}min_${TAsize}_${CAsize}min_${filedate}.rtf, cells("count(fmt(0)) mean(fmt(3)) sd(fmt(3)) min(fmt(0)) max(fmt(0))") label nomtitle nonumber replace
 
 
+duplicates report x y, inspect
+duplicates tag x y, gen(tag)
+set seed 10001
+gen double shuffle1 = runiform(0.00001,0.00002)
+replace x = x +shuffle1 if tag>0
+replace y = y +shuffle1 if tag>0
+
+drop tag shuffle1
+
+spset obsid, coord(x y) 
+
+spset, clear
+
+spmatrix create idistance W, replace
+spmatrix save W using Data/SPmat.dta, replace
+
+
+spmat idistance W x_coord y_coord, id(identificatie) dfunction(euclidean) replace
+spmat save W using Data/SPmat.dta, replace
+
+predict residuals, resid
+spregress moran residuals, spmat(W)
+
+spregress lnprice treated treattime did lnsize nrooms d_maintgood i.building_type b1.construction_period i.trans_year i.trans_month if ca == 1, gs2sls errorlag(W) force
+
+save, replace
+
+
+spmat idistance W x y, id(obsid) dfunction(euclidean) replace
+spmat save W using Data/SPmat.dta, replace
 
 
 
 
 
+spmatrix create contiguity W if year == 2000
 
 
 
+areg lnprice treated treattime did lnsize nrooms d_maintgood i.building_type b1.construction_period i.trans_year i.trans_month if ca == 1, r absorb(buurt_rel)
 
 
 
