@@ -2,7 +2,7 @@ container Regios
 {
 	parameter<string> Regio_jaar := '2022';
 
-	unit<uint32> Gebiedsindelingen_jaren := range(uint32, 2000, 2023)
+	unit<uint32> Gebiedsindelingen_jaren := range(uint32, 2000, 2024)
 	{
 		attribute<uint32> jaar := id(.);
 		attribute<string> name := 'Y'+string(jaar);
@@ -26,33 +26,33 @@ container Regios
 	}
 	
 	
-	unit<uint32>  Buurt := ='Gebiedsindelingen/y'+Regio_jaar+'/gpkg/cbs_buurt_'+Regio_jaar+'_gegeneraliseerd' 
+	unit<uint32>  Buurt := ='Gebiedsindelingen/y'+Regio_jaar+'/gpkg/buurt_niet_gegeneraliseerd' 
 	{
-		attribute<rdc>       geometry (poly)         := ='Gebiedsindelingen/y'+Regio_jaar+'/gpkg/cbs_buurt_'+Regio_jaar+'_gegeneraliseerd/geometry';
-		attribute<string>    statcode                := ='Gebiedsindelingen/y'+Regio_jaar+'/gpkg/cbs_buurt_'+Regio_jaar+'_gegeneraliseerd/statcode';
-		attribute<string>    statnaam                := ='Gebiedsindelingen/y'+Regio_jaar+'/gpkg/cbs_buurt_'+Regio_jaar+'_gegeneraliseerd/statnaam';
+		attribute<rdc>       geometry (poly)         := ='Gebiedsindelingen/y'+Regio_jaar+'/gpkg/buurt_niet_gegeneraliseerd/geometry';
+		attribute<string>    statcode                := ='Gebiedsindelingen/y'+Regio_jaar+'/gpkg/buurt_niet_gegeneraliseerd/statcode';
+		attribute<string>    statnaam                := ='Gebiedsindelingen/y'+Regio_jaar+'/gpkg/buurt_niet_gegeneraliseerd/statnaam';
 		attribute<string>    name                    := AsItemName(statnaam);
 		attribute<string>    label                   := statnaam;
 		
 		container V := for_each_nedv(name, 'value('+string(id(.))+', ..)', void, .);
 	}
 	
-	unit<uint32>  Wijk := ='Gebiedsindelingen/y'+Regio_jaar+'/gpkg/cbs_wijk_'+Regio_jaar+'_gegeneraliseerd' 
+	unit<uint32>  Wijk := ='Gebiedsindelingen/y'+Regio_jaar+'/gpkg/wijk_niet_gegeneraliseerd' 
 	{
-		attribute<rdc>       geometry (poly)         := ='Gebiedsindelingen/y'+Regio_jaar+'/gpkg/cbs_wijk_'+Regio_jaar+'_gegeneraliseerd/geometry';
-		attribute<string>    statcode                := ='Gebiedsindelingen/y'+Regio_jaar+'/gpkg/cbs_wijk_'+Regio_jaar+'_gegeneraliseerd/statcode';
-		attribute<string>    statnaam                := ='Gebiedsindelingen/y'+Regio_jaar+'/gpkg/cbs_wijk_'+Regio_jaar+'_gegeneraliseerd/statnaam';
+		attribute<rdc>       geometry (poly)         := ='Gebiedsindelingen/y'+Regio_jaar+'/gpkg/wijk_niet_gegeneraliseerd/geometry';
+		attribute<string>    statcode                := ='Gebiedsindelingen/y'+Regio_jaar+'/gpkg/wijk_niet_gegeneraliseerd/statcode';
+		attribute<string>    statnaam                := ='Gebiedsindelingen/y'+Regio_jaar+'/gpkg/wijk_niet_gegeneraliseerd/statnaam';
 		attribute<string>    name                    := AsItemName(statnaam);
 		attribute<string>    label                   := statnaam;
 
 		container V := for_each_nedv(name, 'value('+string(id(.))+', ..)', void, .);
 	}
 	
-	unit<uint32>  Gemeente := ='Gebiedsindelingen/y'+Regio_jaar+'/gpkg/cbs_gemeente_'+Regio_jaar+'_gegeneraliseerd' 
+	unit<uint32>  Gemeente := ='Gebiedsindelingen/y'+Regio_jaar+'/gpkg/gemeente_niet_gegeneraliseerd' 
 	{
-		attribute<rdc>       geometry (poly)         := ='Gebiedsindelingen/y'+Regio_jaar+'/gpkg/cbs_gemeente_'+Regio_jaar+'_gegeneraliseerd/geometry';
-		attribute<string>    statcode                := ='Gebiedsindelingen/y'+Regio_jaar+'/gpkg/cbs_gemeente_'+Regio_jaar+'_gegeneraliseerd/statcode';
-		attribute<string>    statnaam                := ='Gebiedsindelingen/y'+Regio_jaar+'/gpkg/cbs_gemeente_'+Regio_jaar+'_gegeneraliseerd/statnaam';
+		attribute<rdc>       geometry (poly)         := ='Gebiedsindelingen/y'+Regio_jaar+'/gpkg/gemeente_niet_gegeneraliseerd/geometry';
+		attribute<string>    statcode                := ='Gebiedsindelingen/y'+Regio_jaar+'/gpkg/gemeente_niet_gegeneraliseerd/statcode';
+		attribute<string>    statnaam                := ='Gebiedsindelingen/y'+Regio_jaar+'/gpkg/gemeente_niet_gegeneraliseerd/statnaam';
 		attribute<string>    name                    := AsItemName(statnaam);
 		attribute<string>    label                   := statnaam;
 

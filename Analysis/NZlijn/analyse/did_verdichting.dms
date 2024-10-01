@@ -33,6 +33,7 @@ container DiD_Verdichting :=
 	attribute<nrwonha>          won2020              (sg_points) := CBS_vierkanten/Vierkanten/Y2020[sg_points/NL_grid_domain_rel];
 	attribute<nrwonha>          won2021              (sg_points) := CBS_vierkanten/Vierkanten/Y2021[sg_points/NL_grid_domain_rel];
 	attribute<nrwonha>          won2022              (sg_points) := CBS_vierkanten/Vierkanten/Y2022[sg_points/NL_grid_domain_rel];
+	attribute<nrwonha>          won2023              (sg_points) := CBS_vierkanten/Vierkanten/Y2023[sg_points/NL_grid_domain_rel];
 	
 	attribute<regios/gemeente>  gemeente_rel         (sg_points) := point_in_polygon(sg_points/geometry, regios/gemeente/Geometry);
 	attribute<bool>             amsterdam_rel        (sg_points) := gemeente_name = 'Amsterdam';
