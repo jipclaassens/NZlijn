@@ -2,13 +2,13 @@ capture log close
 cd "D:\OneDrive\OneDrive - Objectvision\VU\Projects\202110-NZpaper\"
 log using temp\nzlijn_did_prijzen_log.txt, text replace
 
-global filedate = 20240530
+global filedate = 20240926 // 20240926  20240530
 global acc_range = 30
 global TAsize = 12
 global CAsize = 24
 
 // import delimited data/SourceData_NVM_points_${filedate}.csv, clear
-import delimited data/DiD_Prijzen_${filedate}.csv, clear 
+// import delimited data/DiD_Prijzen_${filedate}.csv, clear 
 
 
 ///////////////////////////////////////
@@ -16,13 +16,12 @@ import delimited data/DiD_Prijzen_${filedate}.csv, clear
 ///////////////////////////////////////
 
 import delimited data/DiD_Prijzen_${acc_range}min_${TAsize}_${CAsize}min_${filedate}.csv, delimiter(";") clear   
-// import delimited C:\GeoDMS\LocalData\NZlijn\Results\nzlijn\Analyse_DiD_Prijzen_20221005_6_12min.csv, delimiter(";") clear   
 save data/DMS_did_prijzen_raw.dta, replace
 use data/DMS_did_prijzen_raw.dta, clear
 
 drop geometry nl_grid_domain*
 
-local replaceNullList = "lotsize bouwjaar bouwjaar_augm buurt_rel"
+local replaceNullList = "lotsize bouwjaar buurt_rel"
 foreach x of local replaceNullList{
 	replace `x' = "" if `x' == "null"
 	destring `x', replace
@@ -41,28 +40,29 @@ replace amsterdam_rel = 1 if gemeente_name == "'Amsterdam'"
 
 replace bouwjaar = . if bouwjaar == 0 | bouwjaar == 9999
 replace bouwjaar = 1600 if bouwjaar < 1600 & bouwjaar != .
-replace bouwjaar_augm = . if bouwjaar_augm == 0 | bouwjaar_augm == 9999
-replace bouwjaar_augm = 1600 if bouwjaar_augm < 1600 & bouwjaar_augm != .
+// replace bouwjaar_augm = . if bouwjaar_augm == 0 | bouwjaar_augm == 9999
+// replace bouwjaar_augm = 1600 if bouwjaar_augm < 1600 & bouwjaar_augm != .
 
-g age = trans_year - bouwjaar_augm
-replace age = . if age < 0
+// g age = trans_year - bouwjaar_augm
+// g age = trans_year - bouwjaar
+// replace age = . if age < 0
 
 g d_constr_unknown = 0
-replace d_constr_unknown = 1 if bouwjaar_augm == .  
+replace d_constr_unknown = 1 if bouwjaar == .  
 g d_constrlt1920 = 0
-replace d_constrlt1920 = 1 if bouwjaar_augm <= 1919 & bouwjaar_augm != .  
+replace d_constrlt1920 = 1 if bouwjaar <= 1919 & bouwjaar != .  
 g d_constr19201944 = 0 
-replace d_constr19201944 = 1 if bouwjaar_augm >= 1920 & bouwjaar_augm <= 1944
+replace d_constr19201944 = 1 if bouwjaar >= 1920 & bouwjaar <= 1944
 g d_constr19451959 = 0 
-replace d_constr19451959 = 1 if bouwjaar_augm >= 1945 & bouwjaar_augm <= 1959
+replace d_constr19451959 = 1 if bouwjaar >= 1945 & bouwjaar <= 1959
 g d_constr19601973 = 0 
-replace d_constr19601973 = 1 if bouwjaar_augm >= 1960 & bouwjaar_augm <= 1973
+replace d_constr19601973 = 1 if bouwjaar >= 1960 & bouwjaar <= 1973
 g d_constr19741990 = 0 
-replace d_constr19741990 = 1 if bouwjaar_augm >= 1974 & bouwjaar_augm <= 1990
+replace d_constr19741990 = 1 if bouwjaar >= 1974 & bouwjaar <= 1990
 g d_constr19911997 = 0 
-replace d_constr19911997 = 1 if bouwjaar_augm >= 1991 & bouwjaar_augm <= 1997
+replace d_constr19911997 = 1 if bouwjaar >= 1991 & bouwjaar <= 1997
 g d_constrgt1997 = 0 
-replace d_constrgt1997 = 1 if bouwjaar_augm >= 1998 & bouwjaar_augm != .
+replace d_constrgt1997 = 1 if bouwjaar >= 1998 & bouwjaar != .
 
 g construction_period_label = ""
 replace construction_period_label = "Construction before 1920" if d_constrlt1920 == 1
@@ -85,7 +85,7 @@ encode building_type_label, generate(building_type)
 g trans_year_month = string(trans_year) + "/" + string(trans_month)
 g trans_date = date(trans_year_month, "YM")
 
-replace nbath = 1 if nbath == .
+// replace nbath = 1 if nbath == .
 
 
 local stations "noord noorderpark centraal rokin vijzelgracht depijp europaplein zuid"
@@ -105,6 +105,7 @@ use "data/DMS_did_prijzen_base.dta", clear
 drop if trans_year < 1996
 drop if amsterdam_rel == 0
 fvset base 1 construction_period
+// drop if trans_year > 2021
 
 
 ////Aantal waarnemingen per zone, per periode
@@ -141,8 +142,8 @@ foreach s of local stations{
 
 local stations "noord noorderpark centraal rokin vijzelgracht depijp europaplein zuid all"
 foreach s of local stations{ 
-	local dates "22042003 01082009 08072016 21072018"
-// 	local dates "21072018"
+// 	local dates "22042003 01082009 08072016 21072018"
+	local dates "21072018"
 	foreach d of local dates{
 		g treated = `s'_ta
 		g treattime = trans_date >= td(`d')
@@ -150,7 +151,7 @@ foreach s of local stations{
 		
 		g ca = `s'_ca + `s'_ta
 		
-		areg lnprice treated treattime did lnsize nbath nrooms d_maintgood d_central d_kk d_isol_compl d_erfpacht d_privpark i.building_type b1.construction_period i.trans_year i.trans_month if ca == 1, r absorb(buurt_rel)
+		areg lnprice treated treattime did lnsize nrooms d_maintgood i.building_type b1.construction_period i.trans_year i.trans_month if ca == 1, r absorb(buurt_rel)
 		outreg2 using output/prijzen/did_windows_indiv_AccBased_${acc_range}min_buurt_${TAsize}_${CAsize}min_${filedate}, excel cttop (`s', `d') label dec(3) addtext (Year FE, Yes, Month FE, Yes, Neighbourhood FE, Yes) keep(treat* did*)  
 		
 		drop did* treated treattime* ca

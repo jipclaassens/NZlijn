@@ -1,6 +1,6 @@
 container NVM: using = "eenheden"
 {
-	parameter<string> nvm_filedate       := '20220406';
+	parameter<string> nvm_filedate       := '20240926'; 
 	parameter<string> csv_filename       := '%SourceDataDir%/NVM/NVM_cleaned_'+nvm_filedate+'.csv';
 	parameter<string> fss_filename       := '%LocalDataDir%/NVM/nvm_'+nvm_filedate;
 	
@@ -30,17 +30,16 @@ container NVM: using = "eenheden"
 				,'ReadElems(
 					BodyLines
 					,string
-					,'+ MakeDefined(field/name[id(field)-1] + '/ReadPos','const(0, domain)')+' 
+					,'+ MakeDefined(field/name[sub_or_null(id(field),1)] + '/ReadPos','const(0, domain)')+' 
 					,16
 				)'
 				,domain
 				,string
 			);
-		parameter<string> Generate_FSS     := 'Ready', ExplicitSuppliers = "MakeFSS";
-		parameter<string> Generate_GPKG     := 'Ready', ExplicitSuppliers = "MakeGPKG";
+		parameter<string> Generate     := 'Ready', ExplicitSuppliers = "NVM_Data";
+		// parameter<string> Generate_GPKG     := 'Ready', ExplicitSuppliers = "MakeGPKG";
 	}
 	
-		
 	container NVM_Data := 
 		for_each_nedv(
 			TableChopper/Field/name
@@ -48,6 +47,7 @@ container NVM: using = "eenheden"
 			, TableChopper/domain
 			, string
 		), StorageName = "=fss_filename+'.gpkg'", StorageType = "gdalwrite.vect";
+		// ), StorageName = "=fss_filename+'.fss'", StorageType = "gdalwrite.vect";
 		
 	container ReadGPKG 
 	: StorageName     = "=fss_filename+'.gpkg'"
@@ -58,9 +58,9 @@ container NVM: using = "eenheden"
 		unit<uint32> NVM_Data
 		{
 			attribute<selectie_polygoon> ams_rel               := point_in_polygon(geometry, selectie_polygoon/polygon);
-			attribute<float32>       xco                   := xcoord[float32];
-			attribute<float32>       yco                   := ycoord[float32];
-			attribute<rdc>           geometry              := point(xco, yco, rdc);
+			attribute<float32>       xco                   := x[float32];
+			attribute<float32>       yco                   := y[float32];
+			attribute<rdc>           geometry              := point_xy(xco, yco, rdc);
 			attribute<uint32>        obsid_value           := obsid[uint32];
 			
 			attribute<uint2>         d_apartment_value     := d_apartment[uint2];
@@ -68,90 +68,88 @@ container NVM: using = "eenheden"
 			attribute<uint2>         d_semidetached_value  := d_semidetached[uint2];
 			attribute<uint2>         d_detached_value      := d_detached[uint2];
 			
-			attribute<uint2>         d_garden_value        := d_garden[uint2];
-			attribute<uint2>         d_listed_value        := d_listed[uint2];
+			// attribute<uint2>         d_garden_value        := d_garden[uint2];
+			// attribute<uint2>         d_listed_value        := d_listed[uint2];
 			
-			attribute<eur>           price_value           := price[eur];
-			attribute<m2>            size_value            := size[m2];
-			attribute<m2>            lotsize_value         := lotsize[m2];
+			attribute<eur>           price_value           := transactieprijs[eur];
+			attribute<eenheden/m2>            size_value            := m2[eenheden/m2];
+			attribute<eenheden/m2>            lotsize_value         := perceel[eenheden/m2];
 			attribute<jaar>          trans_year_value      := value(trans_year, int16)[jaar];
 			attribute<int16>         trans_month_value     := value(trans_month, int16);
 			attribute<jaar>          bouwjaar_value        := bouwjaar[jaar];
 			
-			attribute<jaar>          bouwjaar_augm         := IsDefined(bouwjaar_value)
-																		? bouwjaar_value
-																		: bouwjaar_nvm;
+			// attribute<jaar>          bouwjaar_augm         := IsDefined(bouwjaar_value)
+																		// ? bouwjaar_value
+																		// : bouwjaar_nvm;
 			
-			attribute<bool>          constrmissing_value   := constrmissing[bool];
-			attribute<bool>          constrltr1905_value   := constrlt1905[bool];
-			attribute<bool>          constr19061930_value  := constr19061930[bool];
-			attribute<bool>          constr19311944_value  := constr19311944[bool];
-			attribute<bool>          constr19451959_value  := constr19451959[bool];
-			attribute<bool>          constr19601970_value  := constr19601970[bool];
-			attribute<bool>          constr19711980_value  := constr19711980[bool];
-			attribute<bool>          constr19811990_value  := constr19811990[bool];
-			attribute<bool>          constr19912000_value  := constr19912000[bool];
-			attribute<bool>          constrgt2000_value    := constrgt2000[bool];
+			attribute<bool>          d_construnknown_value   := d_construnknown[bool];
+			attribute<bool>          d_constrlt1920_value    := d_constrlt1920[bool];
+			attribute<bool>          d_constr19201944_value  := d_constr19201944[bool];
+			attribute<bool>          d_constr19451959_value  := d_constr19451959[bool];
+			attribute<bool>          d_constr19601973_value  := d_constr19601973[bool];
+			attribute<bool>          d_constr19741990_value  := d_constr19741990[bool];
+			attribute<bool>          d_constr19911997_value  := d_constr19911997[bool];
+			attribute<bool>          d_constrgt1997_value    := d_constrgt1997[bool];
 			
-			attribute<jaar>          bouwjaar_nvm          := 	switch(
-																		case(constrltr1905_value, 1900[jaar])
-																		, case(constr19061930_value, 1918[jaar])
-																		, case(constr19311944_value, 1937[jaar])
-																		, case(constr19451959_value, 1952[jaar])
-																		, case(constr19601970_value, 1965[jaar])
-																		, case(constr19711980_value, 1975[jaar])
-																		, case(constr19811990_value, 1981[jaar])
-																		, case(constr19912000_value, 1991[jaar])
-																		, case(constrgt2000_value, 2001[jaar])
-																		, case(constrmissing_value, (0/0)[jaar])
-																		, (0/0)[jaar]
-																	);
+			// attribute<jaar>          bouwjaar_nvm          := 	switch(
+																		// case(constrltr1905_value, 1900[jaar])
+																		// , case(constr19061930_value, 1918[jaar])
+																		// , case(constr19311944_value, 1937[jaar])
+																		// , case(constr19451959_value, 1952[jaar])
+																		// , case(constr19601970_value, 1965[jaar])
+																		// , case(constr19711980_value, 1975[jaar])
+																		// , case(constr19811990_value, 1981[jaar])
+																		// , case(constr19912000_value, 1991[jaar])
+																		// , case(constrgt2000_value, 2001[jaar])
+																		// , case(constrmissing_value, (0/0)[jaar])
+																		// , (0/0)[jaar]
+																	// );
 			
-			attribute<uint32>        nrooms_value          := nrooms[uint32];
-			attribute<uint32>        nbathrooms_value      := nbathrooms[uint32];
+			attribute<uint32>        nrooms_value          := nkamers[uint32];
+			// attribute<uint32>        nbathrooms_value      := nbathrooms[uint32];
 			attribute<uint2>         d_maintgood_value     := d_maintgood[uint2];
-			attribute<uint2>         d_CV_value            := d_centralheating[uint2];
-			attribute<uint2>         d_privpark_value      := d_privpark[uint2];
-			attribute<uint2>         d_kk_value            := d_kk[uint2];
-			attribute<uint2>         d_erfpacht_value      := d_erfpacht[uint2];
-			attribute<uint2>         d_isol_compl_value    := d_isol_compl[uint2];
+			// attribute<uint2>         d_CV_value            := d_centralheating[uint2];
+			// attribute<uint2>         d_privpark_value      := d_privpark[uint2];
+			// attribute<uint2>         d_kk_value            := d_kk[uint2];
+			// attribute<uint2>         d_erfpacht_value      := d_erfpacht[uint2];
+			// attribute<uint2>         d_isol_compl_value    := d_isol_compl[uint2];
 		}
 	}
 
-	unit<uint32> points := Subset(IsDefined(ReadGPKG/NVM_Data/ams_rel))
+	unit<uint32> points := select_with_org_rel(IsDefined(ReadGPKG/NVM_Data/ams_rel))
 	{
 		unit<uint32> ReadGPKG := NVM/ReadGPKG/NVM_Data;
-		attribute<rdc>              geometry         := ReadGPKG/geometry[nr_OrgEntity];
-		attribute<uint32>           obsid            := ReadGPKG/obsid_value[nr_OrgEntity];
+		attribute<rdc>              geometry         := ReadGPKG/geometry[org_rel];
+		attribute<uint32>           obsid            := ReadGPKG/obsid_value[org_rel];
 		
-		attribute<uint2>            d_apartment      := ReadGPKG/d_apartment_value[nr_OrgEntity];
-		attribute<uint2>            d_terraced       := ReadGPKG/d_terraced_value[nr_OrgEntity];
-		attribute<uint2>            d_semidetached   := ReadGPKG/d_semidetached_value[nr_OrgEntity];
-		attribute<uint2>            d_detached       := ReadGPKG/d_detached_value[nr_OrgEntity];
+		attribute<uint2>            d_apartment      := ReadGPKG/d_apartment_value[org_rel];
+		attribute<uint2>            d_terraced       := ReadGPKG/d_terraced_value[org_rel];
+		attribute<uint2>            d_semidetached   := ReadGPKG/d_semidetached_value[org_rel];
+		attribute<uint2>            d_detached       := ReadGPKG/d_detached_value[org_rel];
 		
-		attribute<uint2>            d_eengezins      := NOT(d_apartment[bool])[uint2];
-		attribute<uint2>            d_meergezins     := d_apartment;
+		// attribute<uint2>            d_eengezins      := NOT(d_apartment[bool])[uint2];
+		// attribute<uint2>            d_meergezins     := d_apartment;
 		
-		attribute<eur>              price            := ReadGPKG/price_value[nr_OrgEntity];
-		attribute<m2>               size             := ReadGPKG/size_value[nr_OrgEntity];
-		attribute<m2>               lotsize_src      := ReadGPKG/lotsize_value[nr_OrgEntity];
+		attribute<eur>              price            := ReadGPKG/price_value[org_rel];
+		attribute<m2>               size             := ReadGPKG/size_value[org_rel];
+		attribute<m2>               lotsize_src      := ReadGPKG/lotsize_value[org_rel];
 		attribute<m2>               lotsize          := (lotsize_src == 9999[m2] || lotsize_src == 99999[m2]) ? (0/0)[m2] : lotsize_src;
 		
-		attribute<jaar>             trans_year       := ReadGPKG/trans_year_value[nr_OrgEntity];
-		attribute<int16>            trans_month      := ReadGPKG/trans_month_value[nr_OrgEntity];
-		attribute<jaar>             bouwjaar         := ReadGPKG/bouwjaar_value[nr_OrgEntity];
-		attribute<jaar>             bouwjaar_augm    := ReadGPKG/bouwjaar_augm[nr_OrgEntity];
-		attribute<uint32>           nrooms           := ReadGPKG/nrooms_value[nr_OrgEntity];
-		attribute<uint32>           nbathrooms       := MakeDefined(ReadGPKG/nbathrooms_value[nr_OrgEntity], 1);
-		attribute<uint2>            d_maintgood      := ReadGPKG/d_maintgood_value[nr_OrgEntity];
-		attribute<uint2>            d_centralheating := ReadGPKG/d_CV_value[nr_OrgEntity];
-		attribute<uint2>            d_privpark       := ReadGPKG/d_privpark_value[nr_OrgEntity];
-		attribute<uint2>            d_kk             := ReadGPKG/d_kk_value[nr_OrgEntity];
-		attribute<uint2>            d_erfpacht       := ReadGPKG/d_erfpacht_value[nr_OrgEntity];
-		attribute<uint2>            d_isol_compl     := ReadGPKG/d_isol_compl_value[nr_OrgEntity];
-		attribute<uint2>            d_garden         := ReadGPKG/d_garden_value[nr_OrgEntity];
-		attribute<uint2>            d_listed         := ReadGPKG/d_listed_value[nr_OrgEntity];
-		attribute<selectie_polygoon>           ams_rel          := ReadGPKG/ams_rel[nr_OrgEntity];
+		attribute<jaar>             trans_year       := ReadGPKG/trans_year_value[org_rel];
+		attribute<int16>            trans_month      := ReadGPKG/trans_month_value[org_rel];
+		attribute<jaar>             bouwjaar         := ReadGPKG/bouwjaar_value[org_rel];
+		// attribute<jaar>             bouwjaar_augm    := ReadGPKG/bouwjaar_augm[org_rel];
+		attribute<uint32>           nrooms           := ReadGPKG/nrooms_value[org_rel];
+		// attribute<uint32>           nbathrooms       := MakeDefined(ReadGPKG/nbathrooms_value[org_rel], 1);
+		attribute<uint2>            d_maintgood      := ReadGPKG/d_maintgood_value[org_rel];
+		// attribute<uint2>            d_centralheating := ReadGPKG/d_CV_value[org_rel];
+		// attribute<uint2>            d_privpark       := ReadGPKG/d_privpark_value[org_rel];
+		// attribute<uint2>            d_kk             := ReadGPKG/d_kk_value[org_rel];
+		// attribute<uint2>            d_erfpacht       := ReadGPKG/d_erfpacht_value[org_rel];
+		// attribute<uint2>            d_isol_compl     := ReadGPKG/d_isol_compl_value[org_rel];
+		// attribute<uint2>            d_garden         := ReadGPKG/d_garden_value[org_rel];
+		// attribute<uint2>            d_listed         := ReadGPKG/d_listed_value[org_rel];
+		attribute<selectie_polygoon>           ams_rel          := ReadGPKG/ams_rel[org_rel];
 		
 		attribute<string>           gem_naam         := Brondata/Regios/gemeente/name[gem_rel];
 		attribute<Brondata/Regios/gemeente>           gem_rel          := point_in_polygon(geometry, /Brondata/Regios/gemeente/Geometry);

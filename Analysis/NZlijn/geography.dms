@@ -1,7 +1,7 @@
-container geography: isHidden = "True", using = "eenheden"
+container geography : using = "eenheden"
 {
 	unit<fpoint> rdc_base
-	:	Format     = "EPSG:28992"
+	:	SpatialReference     = "EPSG:28992"
 	, 	DialogData = "ngr_layer"; // wms achtergrondlaag voor kaarten met rd coordinaten
 	// unit<fpoint> rdc     := range(rdc_base, point(110000f,475000f), point(135000f,500000f)); //Amsterdam range
 	unit<fpoint> rdc     := range(rdc_base, point(0f, 300000f), point(280000f, 625000f)); //heel NL
@@ -46,8 +46,7 @@ container geography: isHidden = "True", using = "eenheden"
 	}
 		
 	unit<uint32> cirkel
-	:	IsHidden = "True"
-	,	nrofrows = 65
+	:	nrofrows = 65
 	{
 		attribute<Float32> angle  := Float32(ID(cirkel)) * 2f * float32(pi()) / Float32(64);
 		attribute<Float32> x      := cos(angle);
