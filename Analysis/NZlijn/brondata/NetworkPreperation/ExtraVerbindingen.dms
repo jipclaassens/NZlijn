@@ -52,7 +52,7 @@ container ExtraVerbindingen
 		attribute<uint32>                 order      := Elements/Text[value(UInt32(ID(.))* nrAttr + 3, Elements)][uint32];
 		attribute<typeringen/wegtype>     wegtype    := Elements/Text[value(UInt32(ID(.))* nrAttr + 4, Elements)][typeringen/wegtype];
 
-		attribute<geography/rdc>         location   := point(X,Y,geography/rdc);
+		attribute<geography/rdc>         location   := point_xy(X,Y,geography/rdc);
 		parameter<uint32>                 nrPoly     := uint32(max(Elements/Text[value(UInt32(ID(.))* nrAttr + 2, Elements)])) + 1;
 	}
 	unit<uint32> link := range(uint32, 0,coordinates/nrPoly)

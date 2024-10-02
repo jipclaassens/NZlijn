@@ -3,9 +3,9 @@ container geography : using = "eenheden"
 	unit<fpoint> rdc_base
 	:	SpatialReference     = "EPSG:28992"
 	, 	DialogData = "ngr_layer"; // wms achtergrondlaag voor kaarten met rd coordinaten
-	// unit<fpoint> rdc     := range(rdc_base, point(110000f,475000f), point(135000f,500000f)); //Amsterdam range
-	unit<fpoint> rdc     := range(rdc_base, point(0f, 300000f), point(280000f, 625000f)); //heel NL
-	unit<ipoint> rdc_mm  := gridset(rdc, point(0.001,0.001), point(0.0, 0.0), ipoint);
+	// unit<fpoint> rdc     := range(rdc_base, point_xy(110000f,475000f), point_xy(135000f,500000f)); //Amsterdam range
+	unit<fpoint> rdc     := range(rdc_base, point_xy(0f, 300000f), point_xy(280000f, 625000f)); //heel NL
+	unit<ipoint> rdc_mm  := gridset(rdc, point_xy(0.001,0.001), point_xy(0.0, 0.0), ipoint);
 	unit<fpoint> wgs84_base   : SpatialReference = "EPSG:4326";
 	
 	#include <ngr_layer.dms>
@@ -36,9 +36,9 @@ container geography : using = "eenheden"
 			parameter<m>       gridgrootte;
 			parameter<m>       afkapstraal;
 			parameter<float32> straal                 := afkapstraal / gridgrootte;
-			unit<spoint>       potRange               := range(spoint, point(-straal[int16], -straal[int16]), point(straal[int16] + 1s, straal[int16] + 1s))
+			unit<spoint>       potRange               := range(spoint, point_xy(-straal[int16], -straal[int16]), point_xy(straal[int16] + 1s, straal[int16] + 1s))
 			{
-				attribute<Dist2Range> distMatr        := dist2(point(0s, 0s, potRange), Dist2Range);
+				attribute<Dist2Range> distMatr        := dist2(point_xy(0s, 0s, potRange), Dist2Range);
 				attribute<float32> AbsWeight          := distMatr[float32] > 0f ? 1f / (distMatr[float32] + 0.08f) : 1f;
 				attribute<float32> RelWeightSqrt      := AbsWeight / Sum(AbsWeight);
 			}
@@ -51,7 +51,7 @@ container geography : using = "eenheden"
 		attribute<Float32> angle  := Float32(ID(cirkel)) * 2f * float32(pi()) / Float32(64);
 		attribute<Float32> x      := cos(angle);
 		attribute<Float32> y      := sin(angle);
-		attribute<FPoint>  xy     := Point(cos(angle), sin(angle) )
+		attribute<FPoint>  xy     := point_xy(cos(angle), sin(angle) )
 		{
 			parameter<int16> SymbolIndex := int16(169), DialogType = "SymbolIndex";
 		}
@@ -103,10 +103,10 @@ container geography : using = "eenheden"
 	
 	unit<uint32> selectie_polygoon : nrofrows = 1
 	{
-		parameter<geography/rdc> top_left     := point(110000f, 500000f, geography/rdc);
-		parameter<geography/rdc> top_right    := point(135000f, 500000f, geography/rdc);
-		parameter<geography/rdc> bottom_left  := point(110000f, 475000f, geography/rdc);
-		parameter<geography/rdc> bottom_right := point(135000f, 475000f, geography/rdc);
+		parameter<geography/rdc> top_left     := point_xy(110000f, 500000f, geography/rdc);
+		parameter<geography/rdc> top_right    := point_xy(135000f, 500000f, geography/rdc);
+		parameter<geography/rdc> bottom_left  := point_xy(110000f, 475000f, geography/rdc);
+		parameter<geography/rdc> bottom_right := point_xy(135000f, 475000f, geography/rdc);
 		
 		unit<uint32>              point_set    : nrofrows = 5
 		{
@@ -144,36 +144,36 @@ container geography : using = "eenheden"
 			range(
 				 gridset(
 					 rdc
-					,point(gridsize, -gridsize, geography/rdc)
-					,point(x_min, y_max, geography/rdc)
+					,point_xy(gridsize, -gridsize, geography/rdc)
+					,point_xy(x_min, y_max, geography/rdc)
 					,spoint
 				)
-				,point(0s, 0s)
-				,point(nr_cols, nr_rows)
+				,point_xy(0s, 0s)
+				,point_xy(nr_cols, nr_rows)
 			)
 		,	DialogData = "geography/rdc"
 		,	DialogType = "map"
 		{
 			attribute<.>               id            := id(.);
-			attribute<geography/rdc>  point_rd      := id[geography/rdc] + point(0.5f * gridsize, -0.5f * gridsize, geography/rdc);
+			attribute<geography/rdc>  point_rd      := id[geography/rdc] + point_xy(0.5f * gridsize, -0.5f * gridsize, geography/rdc);
 			attribute<uint32>          identificatie := (pointcol(id)[uint32] + 1) + ((pointrow(id)[uint32]) * 250);
 			attribute<domain_1000m>          grid_1000m_rel    := id(.)[domain_1000m];
 			
-			attribute<float32>           woningen2000   := rjoin(id, invert(Brondata/CBS_vierkanten/V2014/Vierkant_rel), BronData/CBS_vierkanten/V2014/woningen2000_ed);
-			attribute<float32>           woningen2001   := rjoin(id, invert(Brondata/CBS_vierkanten/V2014/Vierkant_rel), BronData/CBS_vierkanten/V2014/woningen2001_ed);
-			attribute<float32>           woningen2002   := rjoin(id, invert(Brondata/CBS_vierkanten/V2014/Vierkant_rel), BronData/CBS_vierkanten/V2014/woningen2002_ed);
-			attribute<float32>           woningen2003   := rjoin(id, invert(Brondata/CBS_vierkanten/V2014/Vierkant_rel), BronData/CBS_vierkanten/V2014/woningen2003_ed);
-			attribute<float32>           woningen2004   := rjoin(id, invert(Brondata/CBS_vierkanten/V2014/Vierkant_rel), BronData/CBS_vierkanten/V2014/woningen2004_ed);
-			attribute<float32>           woningen2005   := rjoin(id, invert(Brondata/CBS_vierkanten/V2014/Vierkant_rel), BronData/CBS_vierkanten/V2014/woningen2005_ed);
-			attribute<float32>           woningen2006   := rjoin(id, invert(Brondata/CBS_vierkanten/V2014/Vierkant_rel), BronData/CBS_vierkanten/V2014/woningen2006_ed);
-			attribute<float32>           woningen2007   := rjoin(id, invert(Brondata/CBS_vierkanten/V2014/Vierkant_rel), BronData/CBS_vierkanten/V2014/woningen2007_ed);
-			attribute<float32>           woningen2008   := rjoin(id, invert(Brondata/CBS_vierkanten/V2014/Vierkant_rel), BronData/CBS_vierkanten/V2014/woningen2008_ed);
-			attribute<float32>           woningen2009   := rjoin(id, invert(Brondata/CBS_vierkanten/V2014/Vierkant_rel), BronData/CBS_vierkanten/V2014/woningen2009_ed);
-			attribute<float32>           woningen2010   := rjoin(id, invert(Brondata/CBS_vierkanten/V2014/Vierkant_rel), BronData/CBS_vierkanten/V2014/woningen2010_ed);
-			attribute<float32>           woningen2011   := rjoin(id, invert(Brondata/CBS_vierkanten/V2014/Vierkant_rel), BronData/CBS_vierkanten/V2014/woningen2011_ed);
-			attribute<float32>           woningen2012   := rjoin(id, invert(Brondata/CBS_vierkanten/V2014/Vierkant_rel), BronData/CBS_vierkanten/V2014/woningen2012_ed);
+			// attribute<float32>           woningen2000   := rjoin(id, invert(Brondata/CBS_vierkanten/V2014/Vierkant_rel), BronData/CBS_vierkanten/V2014/woningen2000_ed);
+			// attribute<float32>           woningen2001   := rjoin(id, invert(Brondata/CBS_vierkanten/V2014/Vierkant_rel), BronData/CBS_vierkanten/V2014/woningen2001_ed);
+			// attribute<float32>           woningen2002   := rjoin(id, invert(Brondata/CBS_vierkanten/V2014/Vierkant_rel), BronData/CBS_vierkanten/V2014/woningen2002_ed);
+			// attribute<float32>           woningen2003   := rjoin(id, invert(Brondata/CBS_vierkanten/V2014/Vierkant_rel), BronData/CBS_vierkanten/V2014/woningen2003_ed);
+			// attribute<float32>           woningen2004   := rjoin(id, invert(Brondata/CBS_vierkanten/V2014/Vierkant_rel), BronData/CBS_vierkanten/V2014/woningen2004_ed);
+			// attribute<float32>           woningen2005   := rjoin(id, invert(Brondata/CBS_vierkanten/V2014/Vierkant_rel), BronData/CBS_vierkanten/V2014/woningen2005_ed);
+			// attribute<float32>           woningen2006   := rjoin(id, invert(Brondata/CBS_vierkanten/V2014/Vierkant_rel), BronData/CBS_vierkanten/V2014/woningen2006_ed);
+			// attribute<float32>           woningen2007   := rjoin(id, invert(Brondata/CBS_vierkanten/V2014/Vierkant_rel), BronData/CBS_vierkanten/V2014/woningen2007_ed);
+			// attribute<float32>           woningen2008   := rjoin(id, invert(Brondata/CBS_vierkanten/V2014/Vierkant_rel), BronData/CBS_vierkanten/V2014/woningen2008_ed);
+			// attribute<float32>           woningen2009   := rjoin(id, invert(Brondata/CBS_vierkanten/V2014/Vierkant_rel), BronData/CBS_vierkanten/V2014/woningen2009_ed);
+			// attribute<float32>           woningen2010   := rjoin(id, invert(Brondata/CBS_vierkanten/V2014/Vierkant_rel), BronData/CBS_vierkanten/V2014/woningen2010_ed);
+			// attribute<float32>           woningen2011   := rjoin(id, invert(Brondata/CBS_vierkanten/V2014/Vierkant_rel), BronData/CBS_vierkanten/V2014/woningen2011_ed);
+			// attribute<float32>           woningen2012   := rjoin(id, invert(Brondata/CBS_vierkanten/V2014/Vierkant_rel), BronData/CBS_vierkanten/V2014/woningen2012_ed);
 			
-			attribute<float32>           inwoners2017     := Brondata/CBS_vierkanten/inwoners2017;
+			// attribute<float32>           inwoners2017     := Brondata/CBS_vierkanten/inwoners2017;
 		}
 		
 		parameter<int16> nr_cols_10m := int16((x_max - x_min) / gridsize_10m);
@@ -183,12 +183,12 @@ container geography : using = "eenheden"
 			range(
 				 gridset(
 					 geography/rdc
-					,point(gridsize_10m, -gridsize_10m, geography/rdc)
-					,point(x_min, y_max, geography/rdc)
+					,point_xy(gridsize_10m, -gridsize_10m, geography/rdc)
+					,point_xy(x_min, y_max, geography/rdc)
 					,spoint
 				)
-				,point(0s, 0s)
-				,point(nr_cols_10m, nr_rows_10m)
+				,point_xy(0s, 0s)
+				,point_xy(nr_cols_10m, nr_rows_10m)
 			)
 		,	DialogData = "geography/rdc"
 		{
@@ -196,7 +196,7 @@ container geography : using = "eenheden"
 			attribute<BBGA>        BBG_rel          := poly2grid(BBGA/geometry, .), FreeData = "False";
 		}
 
-		unit<spoint> domain_10m := TiledUnit(Point(1000s, 1200s, domain_10m_untiled))
+		unit<spoint> domain_10m := TiledUnit(point_xy(1000s, 1200s, domain_10m_untiled))
 		{
 			attribute<domain>      grid_100m_rel    := id(.)[domain];
 			attribute<BBGA>        BBG_rel          := poly2grid(BBGA/geometry, .), FreeData = "False";
@@ -209,21 +209,21 @@ container geography : using = "eenheden"
 			range(
 				 gridset(
 					 geography/rdc
-					,point(gridsize_25m, -gridsize_25m, geography/rdc)
-					,point(x_min, y_max, geography/rdc)
+					,point_xy(gridsize_25m, -gridsize_25m, geography/rdc)
+					,point_xy(x_min, y_max, geography/rdc)
 					,spoint
 				)
-				,point(0s, 0s)
-				,point(nr_cols_25m, nr_rows_25m)
+				,point_xy(0s, 0s)
+				,point_xy(nr_cols_25m, nr_rows_25m)
 			)
 		{
 			attribute<domain>      grid_100m_rel    := id(.)[domain];
 			attribute<BBGA>        BBG_rel          := poly2grid(BBGA/geometry, .), FreeData = "False";
 		}
 
-		unit<spoint> domain_25m := TiledUnit(Point(1000s, 1200s, domain_25m_untiled))
+		unit<spoint> domain_25m := TiledUnit(point_xy(1000s, 1200s, domain_25m_untiled))
 		{
-			attribute<geography/rdc>  point_rd      := id(.)[geography/rdc] + point(0.5f * gridsize_25m, -0.5f * gridsize_25m, geography/rdc);
+			attribute<geography/rdc>  point_rd      := id(.)[geography/rdc] + point_xy(0.5f * gridsize_25m, -0.5f * gridsize_25m, geography/rdc);
 			attribute<domain>      grid_100m_rel    := id(.)[domain];
 			attribute<BBGA>        BBG_rel          := poly2grid(BBGA/geometry, .), FreeData = "False";
 		}
@@ -235,12 +235,12 @@ container geography : using = "eenheden"
 			range(
 				 gridset(
 					 geography/rdc
-					,point(gridsize_50m, -gridsize_50m, geography/rdc)
-					,point(x_min, y_max, geography/rdc)
+					,point_xy(gridsize_50m, -gridsize_50m, geography/rdc)
+					,point_xy(x_min, y_max, geography/rdc)
 					,spoint
 				)
-				,point(0s, 0s)
-				,point(nr_cols_50m, nr_rows_50m)
+				,point_xy(0s, 0s)
+				,point_xy(nr_cols_50m, nr_rows_50m)
 			)
 		,	DialogData = "geography/rdc"
 		{
@@ -248,7 +248,7 @@ container geography : using = "eenheden"
 			attribute<BBGA>        BBG_rel          := poly2grid(BBGA/geometry, .), FreeData = "False";
 		}
 
-		unit<spoint> domain_50m := TiledUnit(Point(1000s, 1200s, domain_50m_untiled))
+		unit<spoint> domain_50m := TiledUnit(point_xy(1000s, 1200s, domain_50m_untiled))
 		{
 			attribute<domain>      grid_100m_rel    := id(.)[domain];
 			attribute<BBGA>        BBG_rel          := poly2grid(BBGA/geometry, .), FreeData = "False";
@@ -261,22 +261,22 @@ container geography : using = "eenheden"
 			range(
 				 gridset(
 					 geography/rdc
-					,point(gridsize_200m, -gridsize_200m, geography/rdc)
-					,point(x_min, y_max, geography/rdc)
+					,point_xy(gridsize_200m, -gridsize_200m, geography/rdc)
+					,point_xy(x_min, y_max, geography/rdc)
 					,spoint
 				)
-				,point(0s, 0s)
-				,point(nr_cols_200m, nr_rows_200m)
+				,point_xy(0s, 0s)
+				,point_xy(nr_cols_200m, nr_rows_200m)
 			)
 		,	DialogData = "geography/rdc"
 		{
 			attribute<domain>      grid_100m_rel    := id(.)[domain];
 		}
 
-		unit<spoint> domain_200m := TiledUnit(Point(1000s, 1200s, domain_200m_untiled))
+		unit<spoint> domain_200m := TiledUnit(point_xy(1000s, 1200s, domain_200m_untiled))
 		{
 			attribute<.>               id               := id(.);
-			attribute<geography/rdc>   point_rd         := id[geography/rdc] + point(0.5f * gridsize_200m, -0.5f * gridsize_200m, geography/rdc);
+			attribute<geography/rdc>   point_rd         := id[geography/rdc] + point_xy(0.5f * gridsize_200m, -0.5f * gridsize_200m, geography/rdc);
 			attribute<uint32>          identificatie    := (pointcol(id)[uint32] + 1) + ((pointrow(id)[uint32]) * 250);
 			
 			attribute<float32>         inwoners2017     := Brondata/CBS_vierkanten/inwoners2017_1k;
@@ -290,22 +290,22 @@ container geography : using = "eenheden"
 			range(
 				 gridset(
 					 geography/rdc
-					,point(gridsize_500m, -gridsize_500m, geography/rdc)
-					,point(x_min, y_max, geography/rdc)
+					,point_xy(gridsize_500m, -gridsize_500m, geography/rdc)
+					,point_xy(x_min, y_max, geography/rdc)
 					,spoint
 				)
-				,point(0s, 0s)
-				,point(nr_cols_500m, nr_rows_500m)
+				,point_xy(0s, 0s)
+				,point_xy(nr_cols_500m, nr_rows_500m)
 			)
 		,	DialogData = "geography/rdc"
 		{
 			attribute<domain>      grid_100m_rel    := id(.)[domain];
 		}
 
-		unit<spoint> domain_500m := TiledUnit(Point(1000s, 1200s, domain_500m_untiled))
+		unit<spoint> domain_500m := TiledUnit(point_xy(1000s, 1200s, domain_500m_untiled))
 		{
 			attribute<.>               id               := id(.);
-			attribute<geography/rdc>   point_rd         := id[geography/rdc] + point(0.5f * gridsize_500m, -0.5f * gridsize_500m, geography/rdc);
+			attribute<geography/rdc>   point_rd         := id[geography/rdc] + point_xy(0.5f * gridsize_500m, -0.5f * gridsize_500m, geography/rdc);
 			attribute<uint32>          identificatie    := (pointcol(id)[uint32] + 1) + ((pointrow(id)[uint32]) * 250);
 			
 			attribute<float32>         inwoners2017     := Brondata/CBS_vierkanten/inwoners2017_1k;
@@ -319,12 +319,12 @@ container geography : using = "eenheden"
 			range(
 				 gridset(
 					 geography/rdc
-					,point(gridsize_1000m, -gridsize_1000m, geography/rdc)
-					,point(x_min, y_max, geography/rdc)
+					,point_xy(gridsize_1000m, -gridsize_1000m, geography/rdc)
+					,point_xy(x_min, y_max, geography/rdc)
 					,spoint
 				)
-				,point(0s, 0s)
-				,point(nr_cols_1000m, nr_rows_1000m)
+				,point_xy(0s, 0s)
+				,point_xy(nr_cols_1000m, nr_rows_1000m)
 			)
 		,	DialogData = "geography/rdc"
 		{
@@ -332,10 +332,10 @@ container geography : using = "eenheden"
 			attribute<BBGA>        BBG_rel          := poly2grid(BBGA/geometry, .), FreeData = "False";
 		}
 
-		unit<spoint> domain_1000m := TiledUnit(Point(1000s, 1200s, domain_1000m_untiled))
+		unit<spoint> domain_1000m := TiledUnit(point_xy(1000s, 1200s, domain_1000m_untiled))
 		{
 			attribute<.>               id               := id(.);
-			attribute<geography/rdc>   point_rd         := id[geography/rdc] + point(0.5f * gridsize_1000m, -0.5f * gridsize_1000m, geography/rdc);
+			attribute<geography/rdc>   point_rd         := id[geography/rdc] + point_xy(0.5f * gridsize_1000m, -0.5f * gridsize_1000m, geography/rdc);
 			attribute<uint32>          identificatie    := (pointcol(id)[uint32] + 1) + ((pointrow(id)[uint32]) * 250);
 			
 			attribute<float32>         inwoners2017     := Brondata/CBS_vierkanten/inwoners2017_1k;
@@ -349,12 +349,12 @@ container geography : using = "eenheden"
 			range(
 				 gridset(
 					 geography/rdc
-					,point(gridsize_10000m, -gridsize_10000m, geography/rdc)
-					,point(x_min, y_max, geography/rdc)
+					,point_xy(gridsize_10000m, -gridsize_10000m, geography/rdc)
+					,point_xy(x_min, y_max, geography/rdc)
 					,spoint
 				)
-				,point(0s, 0s)
-				,point(nr_cols_10000m, nr_rows_10000m)
+				,point_xy(0s, 0s)
+				,point_xy(nr_cols_10000m, nr_rows_10000m)
 			)
 		,	DialogData = "geography/rdc"
 		{
@@ -362,10 +362,10 @@ container geography : using = "eenheden"
 			attribute<BBGA>        BBG_rel          := poly2grid(BBGA/geometry, .), FreeData = "False";
 		}
 
-		unit<spoint> domain_10000m := TiledUnit(Point(1000s, 1200s, domain_10000m_untiled))
+		unit<spoint> domain_10000m := TiledUnit(point_xy(1000s, 1200s, domain_10000m_untiled))
 		{
 			attribute<.>               id               := id(.);
-			attribute<geography/rdc>   point_rd         := id[geography/rdc] + point(0.5f * gridsize_10000m, -0.5f * gridsize_10000m, geography/rdc);
+			attribute<geography/rdc>   point_rd         := id[geography/rdc] + point_xy(0.5f * gridsize_10000m, -0.5f * gridsize_10000m, geography/rdc);
 			attribute<uint32>          identificatie    := (pointcol(id)[uint32] + 1) + ((pointrow(id)[uint32]) * 250);
 			attribute<domain>          grid_100m_rel    := id(.)[domain];
 			attribute<BBGA>            BBG_rel          := poly2grid(BBGA/geometry, .), FreeData = "False";

@@ -120,6 +120,7 @@ container NVM: using = "eenheden"
 	{
 		unit<uint32> ReadGPKG := NVM/ReadGPKG/NVM_Data;
 		attribute<rdc>              geometry         := ReadGPKG/geometry[org_rel];
+		attribute<wgs84_base>       geometry_LL      := RD2LatLongWgs84(geometry, wgs84_base);
 		attribute<uint32>           obsid            := ReadGPKG/obsid_value[org_rel];
 		
 		attribute<uint2>            d_apartment      := ReadGPKG/d_apartment_value[org_rel];

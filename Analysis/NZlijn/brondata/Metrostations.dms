@@ -100,7 +100,7 @@ container Metrostations
 		attribute<string>           lijn;
 		attribute<float32>          x                               := replace(LNG, ',', '.' )[float32];
 		attribute<float32>          y                               := replace(LAT, ',', '.' )[float32];
-		attribute<geography/rdc>   point                           := point(x, y, geography/rdc);
+		attribute<geography/rdc>   point                           := point_xy(x, y, geography/rdc);
 		attribute<geography/rdc>   geometry_rdc                    := LatLongWgs842RD(point, geography/rdc);
 		attribute<string>           LNG_LAT                        := LNG + '_' + LAT;
 		

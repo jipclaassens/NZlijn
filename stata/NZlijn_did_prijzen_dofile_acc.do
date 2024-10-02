@@ -20,7 +20,9 @@ import delimited data/DiD_Prijzen_${acc_range}min_${TAsize}_${CAsize}min_${filed
 save data/DMS_did_prijzen_raw.dta, replace
 use data/DMS_did_prijzen_raw.dta, clear
 
-drop geometry nl_grid_domain*
+drop geometry* nl_grid_domain*
+
+rename v5 lon
 
 local replaceNullList = "lotsize bouwjaar bouwjaar_bag buurt_rel"
 foreach x of local replaceNullList{
@@ -131,7 +133,7 @@ replace zone_label = "e_ca" if europaplein_ca == 1
 replace zone_label = "z_ca" if zuid_ca == 1
 encode zone_label, generate(zone)
 
-tab trans_year zone
+// tab trans_year zone
 
 **# ///////////// TreatmentAreas obv abs bereikbaarheid 
 
@@ -186,25 +188,35 @@ estpost sum price trans_year trans_month  size nrooms bouwjaar d_maintgood d_ap 
 esttab using output/sum_prijzen_${acc_range}min_${TAsize}_${CAsize}min_${filedate}.rtf, cells("count(fmt(0)) mean(fmt(3)) sd(fmt(3)) min(fmt(0)) max(fmt(0))") label nomtitle nonumber replace
 
 
-duplicates report x y, inspect
-duplicates tag x y, gen(tag)
-set seed 10001
-gen double shuffle1 = runiform(0.00001,0.00002)
-replace x = x +shuffle1 if tag>0
-replace y = y +shuffle1 if tag>0
 
-drop tag shuffle1
 
-spset obsid, coord(x y) 
+// gen double lat_d = lat
+// gen double lon_d = lon
+//
+// duplicates report lat_d lon_d, inspect
+// duplicates tag lat_d lon_d, gen(tag)
+// set seed 10000
+// gen double shuffle1 = runiform(0.0000001,0.0000002)
+// replace lat_d = lat_d +shuffle1 if tag>0
+// replace lon_d = lon_d +shuffle1 if tag>0
+// drop tag shuffle1
+// duplicates report lat_d lon_d, inspect
+// spset obsid, coord(lon_d lat_d) coordsys(latlong) 
 
 spset, clear
+spset obsid, coord(x y) 
 
-spmatrix create idistance W, replace
-spmatrix save W using Data/SPmat.dta, replace
+
+// spmatrix create idistance W, vtruncate(1) replace
+// spmatrix save W using Data/SPmat_sub.dta, replace
+// spmatrix export W using Data/SPmat_sub, replace
+
+spmatrix drop W
+spmatrix import W using Data/SPmat_geodms, replace
 
 
 spmat idistance W x_coord y_coord, id(identificatie) dfunction(euclidean) replace
-spmat save W using Data/SPmat.dta, replace
+spmat save W using Data/SPmat_sub.dta, replace
 
 predict residuals, resid
 spregress moran residuals, spmat(W)

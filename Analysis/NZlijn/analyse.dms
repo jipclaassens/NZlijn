@@ -550,4 +550,52 @@ container Analyse: Using = "Eenheden;geography;modelparameters"
 	}
 	
 	#include <Location_2_location.dms>
+	
+	container SpatialWeightMatrix
+	{
+		unit<uint32> RelevantDataset := select_with_org_rel(Analyse/DiD/DiD_Prijzen/IsStudyArea && Analyse/DiD/DiD_Prijzen/trans_year >= 1996[int16] )
+		{
+			attribute<geography/rdc>  geometry                              := Analyse/DiD/DiD_Prijzen/geometry[org_rel];
+			attribute<float32>        x                                     := pointcol(geometry);
+			attribute<float32>        y                                     := pointrow(geometry);
+			attribute<uint32>         obsid                                 := Analyse/DiD/DiD_Prijzen/obsid[org_rel];
+		}
+	
+		unit<uint64> Combined := combine_uint64(RelevantDataset, RelevantDataset)
+		{
+			attribute<uint32>         org_obsid    := RelevantDataset/obsid[first_rel];
+			attribute<uint32>         dest_obsid   := RelevantDataset/obsid[second_rel];
+			attribute<float32>        invdist      := 1f / dist(RelevantDataset/geometry[first_rel], RelevantDataset/geometry[second_rel]);
+		}
+	
+		container WideFormat
+		{
+			unit<uint64> Complete_OrgDest := Combined
+			{
+				attribute<float32> invdist := Combined/invdist;  
+			}
+			
+			unit<uint32> Matrix_Array := RelevantDataset
+			{
+				attribute<string> org_obsid           := string(RelevantDataset/obsid);
+				attribute<string> invdist_list := AsList(string(MakeDefined(Complete_OrgDest/invdist, -1f)), ';', Complete_OrgDest/first_rel);
+			}
+
+			unit<uint32> Header : nrofrows = 1
+			{
+				attribute<string> dest_obsid          := AsList(string(Complete_OrgDest/dest_obsid), ';', const(0[Header],Complete_OrgDest));
+			}
+
+			unit<uint32> Matrix_met_header := union_unit(Header, Matrix_Array) //This unit can easily be exported to csv and used in other applications.
+			{
+				attribute<string> org_obsid           := union_data(., const('',Header), Matrix_Array/org_obsid);
+				attribute<string> values             := union_data(., Header/dest_obsid, replace(Matrix_Array/invdist_list,'-1',''));
+			}
+			
+			attribute<string>  BodyLines_fullOD (Matrix_met_header) := Matrix_met_header/org_obsid + ';' + Matrix_met_header/values;
+			parameter<string>  File_fullOD                          := AsList(BodyLines_fullOD, '\n'), StorageName = "%LocalDataProjDir%/NZlijn/SpatialWeightMatrix.txt", StorageType = "str";
+			
+			// parameter<string> GDAL_LayerCreationOptions: [ 'SEPARATOR=SPACE'];
+		}	
+	}
 }

@@ -9,8 +9,11 @@ container DiD_Prijzen :=
 	unit<uint32>              NVM_AMS                                        := Brondata/NVM/Points;
 
 	attribute<geography/rdc>  geometry                             (NVM_AMS) := NVM_AMS/geometry, DisableStorage = "true";
+	attribute<geography/wgs84_base>  geometry_LL                   (NVM_AMS) := NVM_AMS/geometry_LL, DisableStorage = "true";
 	attribute<float32>        x                                    (NVM_AMS) := pointcol(geometry);
 	attribute<float32>        y                                    (NVM_AMS) := pointrow(geometry);
+	attribute<float32>        Long                                 (NVM_AMS) := pointcol(geometry_LL);
+	attribute<float32>        Lat                                  (NVM_AMS) := pointrow(geometry_LL);
 	attribute<uint32>         obsid                                (NVM_AMS) := NVM_AMS/obsid;
 	
 	attribute<uint2>          d_apartment                          (NVM_AMS) := NVM_AMS/d_apartment;
@@ -71,5 +74,7 @@ container DiD_Prijzen :=
 
 	attribute<uint2>          zuid_ta                   (NVM_AMS) := Analyse/TreatmentControlAreas/Result/zuid_ta[NL_grid_domain_rel][uint2];
 	attribute<uint2>          zuid_ca                   (NVM_AMS) := Analyse/TreatmentControlAreas/Result/zuid_ca[NL_grid_domain_rel][uint2];
+	
+	attribute<bool>           IsStudyArea               (NVM_AMS) := =AsList(TreatmentControlAreas/StationsXareas/name+' == 1[uint2]', ' || ');
 
 }
