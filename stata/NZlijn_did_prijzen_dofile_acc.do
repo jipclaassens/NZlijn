@@ -1,9 +1,9 @@
 capture log close
-// cd "D:\OneDrive\OneDrive - Objectvision\VU\Projects\202110-NZpaper\" //LAPTOP
+cd "D:\OneDrive\OneDrive - Objectvision\VU\Projects\202110-NZpaper\" //LAPTOP
 cd "C:\Users\Jip Claassens\OneDrive - Objectvision\VU\Projects\202110-NZpaper" //OVSRV06
 log using temp\nzlijn_did_prijzen_log.txt, text replace
 
-global filedate = 20240926 // 20240926  20240530
+global filedate = 20241003 // 20240926  20240530
 global acc_range = 30
 global TAsize = 12
 global CAsize = 24
@@ -98,6 +98,23 @@ foreach s of local stations{
 	g tt_`s'_min = station_`s'_reistijds / 60
 }
 
+replace postcode = "" if postcode == "'1000'"
+replace postcode = "" if postcode == "'1000!!'"
+replace postcode = "" if postcode == "'0000'"
+replace postcode = "" if postcode == "'0000AA'"
+replace postcode = "" if postcode == "'1000AA'"
+replace postcode = "" if postcode == "'1000AB'"
+replace postcode = "" if postcode == "'1000II'"
+replace postcode = "" if postcode == "'1000JJ'"
+replace postcode = "" if postcode == "'1000ZZ'"
+replace postcode = "" if postcode == "'1010'"
+replace postcode = "" if postcode == "'1010AA'"
+replace postcode = "" if postcode == "'1011'"
+replace postcode = "" if postcode == "'9999XX'"
+replace postcode = "" if postcode == "'1234AA'"
+
+encode postcode, generate(pc6_code)
+
 save "data/DMS_did_prijzen_base.dta", replace
 
 
@@ -145,11 +162,13 @@ foreach s of local stations{
 	replace all_ca = 1 if `s'_ca == 1
 }
 
-local stations "noorderpark"
-// local stations "noord noorderpark centraal rokin vijzelgracht depijp europaplein zuid all"
+// gen buurt_rel_augm = .
+
+// local stations "noorderpark"
+local stations "noord noorderpark centraal rokin vijzelgracht depijp europaplein zuid all"
 foreach s of local stations{ 
-// 	local dates "22042003 01082009 08072016 21072018"
-	local dates "21072018"
+	local dates "22042003 01082009 08072016 21072018"
+// 	local dates "21072018"
 	foreach d of local dates{
 		g treated = `s'_ta
 		g treattime = trans_date >= td(`d')
@@ -157,10 +176,12 @@ foreach s of local stations{
 		
 		g ca = `s'_ca + `s'_ta
 		
-		areg lnprice treated treattime did lnsize nrooms d_maintgood i.building_type b1.construction_period i.trans_year i.trans_month if ca == 1, r absorb(buurt_rel)
-// 		outreg2 using output/prijzen/did_windows_indiv_AccBased_${acc_range}min_buurt_${TAsize}_${CAsize}min_${filedate}, excel cttop (`s', `d') label dec(3) addtext (Year FE, Yes, Month FE, Yes, Neighbourhood FE, Yes) keep(treat* did*)  
+// 		replace buurt_rel_augm = buurt_rel + 100000*`s'_ta
+
+		areg lnprice treated treattime did lnsize nrooms d_maintgood i.building_type b1.construction_period i.trans_year i.trans_month if ca == 1, absorb(buurt_rel) vce(cluster pc6_code)
+		outreg2 using output/prijzen/did_windows_indiv_AccBased_${acc_range}min_buurt_${TAsize}_${CAsize}min_${filedate}_vce, excel cttop (`s', `d') label dec(3) addtext (Year FE, Yes, Month FE, Yes, Neighbourhood FE, Yes) keep(treat* did*)  
 		
-// 		drop did* treated treattime* ca
+		drop did* treated treattime* ca
 	}
 }
 
@@ -242,6 +263,57 @@ areg lnprice treated treattime did lnsize nrooms d_maintgood i.building_type b1.
 
 
 
+
+////// TEST FOR PARALLEL TREND ASSUMPTION
+use "data/DMS_did_prijzen_base.dta", clear
+
+drop if trans_year < 1996
+drop if amsterdam_rel == 0
+fvset base 1 construction_period
+
+// gen buurt_rel_augm = 0
+
+local stations "noorderpark"
+// local stations "noord noorderpark centraal rokin vijzelgracht depijp europaplein zuid all"
+foreach s of local stations{ 
+// 	local dates "22042003 01082009 08072016 21072018"
+	local dates "21072018"
+	foreach d of local dates{
+		g treated = `s'_ta
+		g treattime = trans_date >= td(`d')
+		g did = treattime * treated
+		
+		g ca = `s'_ca + `s'_ta
+		
+// 		replace buurt_rel_augm = buurt_rel + 100000*`s'_ta
+// 		keep if ca == 1
+		
+// 		didregress (lnprice) (did), group(treated) time(trans_year)
+// 		didregress (lnprice lnsize nrooms d_maintgood i.building_type b1.construction_period i.trans_year i.trans_month) (did), group(buurt_rel_augm) time(trans_year)
+// 		areg lnprice treated treattime did lnsize nrooms d_maintgood i.building_type b1.construction_period i.trans_year i.trans_month if ca == 1, r absorb(buurt_rel)
+// 		reg lnprice treated treattime did lnsize nrooms d_maintgood i.building_type b1.construction_period i.trans_year i.trans_month if ca == 1, r
+
+// 		areg lnprice treated treattime did lnsize nrooms d_maintgood i.building_type b1.construction_period b2018.trans_year##c.lnprice i.trans_month if ca == 1, r absorb(buurt_rel)
+		reg lnprice lnsize nrooms d_maintgood i.building_type b1.construction_period i.trans_month b2018.trans_year##treated if ca == 1, r
+		outreg2 using output/prijzen/did_windows_indiv_AccBased_${acc_range}min_buurt_${TAsize}_${CAsize}min_${filedate}_Ptrend, excel cttop (`s', `d') label dec(3) addtext (Year FE, Yes, Month FE, Yes, Neighbourhood FE, Yes) nose noaster
+		
+		drop did* treated treattime* ca
+
+// 		estat trendplots
+// 		estat ptrends
+	}
+}
+
+
+
+sum buurt_rel
+
+
+preserve
+keep if ca == 1
+collapse (mean) price, by(trans_year treated) 
+lgraph price trans_year, by(treated) xline(2018)
+restore
 
 
 

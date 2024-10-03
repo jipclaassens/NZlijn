@@ -1,5 +1,6 @@
 clear
-cd "D:\OneDrive\OneDrive - Objectvision\VU\Projects\202110-NZpaper" 
+// cd "D:\OneDrive\OneDrive - Objectvision\VU\Projects\202110-NZpaper" //laptop
+cd "C:\Users\Jip Claassens\OneDrive - Objectvision\VU\Projects\202110-NZpaper" //ovsrv6
 
 // import excel "C:\Users\mln740\OneDrive - Vrije Universiteit Amsterdam\NZL_privatehuur\Huurtransacties_clean.xlsx", sheet("Brondata_WatsonHolmes_Huurtrans") firstrow
 //
@@ -35,12 +36,12 @@ replace bouwvorm="Bestaande bouw" if bouwvorm=="bestaande bouw"
 replace bouwvorm="Nieuwbouw" if bouwvorm=="nieuwbouw"
 replace bouwvorm= "." if bouwvorm == "NULL" | bouwvorm == "N.v.t."
  
-tab bouwvorm
+// tab bouwvorm
 
 gen nieuwbouw = 0 
 replace nieuwbouw = . if bouwvorm  == "."
 replace nieuwbouw = 1 if bouwvorm == "Nieuwbouw"
-tab nieuwbouw
+// tab nieuwbouw
 
 
 gen date=date(transactiedatumondertekeningakte,"MDY")
@@ -59,14 +60,14 @@ replace elabelA = 1 if strpos(energielabel, "A")
 replace energielabel= "Aplus" if energielabel =="A+" | energielabel =="A++" | energielabel =="A+++" | energielabel =="A++++" | energielabel =="A+++++"  
 replace elabelA = 1 if strpos(energielabel, "Aplus")
 
-tab elabelA
+// tab elabelA
 
 // Variabelen gemeubileerd en gestoffeerd zijn nog niet ingevuld voor data < 2021 ...  In 'huurprijsspecificatie' en 'bijzonderheden' zit info over stoffering of meubilering.
 replace gemeubileerd = 1 if huurprijsspecificatie=="Gemeubileerd" | strpos(bijzonderheden, "Gemeubileerd")	
 replace gestoffeerd = 1 if huurprijsspecificatie=="Gestoffeerd" | strpos(bijzonderheden, "Gestoffeerd")
 
 
-tab huurprijsconditie
+// tab huurprijsconditie
 replace huurprijs=huurprijs/12 if huurprijsconditie=="per jaar"
 //sum huurprijs 
 replace huurprijsconditie="per maand" if huurprijsconditie=="per jaar"
@@ -86,8 +87,8 @@ replace servicekosten=. if servicekosten>=9999999
 . replace kaleverhuur = 0 if kaleverhuur == . & (gemeubileerd == 1 | gestoffeerd == 1) // Volgens nieuwe data W+H: als gestoffeerd of gemeubileerd = 1, kaleverhuur = 0.  
 replace kaleverhuur =1 if kaleverhuur == . &  gemeubileerd == 0 & gestoffeerd ==0  // 
 
-. tab gestoffeerd kaleverhuur
-. tab gemeubileerd kaleverhuur
+// . tab gestoffeerd kaleverhuur
+// . tab gemeubileerd kaleverhuur
 
 
 /*
@@ -101,14 +102,14 @@ replace huurprijsspecificatie="Exclusief servicekosten" if huurprijsspecificatie
 
 
 
-sum inhoud
+// sum inhoud
 
-sum gebruiksoppervlakte
+// sum gebruiksoppervlakte
 drop if gebruiksoppervlakte<10
 gen hoogte=inhoud/gebruiksoppervlakte
 drop if hoogte<2
 drop if hoogte>10
-reg inhoud gebruiksoppervlakte
+// reg inhoud gebruiksoppervlakte
 
 sa Data/NZL_data_privaterents_edit.dta, replace
 
@@ -256,21 +257,18 @@ encode construction_period_label, generate(construction_period)
 
 
 . label variable lnsize "Size sqm"
-
 . label variable lnhp "Rent €/m"
-
 . label variable nieuwbouw "Newly built"
-
 . label variable kaleverhuur "Unfurnished"
-
 . label variable app "Flats"
-
 . label variable nkamers "Rooms"
 
-	
+encode pc6, generate(pc6_code)
+
+
+// met pc6 SE clustering
 local stations "noord noorderpark centraal rokin vijzelgracht depijp europaplein zuid all"  
 foreach s of local stations{ 
-		
  	local dates "21072018"
 	foreach d of local dates{
 		g treated = `s'_ta
@@ -279,11 +277,31 @@ foreach s of local stations{
 		
 		g ca = `s'_ca + `s'_ta
 		
-		areg lnhp lnsize nkamers app kaleverhuur nieuwbouw b1.construction_period treated treattime did i.trans_year i.trans_month if ca == 1, r absorb(buurt_22_rel) 
-		outreg2 using Output\did_rents_ext, excel cttop (`s') label dec(3) addtext (Year FE, Yes, Month FE, Yes, Neighbourhood FE, Yes) keep(treat* did*)
+		areg lnhp lnsize nkamers app kaleverhuur nieuwbouw b1.construction_period treated treattime did i.trans_year i.trans_month if ca == 1, absorb(buurt_22_rel) vce(cluster pc6_code)
+		outreg2 using Output\PrivateRents\did_rents_vce, excel cttop (`s') label dec(3) addtext (Year FE, Yes, Month FE, Yes, Neighbourhood FE, Yes) keep(treat* did*)
+
 		drop did treated treattime ca
 	}	  
 }
+
+// zonder pc6 SE clustering
+local stations "noord noorderpark centraal rokin vijzelgracht depijp europaplein zuid all"  
+foreach s of local stations{ 
+ 	local dates "21072018"
+	foreach d of local dates{
+		g treated = `s'_ta
+		g treattime = trans_date >= td(`d')
+		g did = treattime * treated
+		
+		g ca = `s'_ca + `s'_ta
+		
+		areg lnhp lnsize nkamers app kaleverhuur nieuwbouw b1.construction_period treated treattime did i.trans_year i.trans_month if ca == 1, absorb(buurt_22_rel) r
+		outreg2 using Output\PrivateRents\did_rents, excel cttop (`s') label dec(3) addtext (Year FE, Yes, Month FE, Yes, Neighbourhood FE, Yes) keep(treat* did*)
+
+		drop did treated treattime ca
+	}	  
+}
+
 
 // b1 stelt "Construction after 1998" (eerste categorie van construction_period) in als referentiecategorie
 

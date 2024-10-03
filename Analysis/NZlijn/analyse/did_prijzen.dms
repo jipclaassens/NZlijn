@@ -15,6 +15,7 @@ container DiD_Prijzen :=
 	attribute<float32>        Long                                 (NVM_AMS) := pointcol(geometry_LL);
 	attribute<float32>        Lat                                  (NVM_AMS) := pointrow(geometry_LL);
 	attribute<uint32>         obsid                                (NVM_AMS) := NVM_AMS/obsid;
+	attribute<string>         postcode                             (NVM_AMS) := NVM_AMS/postcode;
 	
 	attribute<uint2>          d_apartment                          (NVM_AMS) := NVM_AMS/d_apartment;
 	attribute<uint2>          d_terraced                           (NVM_AMS) := NVM_AMS/d_terraced;

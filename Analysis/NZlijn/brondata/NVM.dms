@@ -123,6 +123,9 @@ container NVM: using = "eenheden"
 		attribute<wgs84_base>       geometry_LL      := RD2LatLongWgs84(geometry, wgs84_base);
 		attribute<uint32>           obsid            := ReadGPKG/obsid_value[org_rel];
 		
+		
+		attribute<string>            postcode         := ReadGPKG/postcode[org_rel];
+		
 		attribute<uint2>            d_apartment      := ReadGPKG/d_apartment_value[org_rel];
 		attribute<uint2>            d_terraced       := ReadGPKG/d_terraced_value[org_rel];
 		attribute<uint2>            d_semidetached   := ReadGPKG/d_semidetached_value[org_rel];

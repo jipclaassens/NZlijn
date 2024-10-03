@@ -121,14 +121,12 @@ foreach s of local stations{
 	replace all_ca = 1 if `s'_ca == 1
 }
 
-spmat idistance W x_coord y_coord, id(identificatie) dfunction(euclidean) replace
-spmat save W using Data/SPmat.dta, replace
 
-// local stations "noord noorderpark centraal rokin vijzelgracht depijp europaplein zuid all"
-local stations "all"
+local stations "noord noorderpark centraal rokin vijzelgracht depijp europaplein zuid all"
+// local stations "noord"
 foreach s of local stations{ 
-// 	local dates "22042003 01082009 08072016 21072018"
-	local dates "21072018"
+	local dates "22042003 01082009 08072016 21072018"
+// 	local dates "21072018"
 	foreach d of local dates{
 		g treated = `s'_ta
 		g treattime = trans_date >= td(`d')
@@ -136,13 +134,20 @@ foreach s of local stations{
 		
 		g ca = `s'_ca + `s'_ta
 		
+// 		areg lnwon treated treattime did i.year if ca == 1, r absorb(buurt_rel)
+		areg lnwon treated treattime did i.year if ca == 1, absorb(buurt_rel) vce(cluster identificatie)
+		outreg2 using output/verdichting/did_windows_indiv_AccBased_${acc_range}min_buurt_${TAsize}_${CAsize}min_${filedate}_vce, excel cttop (`s', `d') label dec(3) addtext (Year FE, Yes, Neighbourhood FE, Yes) keep(treat* did*) 
 		
-		areg lnwon treated treattime did i.year if ca == 1, r absorb(buurt_rel)
-		outreg2 using output/verdichting/did_windows_indiv_AccBased_${acc_range}min_buurt_${TAsize}_${CAsize}min_${filedate}_temp, excel cttop (`s', `d') label dec(3) addtext (Year FE, Yes, Neighbourhood FE, Yes) keep(treat* did*) 
-		
-// 		drop did* treated treattime* ca
+		drop did* treated treattime* ca
 	}
 }
+
+
+
+
+
+spmat idistance W x_coord y_coord, id(identificatie) dfunction(euclidean) replace
+spmat save W using Data/SPmat.dta, replace
 
 predict residuals, resid
 spregress moran residuals, spmat(W)
