@@ -271,10 +271,17 @@ drop if trans_year < 1996
 drop if amsterdam_rel == 0
 fvset base 1 construction_period
 
-// gen buurt_rel_augm = 0
+g all_ta = 0
+g all_ca = 0
+local stations "noord noorderpark centraal rokin vijzelgracht depijp europaplein zuid"
+foreach s of local stations{ 
+	replace all_ta = 1 if `s'_ta == 1
+	replace all_ca = 1 if `s'_ca == 1
+}
 
-local stations "noorderpark"
-// local stations "noord noorderpark centraal rokin vijzelgracht depijp europaplein zuid all"
+
+// local stations "noorderpark"
+local stations "noord noorderpark centraal rokin vijzelgracht depijp europaplein zuid all"
 foreach s of local stations{ 
 // 	local dates "22042003 01082009 08072016 21072018"
 	local dates "21072018"
@@ -288,15 +295,16 @@ foreach s of local stations{
 // 		replace buurt_rel_augm = buurt_rel + 100000*`s'_ta
 // 		keep if ca == 1
 		
+		areg lnprice treated##b2017.trans_year if ca == 1, r absorb(buurt_rel)
 // 		didregress (lnprice) (did), group(treated) time(trans_year)
 // 		didregress (lnprice lnsize nrooms d_maintgood i.building_type b1.construction_period i.trans_year i.trans_month) (did), group(buurt_rel_augm) time(trans_year)
 // 		areg lnprice treated treattime did lnsize nrooms d_maintgood i.building_type b1.construction_period i.trans_year i.trans_month if ca == 1, r absorb(buurt_rel)
 // 		reg lnprice treated treattime did lnsize nrooms d_maintgood i.building_type b1.construction_period i.trans_year i.trans_month if ca == 1, r
 
 // 		areg lnprice treated treattime did lnsize nrooms d_maintgood i.building_type b1.construction_period b2018.trans_year##c.lnprice i.trans_month if ca == 1, r absorb(buurt_rel)
-		reg lnprice lnsize nrooms d_maintgood i.building_type b1.construction_period i.trans_month b2018.trans_year##treated if ca == 1, r
-		outreg2 using output/prijzen/did_windows_indiv_AccBased_${acc_range}min_buurt_${TAsize}_${CAsize}min_${filedate}_Ptrend, excel cttop (`s', `d') label dec(3) addtext (Year FE, Yes, Month FE, Yes, Neighbourhood FE, Yes) nose noaster
-		
+// 		reg lnprice lnsize nrooms d_maintgood i.building_type b1.construction_period i.trans_month b2018.trans_year##treated if ca == 1, r
+// 		outreg2 using output/prijzen/did_windows_indiv_AccBased_${acc_range}min_buurt_${TAsize}_${CAsize}min_${filedate}_Ptrend, excel cttop (`s', `d') label dec(3) addtext (Year FE, Yes, Month FE, Yes, Neighbourhood FE, Yes) nose noaster
+		outreg2 using output/prijzen/did_windows_indiv_AccBased_${acc_range}min_buurt_${TAsize}_${CAsize}min_${filedate}_Ptrend_doubleint17, excel cttop (`s', `d') label dec(3) addtext (Year FE, Yes, Month FE, Yes, Neighbourhood FE, Yes) nose  // noaster
 		drop did* treated treattime* ca
 
 // 		estat trendplots
