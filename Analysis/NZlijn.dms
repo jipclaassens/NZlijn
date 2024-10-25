@@ -16,8 +16,8 @@ container NZlijn_Analysis
 		// parameter<int32>   Threshold_ToenameAantalBanen := 75000i; //banen   50000i
 		
 		// parameter<int32>   AccessibilityThreshold       := 15i;    //aantal banen bereikbaar binnen X minuten
-		parameter<int32>   AccessibilityThreshold       := 30i;    //aantal banen bereikbaar binnen X minuten
-		// parameter<int32>   AccessibilityThreshold       := 45i;    //aantal banen bereikbaar binnen X minuten
+		// parameter<int32>   AccessibilityThreshold       := 30i;    //aantal banen bereikbaar binnen X minuten
+		parameter<int32>   AccessibilityThreshold       := 45i;    //aantal banen bereikbaar binnen X minuten
 	}
 	
 	

@@ -270,11 +270,10 @@ use "data/DMS_did_prijzen_base.dta", clear
 drop if trans_year < 1996
 drop if amsterdam_rel == 0
 fvset base 1 construction_period
+fvset base 2017 trans_year
 
-// gen buurt_rel_augm = 0
-
-local stations "noorderpark"
-// local stations "noord noorderpark centraal rokin vijzelgracht depijp europaplein zuid all"
+// local stations "noord noorderpark"
+local stations "noord noorderpark centraal rokin vijzelgracht depijp europaplein zuid "
 foreach s of local stations{ 
 // 	local dates "22042003 01082009 08072016 21072018"
 	local dates "21072018"
@@ -285,28 +284,13 @@ foreach s of local stations{
 		
 		g ca = `s'_ca + `s'_ta
 		
-// 		replace buurt_rel_augm = buurt_rel + 100000*`s'_ta
-// 		keep if ca == 1
-		
-// 		didregress (lnprice) (did), group(treated) time(trans_year)
-// 		didregress (lnprice lnsize nrooms d_maintgood i.building_type b1.construction_period i.trans_year i.trans_month) (did), group(buurt_rel_augm) time(trans_year)
-// 		areg lnprice treated treattime did lnsize nrooms d_maintgood i.building_type b1.construction_period i.trans_year i.trans_month if ca == 1, r absorb(buurt_rel)
-// 		reg lnprice treated treattime did lnsize nrooms d_maintgood i.building_type b1.construction_period i.trans_year i.trans_month if ca == 1, r
-
-// 		areg lnprice treated treattime did lnsize nrooms d_maintgood i.building_type b1.construction_period b2018.trans_year##c.lnprice i.trans_month if ca == 1, r absorb(buurt_rel)
-		reg lnprice lnsize nrooms d_maintgood i.building_type b1.construction_period i.trans_month b2018.trans_year##treated if ca == 1, r
-		outreg2 using output/prijzen/did_windows_indiv_AccBased_${acc_range}min_buurt_${TAsize}_${CAsize}min_${filedate}_Ptrend, excel cttop (`s', `d') label dec(3) addtext (Year FE, Yes, Month FE, Yes, Neighbourhood FE, Yes) nose noaster
+		areg lnprice lnsize nrooms i.d_maintgood i.building_type i.construction_period i.trans_month i.treated##i.trans_year if ca == 1, r absorb(buurt_rel) allbaselevels
+		outreg2 using output/prijzen/did_windows_indiv_AccBased_${acc_range}min_buurt_${TAsize}_${CAsize}min_${filedate}_PtrendCorr, excel cttop (`s', `d') label dec(3) addtext (Year FE, Yes, Month FE, Yes, Neighbourhood FE, Yes) nose //noaster
 		
 		drop did* treated treattime* ca
-
-// 		estat trendplots
-// 		estat ptrends
 	}
 }
 
-
-
-sum buurt_rel
 
 
 preserve
