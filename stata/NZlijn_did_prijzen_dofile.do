@@ -272,8 +272,16 @@ drop if amsterdam_rel == 0
 fvset base 1 construction_period
 fvset base 2017 trans_year
 
-// local stations "noord noorderpark"
-local stations "noord noorderpark centraal rokin vijzelgracht depijp europaplein zuid "
+g all_ta = 0
+g all_ca = 0
+local stations "noord noorderpark centraal rokin vijzelgracht depijp europaplein zuid"
+foreach s of local stations{ 
+	replace all_ta = 1 if `s'_ta == 1
+	replace all_ca = 1 if `s'_ca == 1
+}
+
+// local stations "noorderpark"
+local stations "noord noorderpark centraal rokin vijzelgracht depijp europaplein zuid all"
 foreach s of local stations{ 
 // 	local dates "22042003 01082009 08072016 21072018"
 	local dates "21072018"
@@ -286,7 +294,7 @@ foreach s of local stations{
 		
 		areg lnprice lnsize nrooms i.d_maintgood i.building_type i.construction_period i.trans_month i.treated##i.trans_year if ca == 1, r absorb(buurt_rel) allbaselevels
 		outreg2 using output/prijzen/did_windows_indiv_AccBased_${acc_range}min_buurt_${TAsize}_${CAsize}min_${filedate}_PtrendCorr, excel cttop (`s', `d') label dec(3) addtext (Year FE, Yes, Month FE, Yes, Neighbourhood FE, Yes) nose //noaster
-		
+
 		drop did* treated treattime* ca
 	}
 }
