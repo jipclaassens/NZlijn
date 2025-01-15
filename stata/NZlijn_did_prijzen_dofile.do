@@ -115,6 +115,14 @@ replace postcode = "" if postcode == "'1234AA'"
 
 encode postcode, generate(pc6_code)
 
+g all_ta = 0
+g all_ca = 0
+local stations "noord noorderpark centraal rokin vijzelgracht depijp europaplein zuid"
+foreach s of local stations{ 
+	replace all_ta = 1 if `s'_ta == 1
+	replace all_ca = 1 if `s'_ca == 1
+}
+
 save "data/DMS_did_prijzen_base.dta", replace
 
 
@@ -280,8 +288,9 @@ foreach s of local stations{
 	replace all_ca = 1 if `s'_ca == 1
 }
 
-// local stations "noorderpark"
-local stations "noord noorderpark centraal rokin vijzelgracht depijp europaplein zuid all"
+// local stations "all"
+// local stations "noord noorderpark centraal rokin vijzelgracht depijp europaplein zuid all"
+local stations "noord noorderpark "
 foreach s of local stations{ 
 // 	local dates "22042003 01082009 08072016 21072018"
 	local dates "21072018"
@@ -292,8 +301,11 @@ foreach s of local stations{
 		
 		g ca = `s'_ca + `s'_ta
 		
-		areg lnprice lnsize nrooms i.d_maintgood i.building_type i.construction_period i.trans_month i.treated##i.trans_year if ca == 1, r absorb(buurt_rel) allbaselevels
-		outreg2 using output/prijzen/did_windows_indiv_AccBased_${acc_range}min_buurt_${TAsize}_${CAsize}min_${filedate}_PtrendCorr, excel cttop (`s', `d') label dec(3) addtext (Year FE, Yes, Month FE, Yes, Neighbourhood FE, Yes) nose //noaster
+// 		areg lnprice lnsize nrooms i.d_maintgood i.building_type i.construction_period i.trans_month i.treated##i.trans_year if ca == 1, r absorb(buurt_rel) allbaselevels
+		areg lnprice lnsize nrooms i.d_maintgood i.building_type i.construction_period i.trans_month i.trans_year if `s'_ca == 1, r absorb(buurt_rel) allbaselevels 
+// 		outreg2 using output/prijzen/did_windows_indiv_AccBased_${acc_range}min_buurt_${TAsize}_${CAsize}min_${filedate}_PtrendCorr7_ta, excel cttop (`s', `d') label dec(3) addtext (Year FE, Yes, Month FE, Yes, Neighbourhood FE, Yes) ci_low ci_high //nose noaster
+		outreg2 using output/prijzen/did_windows_indiv_AccBased_${acc_range}min_buurt_${TAsize}_${CAsize}min_${filedate}_PtrendCorr6_ca, st(coef pval ci_low ci_high) noaster noparen excel append cttop (`s', `d') label dec(3) addtext (Year FE, Yes, Month FE, Yes, Neighbourhood FE, Yes) wide
+		
 
 		drop did* treated treattime* ca
 	}
@@ -311,3 +323,152 @@ restore
 
 
 
+
+
+
+
+
+
+
+
+
+
+**# CREATE PARALLEL TREND PLOTS
+use "data/DMS_did_prijzen_base.dta", clear
+
+drop if trans_year < 1996
+drop if amsterdam_rel == 0
+fvset base 1 construction_period
+fvset base 2017 trans_year
+
+global station_name = "zuid" // noord noorderpark centraal rokin vijzelgracht depijp europaplein zuid all
+// Step 1.1: Run the regression with fixed time effects (TREATED SET)
+areg lnprice lnsize nrooms i.d_maintgood i.building_type i.construction_period i.trans_month i.trans_year if ${station_name}_ta == 1, r absorb(buurt_rel) allbaselevels 
+
+// Step 1.2: Create a new dataset with the year range
+clear
+input trans_year
+1996
+1997
+1998
+1999
+2000
+2001
+2002
+2003
+2004
+2005
+2006
+2007
+2008
+2009
+2010
+2011
+2012
+2013
+2014
+2015
+2016
+2017
+2018
+2019
+2020
+2021
+2022
+end
+
+
+// Step 1.3: Generate variables to store the coefficients and confidence intervals
+gen coef_treated = .
+gen lb_treated = .    // Lower bound of CI
+gen ub_treated = .    // Upper bound of CI
+
+// Step 1.4: Loop through each year to extract the coefficients and CIs using lincom
+local i = 1
+foreach year of numlist 1996/2022 {
+    lincom _b[`year'.trans_year]
+    replace coef_treated = exp(r(estimate))*100 in `i'
+    replace lb_treated = exp(r(lb))*100 in `i'
+    replace ub_treated = exp(r(ub))*100 in `i'
+    local i = `i' + 1
+}
+
+// Step 1.5: save results to temp file
+save "temp/did_prijzen_yearcoeff_treated_${station_name}.dta", replace
+
+// Step 2.0: reopen prepped data for regression
+use "data/DMS_did_prijzen_base.dta", clear
+
+drop if trans_year < 1996
+drop if amsterdam_rel == 0
+fvset base 1 construction_period
+fvset base 2017 trans_year
+
+// Step 2.1: Run the regression with fixed time effects (CONTROL SET)
+areg lnprice lnsize nrooms i.d_maintgood i.building_type i.construction_period i.trans_month i.trans_year if ${station_name}_ca == 1, r absorb(buurt_rel) allbaselevels 
+
+// Step 2.2: Create a new dataset with the year range
+clear
+input trans_year
+1996
+1997
+1998
+1999
+2000
+2001
+2002
+2003
+2004
+2005
+2006
+2007
+2008
+2009
+2010
+2011
+2012
+2013
+2014
+2015
+2016
+2017
+2018
+2019
+2020
+2021
+2022
+end
+
+
+// Step 2.3: Generate variables to store the coefficients and confidence intervals
+gen coef_control = .
+gen lb_control = .    // Lower bound of CI
+gen ub_control = .    // Upper bound of CI
+
+// Step 2.4: Loop through each year to extract the coefficients and CIs using lincom
+local i = 1
+foreach year of numlist 1996/2022 {
+    lincom _b[`year'.trans_year]
+    replace coef_control = exp(r(estimate))*100 in `i'
+    replace lb_control = exp(r(lb))*100 in `i'
+    replace ub_control = exp(r(ub))*100 in `i'
+    local i = `i' + 1
+}
+
+// Step 2.5: merge treated data with control data
+merge 1:1 trans_year using temp/did_prijzen_yearcoeff_treated_${station_name}.dta
+drop _merge 
+
+// Step 2.6: Plot the coefficients with confidence intervals
+twoway ///
+    (rarea lb_treated ub_treated trans_year, color(gs12%50)) ///
+    (rarea lb_control ub_control trans_year, color(gs7%50)) ///
+    (line coef_treated trans_year, lcolor(blue) lwidth(medium)) ///
+    (line coef_control trans_year, lcolor(red) lwidth(medium)) ///
+	,xline(2017, lcolor(black) lwidth(thin) lpattern(dash)) ///
+    title("Parallel trends: ${station_name}") ///
+    ytitle("exp(coefficient)*100") ///
+    xlabel(1996(2)2022) legend(order(1 "95% CI (Treated)" 2 "95% CI (Control)" 3 "Treated" 4 "Control")) ///
+    plotregion(style(none))	
+	
+graph export "Output\paralleltrend_plot_${station_name}.png", replace width(1800) height(1200)
