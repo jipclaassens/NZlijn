@@ -88,6 +88,8 @@ encode zone_label, generate(zone)
 
 tab zone
 
+drop if zone == .
+
 
 /* short waiting times may indicate that dwellings have been assigned by priority. We delete these observations. Our assumption is that waiting times below 1 year may indicate priority assignment. */
 
@@ -189,7 +191,7 @@ foreach s of local stations{
 		areg Gem_Wachttijd avg_opp_app b1.construction_period treated treattime did if ca == 1, r absorb(buurt_22_rel) 
 		
 		estpost sum Gem_Wachttijd avg_opp_app d_constr* 
-		esttab using Output\sum_wachttijden.rtf, cells("count(fmt(0)) mean(fmt(3)) sd(fmt(3)) min(fmt(0)) max(fmt(0))") label nomtitle nonumber replace
+		esttab using Output\sum_wachttijden.rtf, cells("count(fmt(0)) mean(fmt(2)) sd(fmt(2)) min(fmt(0)) max(fmt(0))") label nomtitle nonumber replace
 		
 		//outreg2 using did_wachttijden_ext2, excel cttop (`s') label dec(3) addtext (Year FE, Yes, Neighbourhood FE, Yes) //keep(treat* did*)
 	 drop treated treattime did ca

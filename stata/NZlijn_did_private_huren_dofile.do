@@ -1,6 +1,6 @@
 clear
-// cd "D:\OneDrive\OneDrive - Objectvision\VU\Projects\202110-NZpaper" //laptop
-cd "C:\Users\Jip Claassens\OneDrive - Objectvision\VU\Projects\202110-NZpaper" //ovsrv6
+cd "D:\OneDrive\OneDrive - Objectvision\VU\Projects\202110-NZpaper" //laptop
+// cd "C:\Users\Jip Claassens\OneDrive - Objectvision\VU\Projects\202110-NZpaper" //ovsrv6
 
 // import excel "C:\Users\mln740\OneDrive - Vrije Universiteit Amsterdam\NZL_privatehuur\Huurtransacties_clean.xlsx", sheet("Brondata_WatsonHolmes_Huurtrans") firstrow
 //
@@ -135,6 +135,7 @@ drop _merge
 sa Temp/NZL_data_privaterents_newTACA.dta, replace
 
 **# Bookmark #2
+use Temp/NZL_data_privaterents_newTACA.dta, clear
 
 gen lnhp=ln(huurprijs)
 gen lnsize=ln(gebruiksoppervlakte)
@@ -321,8 +322,9 @@ foreach s of local stations{
 		
 		areg lnhp lnsize nkamers app kaleverhuur nieuwbouw b1.construction_period treated treattime did i.trans_year i.trans_month if ca == 1, r absorb(buurt_22_rel) 
 		
-		estpost sum lnhp lnsize nkamers app kaleverhuur nieuwbouw d_constr* 
-esttab using Output\sum_rents.rtf, cells("count(fmt(0)) mean(fmt(3)) sd(fmt(3)) min(fmt(0)) max(fmt(0))") label nomtitle nonumber replace
+// 		estpost sum lnhp lnsize nkamers app kaleverhuur nieuwbouw d_constr* 
+		estpost sum huurprijs gebruiksoppervlakte nkamers app kaleverhuur nieuwbouw d_constr* 
+esttab using Output\sum_rents.rtf, cells("count(fmt(0)) mean(fmt(2)) sd(fmt(2)) min(fmt(0)) max(fmt(0))") label nomtitle nonumber replace
 		//outreg2 using C:\Users\Maureen\did_rents_ext, excel cttop (`s') label dec(3) addtext (Year FE, Yes, Month FE, Yes, Neighbourhood FE, Yes) //keep(treat* did*)
 		drop did treated treattime ca
 	}	  

@@ -34,20 +34,51 @@ container CBS_vierkanten
 		attribute<nrwonha> Y2014 (NL_grid/domain) := Y2013 + ((Y2015 - Y2012) / 3f);
 		
 		attribute<nrwonha> new (NL_grid/domain) := Y2015 - Y2012;
+		
+		
+		attribute<nrwonha> new2 (NL_grid/domain) := Y2023 - Y2000;
+		
+		parameter<nrwonha> sum_2000_ta := sum(/Analyse/TreatmentControlAreas/RESULT/depijp_ta ? Y2000 : 0f);
+		parameter<nrwonha> sum_2016_ta := sum(/Analyse/TreatmentControlAreas/RESULT/depijp_ta ? Y2016 : 0f);
+		parameter<nrwonha> sum_2023_ta := sum(/Analyse/TreatmentControlAreas/RESULT/depijp_ta ? Y2023 : 0f);
+		
+		parameter<nrwonha> sum_2000_ca := sum(/Analyse/TreatmentControlAreas/RESULT/depijp_ca ? Y2000 : 0f);
+		parameter<nrwonha> sum_2016_ca := sum(/Analyse/TreatmentControlAreas/RESULT/depijp_ca ? Y2016 : 0f);
+		parameter<nrwonha> sum_2023_ca := sum(/Analyse/TreatmentControlAreas/RESULT/depijp_ca ? Y2023 : 0f);
+		
 	}
+	
+	//adhoc
+	container Sum_ta :=
+		for_each_nedv(
+			VierkantJaren/sub/name
+			, 'sum(/Analyse/TreatmentControlAreas/RESULT/depijp_ta ? Vierkanten/'+VierkantJaren/sub/name+' : 0f)'
+			, void
+			, nrwonha
+		);
+	container Sum_ca :=
+		for_each_nedv(
+			VierkantJaren/sub/name
+			, 'sum(/Analyse/TreatmentControlAreas/RESULT/depijp_ca ? Vierkanten/'+VierkantJaren/sub/name+' : 0f)'
+			, void
+			, nrwonha
+		);
+	
 
 	Template Read_Vierkanten_gpkg_T
 	{
 		parameter<string> jaar;
 		//
 		container gpkg
-		:	StorageName     = "='%SourceDataDir%/CBS/cbs_vk100_'+jaar+'_vol.gpkg'"
+		:	StorageName     = "='%SourceDataDir%/CBS/cbsvierkanten/cbs_vk100_'+jaar+'_vol.gpkg'"
 		, 	StorageType     = "gdal.vect"
 		,	StorageReadOnly = "True"
 		,	SyncMode        = "alltables"
 		,	DialogData      = "rdc"
 		{
-			unit<uint32> vierkant_100m_2023 := cbs_vk100_2023;
+			unit<uint32> vierkant_100m_2023 := vierkant_100m;
+			// unit<uint32> vierkant_100m_2020 := cbs_vk100_2020_vol;
+			unit<uint32> vierkant_100m_2022 := cbs_vk100_2022;
 		}
 	}
 }

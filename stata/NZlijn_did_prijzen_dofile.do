@@ -3,7 +3,7 @@ cd "D:\OneDrive\OneDrive - Objectvision\VU\Projects\202110-NZpaper\" //LAPTOP
 cd "C:\Users\Jip Claassens\OneDrive - Objectvision\VU\Projects\202110-NZpaper" //OVSRV06
 log using temp\nzlijn_did_prijzen_log.txt, text replace
 
-global filedate = 20241003 // 20240926  20240530
+global filedate = 20241003 // 20240926  20240530 20241003  20241107
 global acc_range = 30
 global TAsize = 12
 global CAsize = 24
@@ -17,14 +17,14 @@ global CAsize = 24
 ///////////////////////////////////////
 
 import delimited data/DiD_Prijzen_${acc_range}min_${TAsize}_${CAsize}min_${filedate}.csv, delimiter(";") clear   
-save data/DMS_did_prijzen_raw.dta, replace
-use data/DMS_did_prijzen_raw.dta, clear
+save data/DMS_did_prijzen_${acc_range}min_${TAsize}_${CAsize}min_${filedate}_raw.dta, replace
+use data/DMS_did_prijzen_${acc_range}min_${TAsize}_${CAsize}min_${filedate}_raw.dta, clear
 
 drop geometry* nl_grid_domain*
 
 rename v5 lon
 
-local replaceNullList = "lotsize bouwjaar bouwjaar_bag buurt_rel"
+local replaceNullList = "bouwjaar bouwjaar_bag buurt_rel"
 foreach x of local replaceNullList{
 	replace `x' = "" if `x' == "null"
 	destring `x', replace
@@ -33,8 +33,8 @@ foreach x of local replaceNullList{
 rename station_stationcentraal_reistijd station_centraal_reistijds
 rename station_stationzuid_reistijds station_zuid_reistijds
 
-replace lotsize = 1 if lotsize < 1
-g lnlotsize = ln(lotsize) if lotsize > 1
+// replace lotsize = 1 if lotsize < 1
+// g lnlotsize = ln(lotsize) if lotsize > 1
 g lnprice = ln(price) 
 g lnsize = ln(size)
 
@@ -123,21 +123,6 @@ foreach s of local stations{
 	replace all_ca = 1 if `s'_ca == 1
 }
 
-save "data/DMS_did_prijzen_base.dta", replace
-
-
-//////////////////////////////////////////////////////////////////////
-**# ////////////////////////// ANALYSES //////////////////////////////
-//////////////////////////////////////////////////////////////////////
-
-use "data/DMS_did_prijzen_base.dta", clear
-
-drop if trans_year < 1996
-drop if amsterdam_rel == 0
-fvset base 1 construction_period
-// drop if trans_year > 2021
-
-
 ////Aantal waarnemingen per zone, per periode
 g zone_label = ""
 replace zone_label = "n_ta" if noord_ta == 1
@@ -158,17 +143,26 @@ replace zone_label = "e_ca" if europaplein_ca == 1
 replace zone_label = "z_ca" if zuid_ca == 1
 encode zone_label, generate(zone)
 
-// tab trans_year zone
+drop if zone == .
+
+
+save "data/DMS_did_prijzen_base_${acc_range}min_${TAsize}_${CAsize}min_${filedate}.dta", replace
+
+
+//////////////////////////////////////////////////////////////////////
+**# ////////////////////////// ANALYSES //////////////////////////////
+//////////////////////////////////////////////////////////////////////
+
+use "data/DMS_did_prijzen_base_${acc_range}min_${TAsize}_${CAsize}min_${filedate}.dta", clear
+
+drop if trans_year < 1996
+drop if amsterdam_rel == 0
+fvset base 1 construction_period
+// drop if trans_year > 2021
+
+
 
 **# ///////////// TreatmentAreas obv abs bereikbaarheid 
-
-g all_ta = 0
-g all_ca = 0
-local stations "noord noorderpark centraal rokin vijzelgracht depijp europaplein zuid"
-foreach s of local stations{ 
-	replace all_ta = 1 if `s'_ta == 1
-	replace all_ca = 1 if `s'_ca == 1
-}
 
 // gen buurt_rel_augm = .
 
@@ -214,7 +208,7 @@ foreach s of local stations{
 
 //descriptives
 estpost sum price trans_year trans_month  size nrooms bouwjaar d_maintgood d_ap d_ter d_sem d_det d_constr* tt_*  
-esttab using output/sum_prijzen_${acc_range}min_${TAsize}_${CAsize}min_${filedate}.rtf, cells("count(fmt(0)) mean(fmt(3)) sd(fmt(3)) min(fmt(0)) max(fmt(0))") label nomtitle nonumber replace
+esttab using output/sum_prijzen_${acc_range}min_${TAsize}_${CAsize}min_${filedate}.rtf, cells("count(fmt(0)) mean(fmt(2)) sd(fmt(2)) min(fmt(0)) max(fmt(0))") label nomtitle nonumber replace
 
 
 
@@ -273,7 +267,7 @@ areg lnprice treated treattime did lnsize nrooms d_maintgood i.building_type b1.
 
 
 ////// TEST FOR PARALLEL TREND ASSUMPTION
-use "data/DMS_did_prijzen_base.dta", clear
+use "data/DMS_did_prijzen_base_${acc_range}min_${TAsize}_${CAsize}min_${filedate}.dta", clear
 
 drop if trans_year < 1996
 drop if amsterdam_rel == 0
@@ -288,9 +282,8 @@ foreach s of local stations{
 	replace all_ca = 1 if `s'_ca == 1
 }
 
-// local stations "all"
+local stations "noorderpark"
 // local stations "noord noorderpark centraal rokin vijzelgracht depijp europaplein zuid all"
-local stations "noord noorderpark "
 foreach s of local stations{ 
 // 	local dates "22042003 01082009 08072016 21072018"
 	local dates "21072018"
@@ -334,16 +327,16 @@ restore
 
 
 **# CREATE PARALLEL TREND PLOTS
-use "data/DMS_did_prijzen_base.dta", clear
+use "data/DMS_did_prijzen_base_${acc_range}min_${TAsize}_${CAsize}min_${filedate}.dta", clear
 
 drop if trans_year < 1996
 drop if amsterdam_rel == 0
 fvset base 1 construction_period
 fvset base 2017 trans_year
 
-global station_name = "zuid" // noord noorderpark centraal rokin vijzelgracht depijp europaplein zuid all
+global station_name = "all" // noord noorderpark centraal rokin vijzelgracht depijp europaplein zuid all
 // Step 1.1: Run the regression with fixed time effects (TREATED SET)
-areg lnprice lnsize nrooms i.d_maintgood i.building_type i.construction_period i.trans_month i.trans_year if ${station_name}_ta == 1, r absorb(buurt_rel) allbaselevels 
+areg lnprice lnsize nrooms i.d_maintgood i.building_type i.construction_period i.trans_month i.trans_year if ${station_name}_ta == 1, r absorb(buurt_rel) allbaselevels
 
 // Step 1.2: Create a new dataset with the year range
 clear
@@ -472,3 +465,96 @@ twoway ///
     plotregion(style(none))	
 	
 graph export "Output\paralleltrend_plot_${station_name}.png", replace width(1800) height(1200)
+
+
+
+
+
+**# CREATE PARALLEL TREND PLOTS (SUGGESTION JAN of JANUARY 2025)
+use "data/DMS_did_prijzen_base_${acc_range}min_${TAsize}_${CAsize}min_${filedate}.dta", clear
+
+drop if trans_year < 1996
+drop if amsterdam_rel == 0
+fvset base 1 construction_period
+fvset base 2017 trans_year
+
+global station_name = "all" // noord noorderpark centraal rokin vijzelgracht depijp europaplein zuid all
+
+// Step 1.1: Run the regression with fixed time effects (TREATED SET)
+g treated = ${station_name}_ta
+g studyarea = ${station_name}_ca + ${station_name}_ta
+
+areg lnprice i.trans_year i.treated i.trans_year#i.treated if studyarea == 1, r absorb(buurt_rel)  
+// outreg2 using output/prijzen/parallel_trend_${acc_range}min_buurt_${TAsize}_${CAsize}min_${filedate}, st(coef pval ci_low ci_high) noaster noparen excel append cttop (${station_name}) label dec(3) addtext (Neighbourhood FE, Yes) wide
+
+		
+		
+// Step 1.2: Create a new dataset with the year range
+clear
+input trans_year
+1996
+1997
+1998
+1999
+2000
+2001
+2002
+2003
+2004
+2005
+2006
+2007
+2008
+2009
+2010
+2011
+2012
+2013
+2014
+2015
+2016
+2017
+2018
+2019
+2020
+2021
+2022
+end
+
+
+// Step 1.3: Generate variables to store the coefficients and confidence intervals
+gen coef_treated = .
+gen lb_treated = .    // Lower bound of CI
+gen ub_treated = .    // Upper bound of CI
+
+// Step 1.4: Loop through each year to extract the coefficients and CIs using lincom
+local i = 1
+foreach year of numlist 1996/2022 {
+    lincom _b[`year'.trans_year#1.treated], level(95)
+    replace coef_treated = r(estimate) in `i'
+    replace lb_treated = r(lb) in `i'
+    replace ub_treated = r(ub) in `i'
+    local i = `i' + 1
+}
+
+replace lb_treated = 0 if trans_year == 2017
+replace ub_treated = 0 if trans_year == 2017
+
+// Step 1.5: Plot the coefficients with confidence intervals
+twoway ///
+	(rarea lb_treated ub_treated trans_year, color(gs12%50) lpattern(solid) legend(label(1 "95% CI (Treated)"))) ///
+	(line coef_treated trans_year, lcolor(blue) lwidth(medium) legend(label(2 "Treated"))) ///
+	, ///
+	xline(2018, lcolor(black) lwidth(thin) lpattern(dash)) ///
+	yline(0, lcolor(black) lwidth(thin) lpattern(dot)) ///
+    title("Parallel trends: ${station_name}") ///
+    xtitle("") ///
+    ytitle("Treated year coefficients") ///
+    xlabel(1996(2)2022) ///
+	legend(order(1 2)) ///
+	note("areg lnprice i.trans_year i.treated i.trans_year#i.treated, r absorb(buurt_rel) allbaselevels" ///
+	"for AccRange:${acc_range}min TAsize:${TAsize} CAsize:${CAsize}min Filedate:${filedate}") ///
+    plotregion(style(none))	
+	
+graph export "Output\paralleltrend_plot_Jan_${station_name}.png", replace width(1800) height(1200)
+

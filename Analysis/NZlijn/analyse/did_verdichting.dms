@@ -46,27 +46,27 @@ container DiD_Verdichting :=
 	attribute<int32>            diff_Spits_abs_45min (sg_points) := Bereikbaarheid/AccessibilityChange_45min_smoothed[NL_grid_domain_rel];
 	attribute<NL_grid/domain>   NL_grid_domain_rel   (sg_points) := sg_points/Geometry [Geography/NL_grid/domain], DisableStorage = "true";
 	 
-	attribute<uint2>            noord_ta             (sg_points) := ='/Analyse/TreatmentControlAreas/'+ta_ca_areas+'/noord_ta[NL_grid_domain_rel][uint2]';
-	attribute<uint2>            noord_ca             (sg_points) := ='/Analyse/TreatmentControlAreas/'+ta_ca_areas+'/noord_ca[NL_grid_domain_rel][uint2]';
+	attribute<uint2>            noord_ta             (sg_points) := ='/Analyse/TreatmentControlAreas/RESULT/noord_ta[NL_grid_domain_rel][uint2]'; 
+	attribute<uint2>            noord_ca             (sg_points) := ='/Analyse/TreatmentControlAreas/RESULT/noord_ca[NL_grid_domain_rel][uint2]';
 
-	attribute<uint2>            noorderpark_ta       (sg_points) := ='/Analyse/TreatmentControlAreas/'+ta_ca_areas+'/noorderpark_ta[NL_grid_domain_rel][uint2]';
-	attribute<uint2>            noorderpark_ca       (sg_points) := ='/Analyse/TreatmentControlAreas/'+ta_ca_areas+'/noorderpark_ca[NL_grid_domain_rel][uint2]';
+	attribute<uint2>            noorderpark_ta       (sg_points) := ='/Analyse/TreatmentControlAreas/RESULT/noorderpark_ta[NL_grid_domain_rel][uint2]';
+	attribute<uint2>            noorderpark_ca       (sg_points) := ='/Analyse/TreatmentControlAreas/RESULT/noorderpark_ca[NL_grid_domain_rel][uint2]';
 
-	attribute<uint2>            centraal_ta          (sg_points) := ='/Analyse/TreatmentControlAreas/'+ta_ca_areas+'/centraal_ta[NL_grid_domain_rel][uint2]';
-	attribute<uint2>            centraal_ca          (sg_points) := ='/Analyse/TreatmentControlAreas/'+ta_ca_areas+'/centraal_ca[NL_grid_domain_rel][uint2]';
+	attribute<uint2>            centraal_ta          (sg_points) := ='/Analyse/TreatmentControlAreas/RESULT/centraal_ta[NL_grid_domain_rel][uint2]';
+	attribute<uint2>            centraal_ca          (sg_points) := ='/Analyse/TreatmentControlAreas/RESULT/centraal_ca[NL_grid_domain_rel][uint2]';
 
-	attribute<uint2>            rokin_ta             (sg_points) := ='/Analyse/TreatmentControlAreas/'+ta_ca_areas+'/rokin_ta[NL_grid_domain_rel][uint2]';
-	attribute<uint2>            rokin_ca             (sg_points) := ='/Analyse/TreatmentControlAreas/'+ta_ca_areas+'/rokin_ca[NL_grid_domain_rel][uint2]';
+	attribute<uint2>            rokin_ta             (sg_points) := ='/Analyse/TreatmentControlAreas/RESULT/rokin_ta[NL_grid_domain_rel][uint2]';
+	attribute<uint2>            rokin_ca             (sg_points) := ='/Analyse/TreatmentControlAreas/RESULT/rokin_ca[NL_grid_domain_rel][uint2]';
 
-	attribute<uint2>            vijzelgracht_ta      (sg_points) := ='/Analyse/TreatmentControlAreas/'+ta_ca_areas+'/vijzelgracht_ta[NL_grid_domain_rel][uint2]';
-	attribute<uint2>            vijzelgracht_ca      (sg_points) := ='/Analyse/TreatmentControlAreas/'+ta_ca_areas+'/vijzelgracht_ca[NL_grid_domain_rel][uint2]';
+	attribute<uint2>            vijzelgracht_ta      (sg_points) := ='/Analyse/TreatmentControlAreas/RESULT/vijzelgracht_ta[NL_grid_domain_rel][uint2]';
+	attribute<uint2>            vijzelgracht_ca      (sg_points) := ='/Analyse/TreatmentControlAreas/RESULT/vijzelgracht_ca[NL_grid_domain_rel][uint2]';
 
-	attribute<uint2>            depijp_ta            (sg_points) := ='/Analyse/TreatmentControlAreas/'+ta_ca_areas+'/depijp_ta[NL_grid_domain_rel][uint2]';
-	attribute<uint2>            depijp_ca            (sg_points) := ='/Analyse/TreatmentControlAreas/'+ta_ca_areas+'/depijp_ca[NL_grid_domain_rel][uint2]';
+	attribute<uint2>            depijp_ta            (sg_points) := ='/Analyse/TreatmentControlAreas/RESULT/depijp_ta[NL_grid_domain_rel][uint2]';
+	attribute<uint2>            depijp_ca            (sg_points) := ='/Analyse/TreatmentControlAreas/RESULT/depijp_ca[NL_grid_domain_rel][uint2]';
 
-	attribute<uint2>            europaplein_ta       (sg_points) := ='/Analyse/TreatmentControlAreas/'+ta_ca_areas+'/europaplein_ta[NL_grid_domain_rel][uint2]';
-	attribute<uint2>            europaplein_ca       (sg_points) := ='/Analyse/TreatmentControlAreas/'+ta_ca_areas+'/europaplein_ca[NL_grid_domain_rel][uint2]';
+	attribute<uint2>            europaplein_ta       (sg_points) := ='/Analyse/TreatmentControlAreas/RESULT/europaplein_ta[NL_grid_domain_rel][uint2]';
+	attribute<uint2>            europaplein_ca       (sg_points) := ='/Analyse/TreatmentControlAreas/RESULT/europaplein_ca[NL_grid_domain_rel][uint2]';
 
-	attribute<uint2>            zuid_ta              (sg_points) := ='/Analyse/TreatmentControlAreas/'+ta_ca_areas+'/zuid_ta[NL_grid_domain_rel][uint2]';
-	attribute<uint2>            zuid_ca              (sg_points) := ='/Analyse/TreatmentControlAreas/'+ta_ca_areas+'/zuid_ca[NL_grid_domain_rel][uint2]';
+	attribute<uint2>            zuid_ta              (sg_points) := ='/Analyse/TreatmentControlAreas/RESULT/zuid_ta[NL_grid_domain_rel][uint2]';
+	attribute<uint2>            zuid_ca              (sg_points) := ='/Analyse/TreatmentControlAreas/RESULT/zuid_ca[NL_grid_domain_rel][uint2]';
 }

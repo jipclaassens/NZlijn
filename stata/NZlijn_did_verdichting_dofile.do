@@ -99,6 +99,28 @@ foreach s of local stations{
 	g tt_`s'_min = station_`s'_reistijd / 60
 }
 
+////Aantal waarnemingen per zone, per periode
+g zone_label = ""
+replace zone_label = "n_ta" if noord_ta == 1
+replace zone_label = "np_ta" if noorderpark_ta == 1
+replace zone_label = "c_ta" if centraal_ta == 1
+replace zone_label = "r_ta" if rokin_ta == 1
+replace zone_label = "v_ta" if vijzelgracht_ta == 1
+replace zone_label = "p_ta" if depijp_ta == 1
+replace zone_label = "e_ta" if europaplein_ta == 1
+replace zone_label = "z_ta" if zuid_ta == 1
+replace zone_label = "n_ca" if noord_ca == 1
+replace zone_label = "np_ca" if noorderpark_ca == 1
+replace zone_label = "c_ca" if centraal_ca == 1
+replace zone_label = "r_ca" if rokin_ca == 1
+replace zone_label = "v_ca" if vijzelgracht_ca == 1
+replace zone_label = "p_ca" if depijp_ca == 1
+replace zone_label = "e_ca" if europaplein_ca == 1
+replace zone_label = "z_ca" if zuid_ca == 1
+encode zone_label, generate(zone)
+
+tab zone
+drop if zone == .
 
 
 save "temp/DMS_did_verdichting_base.dta", replace
@@ -153,6 +175,29 @@ predict residuals, resid
 spregress moran residuals, spmat(W)
 
 **# Bookmark #4
+
+//descriptives
+local stations "all"   
+foreach s of local stations{ 
+		
+ 	local dates "21072018"
+	foreach d of local dates{
+		g treated = `s'_ta
+		g treattime = trans_date >= td(`d')
+		g did = treattime * treated
+		
+		g ca = `s'_ca + `s'_ta
+		
+		areg lnwon treated treattime did i.year if ca == 1, absorb(buurt_rel) vce(cluster identificatie)
+		
+		estpost sum won 
+		esttab using Output\sum_density.rtf, cells("count(fmt(0)) mean(fmt(2)) sd(fmt(2)) min(fmt(0)) max(fmt(0))") label nomtitle nonumber replace
+		drop did* treated treattime* ca
+	}	  
+}
+
+
+
 
 estpost sum won year diff_spits_abs_3 tt_* 
 esttab using output/sum_verdichting.rtf, cells("count(fmt(0)) mean(fmt(3)) sd(fmt(3)) min(fmt(0)) max(fmt(0))") label nomtitle nonumber replace
