@@ -1,8 +1,8 @@
 container Regios
 {
-	parameter<string> Regio_jaar := '2022';
+	parameter<string> Regio_jaar := '2024'; //analyse op 2022 gedaan.
 
-	unit<uint32> Gebiedsindelingen_jaren := range(uint32, 2000, 2024)
+	unit<uint32> Gebiedsindelingen_jaren := range(uint32, 2000, 2025)
 	{
 		attribute<uint32> jaar := id(.);
 		attribute<string> name := 'Y'+string(jaar);
@@ -34,7 +34,17 @@ container Regios
 		attribute<string>    name                    := AsItemName(statnaam);
 		attribute<string>    label                   := statnaam;
 		
-		container V := for_each_nedv(name, 'value('+string(id(.))+', ..)', void, .);
+		attribute<Wijk>      Wijk_rel                := point_in_polygon(centroid_or_mid(geometry), wijk/geometry);
+		
+		attribute<float64>   CI_2021_BU                 := rjoin(id(.), CriminaliteitsIndex/buurt_rel,CriminaliteitsIndex/CI_2021);
+		attribute<float64>   CI_2021_WK                 := Wijk/CI_2021[Wijk_rel];
+		attribute<uint32>    CI_2021                    := uint32(MakeDefined(CI_2021_BU, CI_2021_WK));
+		
+		attribute<float64>   CI_2022_BU                 := rjoin(id(.), CriminaliteitsIndex/buurt_rel,CriminaliteitsIndex/CI_2022);
+		attribute<float64>   CI_2022_WK                 := Wijk/CI_2022[Wijk_rel];
+		attribute<uint32>    CI_2022                    := uint32(MakeDefined(CI_2022_BU, CI_2022_WK));
+		
+		// container V := for_each_nedv(name, 'value('+string(id(.))+', ..)', void, .);
 	}
 	
 	unit<uint32>  Wijk := ='Gebiedsindelingen/y'+Regio_jaar+'/gpkg/wijk_niet_gegeneraliseerd' 
@@ -44,9 +54,38 @@ container Regios
 		attribute<string>    statnaam                := ='Gebiedsindelingen/y'+Regio_jaar+'/gpkg/wijk_niet_gegeneraliseerd/statnaam';
 		attribute<string>    name                    := AsItemName(statnaam);
 		attribute<string>    label                   := statnaam;
+		attribute<Gemeente>  gem_rel := point_in_polygon(centroid_or_mid(geometry), gemeente/geometry);
+		
+		attribute<float64>   CI_2021                 := rjoin(id(.), CriminaliteitsIndex/wijk_rel,CriminaliteitsIndex/CI_2021);
+		attribute<float64>   CI_2022                 := rjoin(id(.), CriminaliteitsIndex/wijk_rel,CriminaliteitsIndex/CI_2022);
 
-		container V := for_each_nedv(name, 'value('+string(id(.))+', ..)', void, .);
+		attribute<bool>      IsAmsRegio := gem_rel == gemeente/v/amsterdam 
+											|| gem_rel == gemeente/v/amstelveen 
+											|| gem_rel == gemeente/v/diemen
+											|| gem_rel == gemeente/v/ouder_amstel
+											// || gem_rel == gemeente/v/weesp
+											|| gem_rel == gemeente/v/aalsmeer
+											|| gem_rel == gemeente/v/uithoorn;
+											
+		unit<uint32> AmsterdamRegio := select_with_attr_by_cond(., IsAmsRegio);
+		// container V := for_each_nedv(name, 'value('+string(id(.))+', ..)', void, .);
 	}
+	
+	unit<uint8> VM_regios : nrofrows = 115
+	{
+		attribute<.> id := id(.);
+	}
+	
+	unit<uint32> CriminaliteitsIndex 
+	: StorageName = "%ProjDir%/data/VM_Regios_vertaaltabel_CBSCodes2024_Criminaliteit.xlsx"
+	, StorageType = "gdal.vect"
+	, StorageReadOnly = "TRUE"
+	, SqlString = "SELECT * FROM Data"
+	{
+		attribute<Buurt> buurt_rel := rlookup(STATCODE, Buurt/Statcode);
+		attribute<Wijk>  Wijk_rel  := rlookup(STATCODE, Wijk/Statcode);
+	}
+	
 	
 	unit<uint32>  Gemeente := ='Gebiedsindelingen/y'+Regio_jaar+'/gpkg/gemeente_niet_gegeneraliseerd' 
 	{

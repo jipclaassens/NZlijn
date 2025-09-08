@@ -156,6 +156,9 @@ container NVM: using = "eenheden"
 		// attribute<uint2>            d_listed         := ReadGPKG/d_listed_value[org_rel];
 		attribute<selectie_polygoon>           ams_rel          := ReadGPKG/ams_rel[org_rel];
 		
+		attribute<uint32> CriminaliteitsIndex_2021  := /Brondata/Regios/Buurt/CI_2021[buurt_rel];
+		attribute<uint32> CriminaliteitsIndex_2022  := /Brondata/Regios/Buurt/CI_2022[buurt_rel];
+		
 		attribute<string>           gem_naam         := Brondata/Regios/gemeente/name[gem_rel];
 		attribute<Brondata/Regios/gemeente>           gem_rel          := point_in_polygon(geometry, /Brondata/Regios/gemeente/Geometry);
 		attribute<Brondata/Regios/buurt>           buurt_rel        := point_in_polygon(geometry, /Brondata/Regios/buurt/Geometry);
