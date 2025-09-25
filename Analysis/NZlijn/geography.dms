@@ -10,9 +10,9 @@ container geography : using = "eenheden"
 	
 	#include <ngr_layer.dms>
 	
-	unit<uint8> Matrix : nrofrows = 7
+	unit<uint8> Matrix : nrofrows = 11
 	{
-		attribute<m> Size : [25, 50, 100, 150, 200, 300, 500];
+		attribute<m> Size : [25, 50, 100, 150, 200, 300, 500, 1000, 2500, 5000, 10000];
 		attribute<string> name := 'pot'+string(size)+'m';
 	}
 	

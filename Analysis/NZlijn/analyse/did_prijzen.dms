@@ -40,6 +40,9 @@ container DiD_Prijzen :=
 	// attribute<uint2>          d_garden                             (NVM_AMS) := NVM_AMS/d_garden;
 	// attribute<uint2>          d_listed                             (NVM_AMS) := NVM_AMS/d_listed;
 	
+	attribute<uint32>         CrimeIndex                           (NVM_AMS) := /Brondata/Regios/Buurt/CI_2021[buurt_rel];
+	attribute<uint32>         SchoolQuality                        (NVM_AMS) := uint32(/Brondata/Schoolkwaliteit/result/Uitgesmeerd)[NL_grid_domain_rel];
+	
 	attribute<string>         gemeente_name                        (NVM_AMS) := NVM_AMS/gem_naam;
 	attribute<uint32>         buurt_rel                            (NVM_AMS) := NVM_AMS/buurt_rel;
 	// attribute<uint32>         pc6_rel                              (NVM_AMS) := NVM_AMS/pc6_rel;

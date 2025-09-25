@@ -99,13 +99,21 @@ container Regios
 	}
 	
 	unit<uint32> Postcode6 
-	:	StorageName     = "%SourceDataDir%/CBS/PC6_shape.shp"
+	:	StorageName     = "%SourceDataDir%/CBS/PC6_y2022.shp"
 	,	StorageType     = "gdal.vect"
 	,	StorageReadOnly = "True"
+	, 	Descr           = "PC6 gebieden in 2022"
 	{
-		attribute<geography/rdc>   	geometry  (polygon) ;
-		attribute<string>           		label                      	:= POSTCODE ;
-		attribute<Postcode6>         	grid      (NL_grid/domain) 	:= poly2grid(geometry, NL_grid/domain);
+		attribute<rdc>              geometry  (polygon) ;
+		attribute<string>           label                      	:= PC6;
+		attribute<Postcode6>        grid      (NL_grid/domain) 	:= poly2grid(geometry, NL_grid/domain);
+		attribute<bool>             IsMRA                       := IsDefined(point_in_polygon(centroid_or_mid(geometry), Brondata/Regios/Wijk/AmsterdamRegio/geometry));
+		
+		unit<uint32> MRA := select_with_org_rel(IsMRA)
+		{
+			attribute<geography/rdc>       geometry  (poly) := ../geometry[org_rel];
+			attribute<string>              label            := ../label[org_rel];
+		}
 	}
 	
 	unit<uint32> Postcode6_areas 
@@ -136,7 +144,7 @@ container Regios
 		attribute<stadsdelen>       NL_grid_domain_rel  (NL_grid/domain)         := poly2grid(geometry, NL_grid/domain);
 		attribute<string>           Stadsdeeln;
 		attribute<uint8>            sdnummer;
-		attribute<uint32>            Stadsdeelnummer                                 := sdnummer[uint32];
+		attribute<uint32>           Stadsdeelnummer                                 := sdnummer[uint32];
 		attribute<uint32>           point_rel   (sg_points)   := point_in_polygon(sg_points/Geometry, geometry);
 	}
  
