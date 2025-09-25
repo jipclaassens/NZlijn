@@ -72,7 +72,7 @@ container BAG : using = "geography"
 				// }
 			}
 			
-			unit<uint32> pand := subset(pand_src/X_ext < 1000000i && pand_src/Y_ext < 1000000i && IsDefined(pand_src/ams_rel)
+			unit<uint32> pand := select_with_org_rel(pand_src/X_ext < 1000000i && pand_src/Y_ext < 1000000i && IsDefined(pand_src/ams_rel)
 											&& 	(pand_src/status == 'Pand in gebruik' 
 												|| pand_src/status == 'Pand in gebruik (niet ingemeten)' 
 												|| pand_src/status == 'Pand buiten gebruik'
@@ -82,13 +82,13 @@ container BAG : using = "geography"
 			, DialogData = "geometry_mm"
 			, FreeData = "False"
 			{
-				attribute<geography/rdc_mm>           geometry_mm (polygon)       := pand_src/geometry_mm[Nr_OrgEntity];
+				attribute<geography/rdc_mm>           geometry_mm (polygon)       := pand_src/geometry_mm[org_rel];
 				attribute<geography/rdc>              geometry (polygon)          := geometry_mm[geography/rdc];
-				attribute<string>                     identificatie               := pand_src/identificatie[Nr_OrgEntity];
-				attribute<eenheden/jaar>              bouwjaar                    := pand_src/bouwjaar[Nr_OrgEntity];
+				attribute<string>                     identificatie               := pand_src/identificatie[org_rel];
+				attribute<eenheden/jaar>              bouwjaar                    := pand_src/bouwjaar[org_rel];
 				attribute<int16>                      bouwjaar_trunc              := bouwjaar < 1000s || bouwjaar > 2019s ? (0/0)[int16] : bouwjaar < 1600s ? 1600s : bouwjaar;
-				attribute<typeringen/WP>              woonpand_rel                := pand_src/wp_rel[Nr_OrgEntity];
-				// attribute<typeringen/WP>              woonpand_rel                := pand_src/woonpand_rel[Nr_OrgEntity];
+				attribute<typeringen/WP>              woonpand_rel                := pand_src/wp_rel[org_rel];
+				// attribute<typeringen/WP>              woonpand_rel                := pand_src/woonpand_rel[org_rel];
 				attribute<eenheden/m2>                opp                         := area(geometry, eenheden/m2);
 				
 				attribute<geography/rdc>              pand_centroid               := centroid_or_mid(geometry);
@@ -111,13 +111,13 @@ container BAG : using = "geography"
 						, 'Rekenschemas/MaakImpedancePerStation(' +quote(typeringen/metro_stations/name)+ ', '+Jaar_str+'/Pand)'
 					);
 					
-				unit<uint32> Amsterdam_selectie := subset(IsDefined(studyarea_rel))
+				unit<uint32> Amsterdam_selectie := select_with_org_rel(IsDefined(studyarea_rel))
 				,	StorageName     = "%LocalDataDir%/Panden_Amsterdam.fss"
 				,	DialogType = "Map"
 				,	DialogData = "pand_centroid"
 				{
-					attribute<geography/rdc>                 pand_centroid             := ../pand_centroid[nr_OrgEntity];
-					attribute<string>                        identificatie        := ../identificatie[nr_OrgEntity];
+					attribute<geography/rdc>                 pand_centroid             := ../pand_centroid[org_rel];
+					attribute<string>                        identificatie        := ../identificatie[org_rel];
 					
 
 				}
@@ -195,24 +195,24 @@ container BAG : using = "geography"
 				attribute</typeringen/vbo_gebruiksdoel> gebruiksdoel_class := rlookup(gebruiksdoel, /typeringen/vbo_gebruiksdoel/name);
 				
 				
-				unit<uint32> src := subset(IsDefined(studyarea_rel) 
+				unit<uint32> src := select_with_org_rel(IsDefined(studyarea_rel) 
 												&& /typeringen/vbo_status/IsVoorraad[vbo/status_rel]
 											)
 				{
-					attribute<geography/rdc_mm>                                        geometry_mm         := vbo/geometry_mm[nr_OrgEntity], DisableStorage = "True";
+					attribute<geography/rdc_mm>                                        geometry_mm         := vbo/geometry_mm[org_rel], DisableStorage = "True";
 					attribute<geography/rdc>                                           geometry            := geometry_mm[geography/rdc]; //, Storagename = "='%LocalDataProjDir%/OutputOri/BAG_vbo_2018_' +name+ '_opp.shp'";
-					attribute<int32>                                                   oppervlakte         := vbo/oppervlakte[nr_OrgEntity];
+					attribute<int32>                                                   oppervlakte         := vbo/oppervlakte[org_rel];
 					attribute<int32>                                                   oppervlakte_trunc   := oppervlakte < 1000i ? oppervlakte : 0i, DisableStorage = "True";
 					attribute<int32>                                                   oppervlakte_trunc2   := oppervlakte < 500000i && oppervlakte != 99999i && oppervlakte != 9999i ? oppervlakte : 0i, DisableStorage = "True";
 					
-					attribute<string>                                                  identificatie       := vbo/identificatie[nr_OrgEntity];
-					// attribute<uint32>                                                  begindatum          := vbo/begindatum[nr_OrgEntity];
-					attribute<string>                                                  nummeraanduiding_id := vbo/nummeraanduiding_id[nr_OrgEntity];
+					attribute<string>                                                  identificatie       := vbo/identificatie[org_rel];
+					// attribute<uint32>                                                  begindatum          := vbo/begindatum[org_rel];
+					attribute<string>                                                  nummeraanduiding_id := vbo/nummeraanduiding_id[org_rel];
 					// attribute<uint32>                                                  pand_rel            := ='point_in_polygon(geometry_mm, panden/'+Jaar_str+'/pand/geometry_mm)';
-					attribute<string>                                                  pand_id             := vbo/pand_id[nr_OrgEntity];
-					// attribute<typeringen/WP>                                           woonpand_rel        := vbo/woonpand_rel[nr_OrgEntity];
+					attribute<string>                                                  pand_id             := vbo/pand_id[org_rel];
+					// attribute<typeringen/WP>                                           woonpand_rel        := vbo/woonpand_rel[org_rel];
 					attribute<NL_grid/domain>                                          NL_grid_domain_rel  := geometry[NL_grid/domain];
-					attribute</typeringen/vbo_gebruiksdoel>                            gebruiksdoel_class  := vbo/gebruiksdoel_class[nr_OrgEntity];
+					attribute</typeringen/vbo_gebruiksdoel>                            gebruiksdoel_class  := vbo/gebruiksdoel_class[org_rel];
 					
 					// attribute<Regios/Gemeenten/src_2012/AgglAmsterdam>      aggl_ams_rel        := point_in_polygon(geometry, Regios/Gemeenten/src_2012/AgglAmsterdam/geometry);
 					// attribute<bool>                                         IsAgglAms           := IsDefined(aggl_ams_rel);
@@ -224,15 +224,15 @@ container BAG : using = "geography"
 					// attribute<regios/Postcode_gebieden/Postcode6_areas/MRA> pc6_mra_rel         := point_in_polygon(geometry, Brondata/regios/Postcode_gebieden/Postcode6_areas/MRA/geometry);
 				}
 				
-				unit<uint32> Amsterdam_selectie := subset(IsDefined(studyarea_rel))
+				unit<uint32> Amsterdam_selectie := select_with_org_rel(IsDefined(studyarea_rel))
 				,	StorageName     = "%LocalDataDir%/Vbos_Amsterdam.fss"
 				,	DialogType = "Map"
 				,	DialogData = "geometry"
 				{
-					attribute<geography/rdc_mm>              geometry_mm             := ../geometry_mm[nr_OrgEntity];
-					attribute<geography/rdc>                 geometry             := ../geometry[nr_OrgEntity];
-					// attribute<int32>                      oppervlakte          := ../oppervlakte[nr_OrgEntity];
-					attribute<string>                        identificatie        := ../identificatie[nr_OrgEntity];
+					attribute<geography/rdc_mm>              geometry_mm             := ../geometry_mm[org_rel];
+					attribute<geography/rdc>                 geometry             := ../geometry[org_rel];
+					// attribute<int32>                      oppervlakte          := ../oppervlakte[org_rel];
+					attribute<string>                        identificatie        := ../identificatie[org_rel];
 				}
 				
 				container gebruiksdoelen :=
@@ -287,25 +287,25 @@ container BAG : using = "geography"
 					parameter<string> name;
 					///
 					
-					unit<uint32> GebruiksdoelSet := ='subset(vbo/gebruiksdoelen/' + name + ' 
+					unit<uint32> GebruiksdoelSet := ='select_with_org_rel(vbo/gebruiksdoelen/' + name + ' 
 						&& IsDefined(vbo/ams_rel)
 						&& typeringen/vbo_status/IsVoorraad[vbo/status_rel]
 						)'
 					{
-						attribute<geography/rdc_mm>                                        geometry_mm         := vbo/geometry_mm[nr_OrgEntity], DisableStorage = "True";
+						attribute<geography/rdc_mm>                                        geometry_mm         := vbo/geometry_mm[org_rel], DisableStorage = "True";
 						attribute<geography/rdc>                                           geometry            := geometry_mm[geography/rdc]; //, Storagename = "='%LocalDataProjDir%/OutputOri/BAG_vbo_2018_' +name+ '_opp.shp'";
-						attribute<int32>                                                   oppervlakte         := vbo/oppervlakte[nr_OrgEntity];
+						attribute<int32>                                                   oppervlakte         := vbo/oppervlakte[org_rel];
 						attribute<int32>                                                   oppervlakte_trunc   := oppervlakte < 1000i ? oppervlakte : 0i, DisableStorage = "True";
 						
-						attribute<string>                                                  identificatie       := vbo/identificatie[nr_OrgEntity];
-						// attribute<uint32>                                                  begindatum          := vbo/meta/begindatum[nr_OrgEntity];
-						attribute<string>                                                  nummeraanduiding_id := vbo/nummeraanduiding_id[nr_OrgEntity];
+						attribute<string>                                                  identificatie       := vbo/identificatie[org_rel];
+						// attribute<uint32>                                                  begindatum          := vbo/meta/begindatum[org_rel];
+						attribute<string>                                                  nummeraanduiding_id := vbo/nummeraanduiding_id[org_rel];
 									
 
 						attribute<string>                                                  PC6                 := ='rjoin(nummeraanduiding_id, /Brondata/BAG/Snapshots/Adressen/'+PC6_adressen_jaar+'/adres/nummeraanduiding_id, /Brondata/BAG/Snapshots/Adressen/'+PC6_adressen_jaar+'/adres/postcode)';
 
-						attribute<string>                                                  pand_id             := vbo/pand_id[nr_OrgEntity];
-						attribute<typeringen/WP>                                           woonpand_rel        := vbo/woonpand_rel[nr_OrgEntity];
+						attribute<string>                                                  pand_id             := vbo/pand_id[org_rel];
+						attribute<typeringen/WP>                                           woonpand_rel        := vbo/woonpand_rel[org_rel];
 						attribute<typeringen/WP>                                           WP_rel              := id(typeringen/WP)[woonpand_rel];
 						// attribute<typeringen/WP2>                                          WP2_rel             := switch(
 																													// case(WP4_rel == typeringen/WP4/V/appartement,WP2/V/meergezins)
@@ -360,15 +360,15 @@ container BAG : using = "geography"
 				}
 				
 				unit<uint32> zonderwoonfunctie_enCBSStatus := 
-					subset(!vbo/gebruiksdoelen/woon && (vbo/status == 'Verblijfsobject buiten gebruik' || vbo/status == 'Verblijfsobject in gebruik' || vbo/status == 'Verblijfsobject in gebruik (niet ingemeten)') && IsDefined(ams_rel))
+					select_with_org_rel(!vbo/gebruiksdoelen/woon && (vbo/status == 'Verblijfsobject buiten gebruik' || vbo/status == 'Verblijfsobject in gebruik' || vbo/status == 'Verblijfsobject in gebruik (niet ingemeten)') && IsDefined(ams_rel))
 				,	DialogType = "Map"
 				,	DialogData = "geometry_mm"
 				, 	FreeData = "False"
 				{
-					attribute<geography/rdc_mm>            geometry_mm               := vbo/geometry_mm[nr_OrgEntity];
+					attribute<geography/rdc_mm>            geometry_mm               := vbo/geometry_mm[org_rel];
 					attribute<geography/rdc>               geometry                  := geometry_mm[geography/rdc];
 					
-					attribute<int32>                       oppervlakte               := vbo/oppervlakte[nr_OrgEntity];
+					attribute<int32>                       oppervlakte               := vbo/oppervlakte[org_rel];
 					attribute<int32>                       oppervlakte_trunc         := oppervlakte < 1000i ? oppervlakte : 0i;
 					
 					attribute<NL_grid/domain>              NL_grid_domain_rel        := geometry[NL_grid/domain];
@@ -409,21 +409,21 @@ container BAG : using = "geography"
 				{
 					attribute<float32>  x_mean := mean(pointcol(../geometry), uq_rel);
 					attribute<float32>  y_mean := mean(pointrow(../geometry), uq_rel);
-					attribute<rdc>      geometry := point(x_mean, y_mean, rdc);
+					attribute<rdc>      geometry := point_xy(x_mean, y_mean, rdc);
 					attribute<string>   PC6      := values;
 				}
 				
-				unit<uint32> PC6_centroids := subset(IsDefined(pc6_uq/geometry) && pc6_uq/PC6 != '')
+				unit<uint32> PC6_centroids := select_with_org_rel(IsDefined(pc6_uq/geometry) && pc6_uq/PC6 != '')
 				{
-					attribute<rdc>      geometry := pc6_uq/geometry[nr_OrgEntity];
-					attribute<string>   PC6      := pc6_uq/PC6[nr_OrgEntity];
+					attribute<rdc>      geometry := pc6_uq/geometry[org_rel];
+					attribute<string>   PC6      := pc6_uq/PC6[org_rel];
 					attribute<string>   Label    := pc6;
 					attribute<Brondata/Regios/Stadsdelen> Stadsdeel_rel := point_in_polygon(geometry, /Brondata/Regios/Stadsdelen/geometry);
 				}
-				unit<uint32> PC6_AMS := subset(IsDefined(PC6_centroids/Stadsdeel_rel))
+				unit<uint32> PC6_AMS := select_with_org_rel(IsDefined(PC6_centroids/Stadsdeel_rel))
 				{
-					attribute<rdc>      geometry := PC6_centroids/geometry[nr_OrgEntity];
-					attribute<string>   PC6      := PC6_centroids/PC6[nr_OrgEntity];
+					attribute<rdc>      geometry := PC6_centroids/geometry[org_rel];
+					attribute<string>   PC6      := PC6_centroids/PC6[org_rel];
 					attribute<string>   Label    := pc6;
 					attribute<Brondata/Regios/Buurt>    buurt_rel        := point_in_polygon(geometry, Brondata/Regios/Buurt/geometry);
 				}

@@ -8,10 +8,10 @@ container Spatial_data
 		,	StorageReadOnly = "True"
 		,	DialogType = "Map"
 		,	DialogData = "geometry_rd"	
-		, syncmode = "none"			
+		, syncmode = "none"
 		{
 			attribute<fpoint> 	         geometry (arc);	
-			attribute<geography/rdc>    geometry_rd (arc)   := LatLongWgs842RD(geometry, fpoint)[geography/rdc];
+			attribute<geography/rdc>     geometry_rd (arc)   := LatLongWgs842RD(geometry, fpoint)[geography/rdc];
 			attribute<string>            fclass;
 			attribute<uint32>            id                  := id(.);
 		
@@ -21,16 +21,16 @@ container Spatial_data
 				attribute<bool>                         point_in_sel        := IsDefined(arcpoints_sg_rel);
 			}
 			
-			attribute<bool>                             road_in_sel         := any(arcpoints/point_in_sel, arcpoints/sequencenr);
+			attribute<bool>                             road_in_sel         := any(arcpoints/point_in_sel, arcpoints/sequence_rel);
 		}
 
-		unit<uint32> Wegen_Amsterdam_Creator := subset(wegen/road_in_sel)
+		unit<uint32> Wegen_Amsterdam_Creator := select_with_org_rel(wegen/road_in_sel)
 		,   StorageName = "%LocalDataDir%/NZlijn/Wegen_Amsterdam.new.fss"
 		,	DialogType = "Map"
 		,	DialogData = "geometry"	
 		{
-			attribute<geography/rdc>              geometry (arc) := wegen/geometry_rd[nr_OrgEntity];
-			attribute<string>                      fclass         := wegen/fclass[nr_OrgEntity];
+			attribute<geography/rdc>              geometry (arc) := wegen/geometry_rd[org_rel];
+			attribute<string>                      fclass         := wegen/fclass[org_rel];
 		}
 		
 		unit<uint32> Wegen_Amsterdam
@@ -59,18 +59,18 @@ container Spatial_data
 			attribute<bool>                        isMajor              := type = 'primary_link' || type = 'secondary_link' || type = 'secondary' || type = 'primary';
 			attribute<bool>                        isStreet             := !isMotorWay && !isMajor;
 			
-			unit<uint32> Motorways := subset(isMotorWay)
+			unit<uint32> Motorways := select_with_org_rel(isMotorWay)
 			,	StorageName = "%LocalDataDir%/NZlijn/Motorway_Amsterdam.fss"
 			{
-				attribute<geography/rdc>     geometry (arc)                    := ../geometry[nr_OrgEntity];
+				attribute<geography/rdc>     geometry (arc)                    := ../geometry[org_rel];
 				container                    point_rel_info_sgpoints           := connect_info(geometry, sg_points/geometry);
 				attribute<m> 		         Dist2sgpoints (sg_points)         := point_rel_info_sgpoints/dist[m];
 				container                    point_rel_info_nvm                := connect_info(geometry, NVM/Subset_Amsterdam/geometry);
 				attribute<m> 		         Dist2nvm (NVM/Subset_Amsterdam)   := point_rel_info_nvm/dist[m];
 			}
-			unit<uint32> MotorwayLinks := subset(isMotorWayLink)
+			unit<uint32> MotorwayLinks := select_with_org_rel(isMotorWayLink)
 			{
-				attribute<geography/rdc>     geometry (arc)                    := ../geometry[nr_OrgEntity];
+				attribute<geography/rdc>     geometry (arc)                    := ../geometry[org_rel];
 				container                    point_rel_info_sgpoints           := connect_info(geometry, sg_points/geometry);
 				attribute<m> 		         Dist2sgpoints (sg_points)         := point_rel_info_sgpoints/dist[m];
 				container                    point_rel_info_nvm                := connect_info(geometry, NVM/Subset_Amsterdam/geometry);

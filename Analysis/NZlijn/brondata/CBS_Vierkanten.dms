@@ -34,18 +34,43 @@ container CBS_vierkanten
 		attribute<nrwonha> Y2014 (NL_grid/domain) := Y2013 + ((Y2015 - Y2012) / 3f);
 		
 		attribute<nrwonha> new (NL_grid/domain) := Y2015 - Y2012;
-		
-		
-		attribute<nrwonha> new2 (NL_grid/domain) := Y2023 - Y2000;
+		// attribute<nrwonha> new2 (NL_grid/domain) := Y2023 - Y2000;
 		
 		parameter<nrwonha> sum_2000_ta := sum(/Analyse/TreatmentControlAreas/RESULT/depijp_ta ? Y2000 : 0f);
 		parameter<nrwonha> sum_2016_ta := sum(/Analyse/TreatmentControlAreas/RESULT/depijp_ta ? Y2016 : 0f);
-		parameter<nrwonha> sum_2023_ta := sum(/Analyse/TreatmentControlAreas/RESULT/depijp_ta ? Y2023 : 0f);
+		// parameter<nrwonha> sum_2023_ta := sum(/Analyse/TreatmentControlAreas/RESULT/depijp_ta ? Y2023 : 0f);
 		
 		parameter<nrwonha> sum_2000_ca := sum(/Analyse/TreatmentControlAreas/RESULT/depijp_ca ? Y2000 : 0f);
 		parameter<nrwonha> sum_2016_ca := sum(/Analyse/TreatmentControlAreas/RESULT/depijp_ca ? Y2016 : 0f);
-		parameter<nrwonha> sum_2023_ca := sum(/Analyse/TreatmentControlAreas/RESULT/depijp_ca ? Y2023 : 0f);
+		// parameter<nrwonha> sum_2023_ca := sum(/Analyse/TreatmentControlAreas/RESULT/depijp_ca ? Y2023 : 0f);
 		
+		unit<uint32>         y2018_dom := Read_Vierkanten/Y2018/gpkg/vierkant_100m_2018;
+		attribute<y2018_dom> NL_grid_domain_rel_2018 (NL_grid/domain) := poly2grid(y2018_dom/geometry, NL_grid/domain);
+		
+		attribute<float32> avg_woz_src     (NL_grid/domain) := y2018_dom/gemiddelde_woz_waarde_woning[NL_grid_domain_rel_2018][float32];
+		attribute<float32> avg_woz         (NL_grid/domain) := avg_woz_src == -99997f ? null_f : avg_woz_src * 1000f;
+		attribute<float32> avg_woz_edit    (NL_grid/domain) := avg_woz <= 100000f ? null_f : avg_woz;
+		 
+		attribute<float32> pop_working_src (NL_grid/domain) := (y2018_dom/aantal_inwoners_15_tot_25_jaar + y2018_dom/aantal_inwoners_25_tot_45_jaar + y2018_dom/aantal_inwoners_45_tot_65_jaar)[NL_grid_domain_rel_2018][float32];
+		attribute<float32> pop_working     (NL_grid/domain) := pop_working_src < 0f ? null_f : pop_working_src;
+		
+		attribute<float32> pop_src         (NL_grid/domain) := y2018_dom/aantal_inwoners[NL_grid_domain_rel_2018][float32];
+		attribute<float32> pop             (NL_grid/domain) := pop_src < 0f ? null_f : pop_src;
+		
+		attribute<float32> won_src         (NL_grid/domain) := y2018_dom/aantal_woningen[NL_grid_domain_rel_2018][float32];
+		attribute<float32> won             (NL_grid/domain) := won_src < 0f ? null_f : won_src;
+		
+		attribute<float32> won_prewar_src  (NL_grid/domain) := y2018_dom/aantal_woningen_bouwjaar_voor_1945[NL_grid_domain_rel_2018][float32];
+		attribute<float32> won_prewar      (NL_grid/domain) := won_prewar_src < 0f ? null_f : won_prewar_src;
+		
+		attribute<float32> p_nl_src        (NL_grid/domain) := y2018_dom/percentage_nederlandse_achtergrond[NL_grid_domain_rel_2018][float32];
+		attribute<float32> p_west_src      (NL_grid/domain) := y2018_dom/percentage_westerse_migr_achtergr[NL_grid_domain_rel_2018][float32];
+		attribute<float32> p_nietwest_src  (NL_grid/domain) := y2018_dom/percentage_niet_westerse_migr_achtergr[NL_grid_domain_rel_2018][float32];
+		attribute<float32> p_nl            (NL_grid/domain) := p_nl_src < 0f ? 0f : p_nl_src / 100f;
+		attribute<float32> p_west          (NL_grid/domain) := p_west_src < 0f ? 0f : p_west_src / 100f;
+		attribute<float32> p_nietwest      (NL_grid/domain) := p_nietwest_src < 0f ? 0f : p_nietwest_src / 100f;
+		attribute<float32> pop_west        (NL_grid/domain) := p_west + p_nl * pop;
+		attribute<float32> pop_nietwest    (NL_grid/domain) := p_nietwest * pop;
 	}
 	
 	//adhoc

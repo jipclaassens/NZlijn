@@ -1,35 +1,35 @@
 container Aardbevingen : FreeData = "False" 
 {
-	// unit<uint32> NVM := subset(Brondata/NVM/Subset_NoordNL/gemeente_rel == 14)
-	unit<uint32> NVM := subset(IsDefined(Brondata/NVM/Subset_NoordNL/gemeente_rel))
+	// unit<uint32> NVM := select_with_org_rel(Brondata/NVM/Subset_NoordNL/gemeente_rel == 14)
+	unit<uint32> NVM := select_with_org_rel(IsDefined(Brondata/NVM/Subset_NoordNL/gemeente_rel))
 	, DialogType = "map"
 	, DialogData = "geometry"
 	{
-		attribute<geography/rdc>  geometry        := Brondata/NVM/Subset_NoordNL/geometry[nr_OrgEntity];
-		attribute<uint32>         obsid           := Brondata/NVM/Subset_NoordNL/obsid[nr_OrgEntity];
+		attribute<geography/rdc>  geometry        := Brondata/NVM/Subset_NoordNL/geometry[org_rel];
+		attribute<uint32>         obsid           := Brondata/NVM/Subset_NoordNL/obsid[org_rel];
 		attribute<string>         obsname         := 'T' + string(obsid);
 		
-		attribute<uint2>          d_apartment     := Brondata/NVM/Subset_NoordNL/d_apartment[nr_OrgEntity];
-		attribute<uint2>          d_terraced      := Brondata/NVM/Subset_NoordNL/d_terraced[nr_OrgEntity];
-		attribute<uint2>          d_semidetached  := Brondata/NVM/Subset_NoordNL/d_semidetached[nr_OrgEntity];
-		attribute<uint2>          d_detached      := Brondata/NVM/Subset_NoordNL/d_detached[nr_OrgEntity];
-		attribute<eur>            price           := Brondata/NVM/Subset_NoordNL/price[nr_OrgEntity];
-		attribute<m2>             size            := Brondata/NVM/Subset_NoordNL/size[nr_OrgEntity];
-		attribute<m2>             lotsize         := Brondata/NVM/Subset_NoordNL/lotsize[nr_OrgEntity];
-		attribute<jaar>           trans_year      := Brondata/NVM/Subset_NoordNL/trans_year[nr_OrgEntity];
-		attribute<maand>          trans_month     := Brondata/NVM/Subset_NoordNL/trans_month[nr_OrgEntity];
+		attribute<uint2>          d_apartment     := Brondata/NVM/Subset_NoordNL/d_apartment[org_rel];
+		attribute<uint2>          d_terraced      := Brondata/NVM/Subset_NoordNL/d_terraced[org_rel];
+		attribute<uint2>          d_semidetached  := Brondata/NVM/Subset_NoordNL/d_semidetached[org_rel];
+		attribute<uint2>          d_detached      := Brondata/NVM/Subset_NoordNL/d_detached[org_rel];
+		attribute<eur>            price           := Brondata/NVM/Subset_NoordNL/price[org_rel];
+		attribute<m2>             size            := Brondata/NVM/Subset_NoordNL/size[org_rel];
+		attribute<m2>             lotsize         := Brondata/NVM/Subset_NoordNL/lotsize[org_rel];
+		attribute<jaar>           trans_year      := Brondata/NVM/Subset_NoordNL/trans_year[org_rel];
+		attribute<maand>          trans_month     := Brondata/NVM/Subset_NoordNL/trans_month[org_rel];
 		attribute<uint32>         trans_yearmonth := trans_year[uint32] * 100 + trans_month[uint32];
-		attribute<jaar>           bouwjaar        := Brondata/NVM/Subset_NoordNL/bouwjaar[nr_OrgEntity];
-		attribute<uint32>         nrooms          := Brondata/NVM/Subset_NoordNL/nrooms[nr_OrgEntity];
-		attribute<uint32>         nbadk           := Brondata/NVM/Subset_NoordNL/nbadk[nr_OrgEntity];
-		attribute<uint2>          d_maintgood     := Brondata/NVM/Subset_NoordNL/d_maintgood[nr_OrgEntity];
-		attribute<uint2>          d_CV            := Brondata/NVM/Subset_NoordNL/d_CV[nr_OrgEntity];
-		attribute<uint2>          d_privpark      := Brondata/NVM/Subset_NoordNL/d_privpark[nr_OrgEntity];
-		attribute<uint2>          d_kk            := Brondata/NVM/Subset_NoordNL/d_kk[nr_OrgEntity];
-		attribute<uint2>          d_erfpacht      := Brondata/NVM/Subset_NoordNL/d_erfpacht[nr_OrgEntity];
-		attribute<uint2>          d_isol_compl    := Brondata/NVM/Subset_NoordNL/d_isol_compl[nr_OrgEntity];
+		attribute<jaar>           bouwjaar        := Brondata/NVM/Subset_NoordNL/bouwjaar[org_rel];
+		attribute<uint32>         nrooms          := Brondata/NVM/Subset_NoordNL/nrooms[org_rel];
+		attribute<uint32>         nbadk           := Brondata/NVM/Subset_NoordNL/nbadk[org_rel];
+		attribute<uint2>          d_maintgood     := Brondata/NVM/Subset_NoordNL/d_maintgood[org_rel];
+		attribute<uint2>          d_CV            := Brondata/NVM/Subset_NoordNL/d_CV[org_rel];
+		attribute<uint2>          d_privpark      := Brondata/NVM/Subset_NoordNL/d_privpark[org_rel];
+		attribute<uint2>          d_kk            := Brondata/NVM/Subset_NoordNL/d_kk[org_rel];
+		attribute<uint2>          d_erfpacht      := Brondata/NVM/Subset_NoordNL/d_erfpacht[org_rel];
+		attribute<uint2>          d_isol_compl    := Brondata/NVM/Subset_NoordNL/d_isol_compl[org_rel];
 		
-		attribute<string>         pc4             := Brondata/NVM/Subset_NoordNL/pc4[nr_OrgEntity];
+		attribute<string>         pc4             := Brondata/NVM/Subset_NoordNL/pc4[org_rel];
 		attribute<uint32>         gemeente_rel    := point_in_polygon(geometry, /Brondata/regios/gemeenten/src_2016/Geometry);
 		attribute<string>         gemeente_name   := rjoin(gemeente_rel, id(Brondata/regios/gemeenten/src_2016), Brondata/regios/gemeenten/src_2016/GM_NAAM);
 		attribute<uint32>         buurt_rel       := point_in_polygon(geometry, /Brondata/regios/buurten/src_2016/Geometry);
@@ -57,17 +57,17 @@ container Aardbevingen : FreeData = "False"
 		attribute<string>           event     ;
 		attribute<uint32>           noord_nl_rel    := point_in_polygon(geometry, /Brondata/regios/provincies/src_2012/Noord_Nederland/Geometry);
 
-		unit<uint32> Noord_nederland := subset(IsDefined(noord_nl_rel))
+		unit<uint32> Noord_nederland := select_with_org_rel(IsDefined(noord_nl_rel))
 		,   DialogType      = "map"
 		,   DialogData      = "geometry"
 		,   SyncMode        = "none"
 		{
-			attribute<geography/rdc>    geometry  := ../geometry[nr_OrgEntity];
+			attribute<geography/rdc>    geometry  := ../geometry[org_rel];
 			attribute<string>           name      := 'Q' + replace(date, '/', '');
-			attribute<string>           date      := ../date_[nr_OrgEntity];
-			attribute<int32>            depth     := ../depth[nr_OrgEntity];
-			attribute<float64>          magnitude := ../magnitude[nr_OrgEntity];
-			attribute<string>           event     := ../event[nr_OrgEntity];
+			attribute<string>           date      := ../date_[org_rel];
+			attribute<int32>            depth     := ../depth[org_rel];
+			attribute<float64>          magnitude := ../magnitude[org_rel];
+			attribute<string>           event     := ../event[org_rel];
 			
 			attribute<uint32>           quake_year      := substr(date, 0, 4)[uint32];
 			attribute<uint32>           quake_month     := substr(date, 5, 2)[uint32];
@@ -122,14 +122,14 @@ container Aardbevingen : FreeData = "False"
 		parameter<float32>        c4a              := -1.2274f;
 		parameter<float32>        c4b              := -1.7343f;
 		
-		unit<uint32> QuakeBeforeTrans_selection := subset(QuakeBeforeTrans)
+		unit<uint32> QuakeBeforeTrans_selection := select_with_org_rel(QuakeBeforeTrans)
 		{
-			attribute<int32>         trans_yearmonth  := (../trans_yearmonth[nr_OrgEntity])[int32];
-			attribute<int32>         trans_year       := (../trans_year[nr_OrgEntity])[int32];
-			attribute<int32>         trans_month      := (../trans_month[nr_OrgEntity])[int32];
-			attribute<int32>         quake_yearmonth  := (../quake_yearmonth[nr_OrgEntity])[int32];
-			attribute<int32>         quake_year       := (../quake_year[nr_OrgEntity])[int32];
-			attribute<int32>         quake_month      := (../quake_month[nr_OrgEntity])[int32];
+			attribute<int32>         trans_yearmonth  := (../trans_yearmonth[org_rel])[int32];
+			attribute<int32>         trans_year       := (../trans_year[org_rel])[int32];
+			attribute<int32>         trans_month      := (../trans_month[org_rel])[int32];
+			attribute<int32>         quake_yearmonth  := (../quake_yearmonth[org_rel])[int32];
+			attribute<int32>         quake_year       := (../quake_year[org_rel])[int32];
+			attribute<int32>         quake_month      := (../quake_month[org_rel])[int32];
 			
 			attribute<int32>         YearsBeforeTrans := trans_year - quake_year;
 			attribute<int32>         MontsBeforeTrans := trans_month[int32] - quake_month[int32];

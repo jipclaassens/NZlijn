@@ -11,10 +11,10 @@ container rekenschemas: isHidden = "True", using = "eenheden;geography"
 		parameter<string> station_varname_org;
 		unit<uint32> target_domain;
 		//
-		// unit<uint32> subset  := Subset(Brondata/Metrostations/All_stations/uq/name == station_varname)
-		unit<uint32> subset  := Subset(Brondata/Metrostations/All_stations/name == station_varname_org)
+		// unit<uint32> subset  := select_with_org_rel(Brondata/Metrostations/All_stations/uq/name == station_varname)
+		unit<uint32> subset  := select_with_org_rel(Brondata/Metrostations/All_stations/name == station_varname_org)
 		{
-			attribute<geography/rdc>    geometry                        := Brondata/Metrostations/All_stations/geometry[nr_OrgEntity];
+			attribute<geography/rdc>    geometry                        := Brondata/Metrostations/All_stations/geometry[org_rel];
 			attribute<float32>          x                               := PointCol(geometry);
 			attribute<float32>          y                               := PointRow(geometry);
 			

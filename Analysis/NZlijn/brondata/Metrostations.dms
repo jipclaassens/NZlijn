@@ -18,50 +18,50 @@ container Metrostations
 		attribute<uint8>            station_rel                     := rlookup(name, typeringen/metro_stations/name);
 		attribute<bool>             bestaand                        := typeringen/metro_stations/bestaand[station_rel];
 		
-		unit<uint32>   NZL_stations_bestaand := Subset(NZL_stations_src/bestaand)
+		unit<uint32>   NZL_stations_bestaand := select_with_org_rel(NZL_stations_src/bestaand)
 		{
-			attribute<geography/rdc>   geometry    := NZL_stations_src/geometry[nr_OrgEntity];
-			attribute<string>           name        := NZL_stations_src/name[nr_OrgEntity];
+			attribute<geography/rdc>   geometry    := NZL_stations_src/geometry[org_rel];
+			attribute<string>           name        := NZL_stations_src/name[org_rel];
 		}
 	}
 	
-	unit<uint32> Lijn50 := subset(Tram_metro_stations_2017/metro/Islijn50)
+	unit<uint32> Lijn50 := select_with_org_rel(Tram_metro_stations_2017/metro/Islijn50)
 	,	DialogData = "geometry"
 	,	DialogType = "map"
 	{
-		attribute<geography/rdc>    geometry                := Tram_metro_stations_2017/metro/geometry[nr_OrgEntity];
-		attribute<string>           name                    := Tram_metro_stations_2017/metro/name[nr_OrgEntity];
+		attribute<geography/rdc>    geometry                := Tram_metro_stations_2017/metro/geometry[org_rel];
+		attribute<string>           name                    := Tram_metro_stations_2017/metro/name[org_rel];
 	}
-	unit<uint32> Lijn51 := subset(Tram_metro_stations_2017/metro/Islijn51)
+	unit<uint32> Lijn51 := select_with_org_rel(Tram_metro_stations_2017/metro/Islijn51)
 	,	DialogData = "geometry"
 	,	DialogType = "map"
 	{
-		attribute<geography/rdc>    geometry                := Tram_metro_stations_2017/metro/geometry[nr_OrgEntity];
-		attribute<string>           name                    := Tram_metro_stations_2017/metro/name[nr_OrgEntity];
+		attribute<geography/rdc>    geometry                := Tram_metro_stations_2017/metro/geometry[org_rel];
+		attribute<string>           name                    := Tram_metro_stations_2017/metro/name[org_rel];
 	}
 	
-	unit<uint32> Lijn52 := subset(IsDefined(NZL_stations_src/name))
+	unit<uint32> Lijn52 := select_with_org_rel(IsDefined(NZL_stations_src/name))
 	,	DialogData = "geometry"
 	,	DialogType = "map"
 	{
-		attribute<geography/rdc>    geometry                 := NZL_stations_src/geometry[nr_OrgEntity];
-		attribute<string>           name                     := NZL_stations_src/name_short[nr_OrgEntity];
+		attribute<geography/rdc>    geometry                 := NZL_stations_src/geometry[org_rel];
+		attribute<string>           name                     := NZL_stations_src/name_short[org_rel];
 		// attribute<string>           name                     : ['Zuid','Centraal','Europaplein','Noorderpark','Noord','Rokin','Vijzelgracht','DePijp'];
 	}
 	
-	unit<uint32> Lijn53 := subset(Tram_metro_stations_2017/metro/Islijn53)
+	unit<uint32> Lijn53 := select_with_org_rel(Tram_metro_stations_2017/metro/Islijn53)
 	,	DialogData = "geometry"
 	,	DialogType = "map"
 	{
-		attribute<geography/rdc>    geometry                := Tram_metro_stations_2017/metro/geometry[nr_OrgEntity];
-		attribute<string>           name                    := Tram_metro_stations_2017/metro/name[nr_OrgEntity];
+		attribute<geography/rdc>    geometry                := Tram_metro_stations_2017/metro/geometry[org_rel];
+		attribute<string>           name                    := Tram_metro_stations_2017/metro/name[org_rel];
 	}
-	unit<uint32> Lijn54 := subset(Tram_metro_stations_2017/metro/Islijn54)
+	unit<uint32> Lijn54 := select_with_org_rel(Tram_metro_stations_2017/metro/Islijn54)
 	,	DialogData = "geometry"
 	,	DialogType = "map"
 	{
-		attribute<geography/rdc>    geometry                := Tram_metro_stations_2017/metro/geometry[nr_OrgEntity];
-		attribute<string>           name                    := Tram_metro_stations_2017/metro/name[nr_OrgEntity];
+		attribute<geography/rdc>    geometry                := Tram_metro_stations_2017/metro/geometry[org_rel];
+		attribute<string>           name                    := Tram_metro_stations_2017/metro/name[org_rel];
 	}
 	
 	unit<uint32> All_stations := union_unit(Lijn50, Lijn51, Lijn52, Lijn53, Lijn54)
@@ -104,16 +104,16 @@ container Metrostations
 		attribute<geography/rdc>   geometry_rdc                    := LatLongWgs842RD(point, geography/rdc);
 		attribute<string>           LNG_LAT                        := LNG + '_' + LAT;
 		
-		unit<uint32> metro  := Subset(./modaliteit == 'Metro')
+		unit<uint32> metro  := select_with_org_rel(./modaliteit == 'Metro')
 		, SyncMode = "None"
 		,	DialogData = "geometry"
 		,	DialogType = "map"
 		{
-			attribute<geography/rdc>   geometry                    := ../geometry_rdc[nr_OrgEntity];
+			attribute<geography/rdc>   geometry                    := ../geometry_rdc[org_rel];
 			attribute<string>          id := string(id(.));
-			attribute<string>          modaliteit                  := ../modaliteit[nr_OrgEntity];
-			attribute<string>          lijn                        := ../lijn[nr_OrgEntity];
-			attribute<string>          LNG_LAT                     := ../LNG_LAT[nr_OrgEntity];
+			attribute<string>          modaliteit                  := ../modaliteit[org_rel];
+			attribute<string>          lijn                        := ../lijn[org_rel];
+			attribute<string>          LNG_LAT                     := ../LNG_LAT[org_rel];
 			
 			attribute<bool>            IsLijn50                    := IsDefined(strpos(Lijn, '50'));
 			attribute<bool>            IsLijn51                    := IsDefined(strpos(Lijn, '51'));
@@ -125,9 +125,9 @@ container Metrostations
 			attribute<string>          name                        := replace(Label, ' ', '');
 		}
 		
-		unit<uint32> tram  := Subset(./modaliteit == 'Tram')
+		unit<uint32> tram  := select_with_org_rel(./modaliteit == 'Tram')
 		{
-			attribute<geography/rdc>   geometry                    := ../geometry_rdc[nr_OrgEntity];
+			attribute<geography/rdc>   geometry                    := ../geometry_rdc[org_rel];
 			
 
 		}
@@ -148,30 +148,30 @@ container Metrostations
 		attribute<geography/rdc>   point                           := point(x, y, geography/rdc);
 		attribute<geography/rdc>   geometry_rdc                    := LatLongWgs842RD(point, geography/rdc);
 		
-		unit<uint32> metro  := Subset(./modaliteit == 'Metro')
+		unit<uint32> metro  := select_with_org_rel(./modaliteit == 'Metro')
 		, SyncMode = "None"
 		,	DialogData = "geometry"
 		,	DialogType = "map"
 		{
-			attribute<geography/rdc>   geometry     := ../geometry_rdc[nr_OrgEntity];
-			attribute<string>          lijn         := ../lijn[nr_OrgEntity];
+			attribute<geography/rdc>   geometry     := ../geometry_rdc[org_rel];
+			attribute<string>          lijn         := ../lijn[org_rel];
 			attribute<bool>            IsLijn52     := IsDefined(strpos(Lijn, '52'));
 			
 			container Distance2nvm          := Rekenschemas/CalculateDistance(., NVM/Subset_Amsterdam);
 			container Distance2sgpoints     := Rekenschemas/CalculateDistance(., geography/sg_points);
 			
-			unit<uint32> nz := subset(IsLijn52)
+			unit<uint32> nz := select_with_org_rel(IsLijn52)
 			{
-				attribute<geography/rdc>   geometry     := ../geometry[nr_OrgEntity];
+				attribute<geography/rdc>   geometry     := ../geometry[org_rel];
 				
 				container Distance2nvm          := Rekenschemas/CalculateDistance(., NVM/Subset_Amsterdam);
 				container Distance2sgpoints     := Rekenschemas/CalculateDistance(., geography/sg_points);
 			}
 		}
 		
-		unit<uint32> tram  := Subset(./modaliteit == 'Tram')
+		unit<uint32> tram  := select_with_org_rel(./modaliteit == 'Tram')
 		{
-			attribute<geography/rdc>   geometry                    := ../geometry_rdc[nr_OrgEntity];
+			attribute<geography/rdc>   geometry                    := ../geometry_rdc[org_rel];
 			container Tram_Distance2nvm          := Rekenschemas/CalculateDistance(Tram, NVM/Subset_Amsterdam);
 			container Tram_Distance2sgpoints     := Rekenschemas/CalculateDistance(Tram, geography/sg_points);
 		}
@@ -192,13 +192,13 @@ container Metrostations
 		attribute<string>     naam : DialogType = "LabelText";
 		attribute<bool>       IsLijn52     := IsDefined(strpos(Lijn, '52'));
 		
-		unit<uint32> Lijn52_src  := Subset(IsLijn52)
+		unit<uint32> Lijn52_src  := select_with_org_rel(IsLijn52)
 		, SyncMode = "None"
 		,	DialogData = "geometry"
 		,	DialogType = "map"
 		{
-			attribute<rdc>        geometry   := ../geometry_rd[nr_OrgEntity];
-			attribute<string>          naam       := ../naam[nr_OrgEntity], DialogType = "LabelText";
+			attribute<rdc>        geometry   := ../geometry_rd[org_rel];
+			attribute<string>          naam       := ../naam[org_rel], DialogType = "LabelText";
 		}
 		
 		unit<uint32> Lijn52  := unique(Lijn52_src/geometry)

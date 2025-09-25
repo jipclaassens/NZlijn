@@ -25,12 +25,12 @@ container ARRA : using = "typeringen;geography"
 		
 		attribute<uint32>        wp_per_ha (NL_grid/domain) := sum(werkzame_personen, NL_grid_domain_rel), StorageName = "%SourceDataDir%/ARRA/wp_per_ha_2016.tif";
 
-		unit<uint32>  subset := subset(werkzame_personen >= 100)
+		unit<uint32>  subset := select_with_org_rel(werkzame_personen >= 100)
 		,  DialogType      = "map"
 		,  DialogData      = "geometry"
 		{
-			attribute<geography/rdc> geometry             := ../geometry[nr_OrgEntity];
-			attribute<uint32>        werkzame_personen    := ../werkzame_personen[nr_OrgEntity];
+			attribute<geography/rdc> geometry             := ../geometry[org_rel];
+			attribute<uint32>        werkzame_personen    := ../werkzame_personen[org_rel];
 		}
 	}
 

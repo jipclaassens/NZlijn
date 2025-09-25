@@ -57,11 +57,11 @@ container geography : using = "eenheden"
 		}
 	}
 
-	unit<uint32> sg_points := Subset(isDefined(NL_grid/domain/point_rd))
+	unit<uint32> sg_points := select_with_org_rel(isDefined(NL_grid/domain/point_rd))
 	// ,	StorageName = "%LocalDataDir%/Amsterdam_points_100m.fss"
 	{
-		attribute<geography/rdc> 	geometry  := NL_grid/domain/point_rd[nr_OrgEntity];	
-		attribute<uint32>           id        := NL_grid/domain/identificatie[nr_OrgEntity];
+		attribute<geography/rdc> 	geometry  := NL_grid/domain/point_rd[org_rel];	
+		attribute<uint32>           id        := NL_grid/domain/identificatie[org_rel];
 		
 		attribute<float32>          x         := PointCol(geometry);
 		attribute<float32>          y         := PointRow(geometry);
@@ -70,35 +70,35 @@ container geography : using = "eenheden"
 		attribute<brondata/regios/postcode_gebieden/postcode4_areas>  pc4_rel  := point_in_polygon(geometry, brondata/regios/postcode_gebieden/postcode4_areas/geometry);
 	}
 	
-	unit<uint32> sg_points_25m := Subset(isDefined(NL_grid/domain_25m/point_rd))
+	unit<uint32> sg_points_25m := select_with_org_rel(isDefined(NL_grid/domain_25m/point_rd))
 	// ,	StorageName = "%LocalDataDir%/Amsterdam_points_25m.fss"
 	{
-		attribute<geography/rdc> 	geometry     := NL_grid/domain_25m/point_rd[nr_OrgEntity];	
+		attribute<geography/rdc> 	geometry     := NL_grid/domain_25m/point_rd[org_rel];	
 		attribute<NL_grid/domain_25m>  NL_grid_domain_25m_rel := geometry[Geography/NL_grid/domain_25m];
 	}
 	
-	unit<uint32> sg_points_200m := Subset(isDefined(NL_grid/domain_200m/point_rd))
+	unit<uint32> sg_points_200m := select_with_org_rel(isDefined(NL_grid/domain_200m/point_rd))
 	// ,	StorageName = "%LocalDataDir%/Amsterdam_points_200m.fss"
 	{
-		attribute<geography/rdc> 	geometry     := NL_grid/domain_200m/point_rd[nr_OrgEntity];	
-		attribute<uint32>           id           := NL_grid/domain_200m/identificatie[nr_OrgEntity];
+		attribute<geography/rdc> 	geometry     := NL_grid/domain_200m/point_rd[org_rel];	
+		attribute<uint32>           id           := NL_grid/domain_200m/identificatie[org_rel];
 		attribute<NL_grid/domain_200m>  NL_grid_domain_200m_rel := geometry[Geography/NL_grid/domain_200m];
 	}
 	
-	unit<uint32> sg_points_500m := Subset(isDefined(NL_grid/domain_500m/point_rd))
+	unit<uint32> sg_points_500m := select_with_org_rel(isDefined(NL_grid/domain_500m/point_rd))
 	// ,	StorageName = "%LocalDataDir%/Amsterdam_points_500m.fss"
 	{
-		attribute<geography/rdc> 	geometry     := NL_grid/domain_500m/point_rd[nr_OrgEntity];	
-		attribute<uint32>           id           := NL_grid/domain_500m/identificatie[nr_OrgEntity];
+		attribute<geography/rdc> 	geometry     := NL_grid/domain_500m/point_rd[org_rel];	
+		attribute<uint32>           id           := NL_grid/domain_500m/identificatie[org_rel];
 		attribute<NL_grid/domain_500m>  NL_grid_domain_500m_rel := geometry[Geography/NL_grid/domain_500m];
 	}
 	
-	unit<uint32> sg_points_1k := Subset(isDefined(NL_grid/domain_1000m/point_rd))
+	unit<uint32> sg_points_1k := select_with_org_rel(isDefined(NL_grid/domain_1000m/point_rd))
 	// ,	StorageName = "%LocalDataDir%/Amsterdam_points_1k.fss"
 	{
-		attribute<geography/rdc> 	geometry     := NL_grid/domain_1000m/point_rd[nr_OrgEntity];	
-		attribute<uint32>           id           := NL_grid/domain_1000m/identificatie[nr_OrgEntity];
-		attribute<float32>          pop          := NL_grid/domain_1000m/inwoners2017[nr_OrgEntity];
+		attribute<geography/rdc> 	geometry     := NL_grid/domain_1000m/point_rd[org_rel];	
+		attribute<uint32>           id           := NL_grid/domain_1000m/identificatie[org_rel];
+		attribute<float32>          pop          := NL_grid/domain_1000m/inwoners2017[org_rel];
 	}
 	
 	unit<uint32> selectie_polygoon : nrofrows = 1

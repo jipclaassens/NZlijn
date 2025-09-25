@@ -164,16 +164,16 @@ container NVM: using = "eenheden"
 		attribute<Brondata/Regios/buurt>           buurt_rel        := point_in_polygon(geometry, /Brondata/Regios/buurt/Geometry);
 	}
 	
-	unit<uint32> Read_Data_with_residuals 
-	: StorageName = "C:/Users/Jip Claassens/OneDrive - Objectvision/VU/Projects/202110-NZpaper/Data/DiD_Prijzen_30min_12_24min_20240926_slim_residuals.csv"
-	, StorageType = "gdal.vect"
-	, StorageReadOnly = "true"
-	{
-	}
-	unit<uint32> WithResiduals := select_with_attr_by_cond(Read_Data_with_residuals, IsDefined(float32(Read_Data_with_residuals/residuals)))
-	{
-		attribute<rdc> geometry := point_xy(float32(x), float32(y), rdc);
-		attribute<float32> resi := float32(residuals);
+	// unit<uint32> Read_Data_with_residuals 
+	// : StorageName = "C:/Users/Jip Claassens/OneDrive - Objectvision/VU/Projects/202110-NZpaper/Data/DiD_Prijzen_30min_12_24min_20240926_slim_residuals.csv"
+	// , StorageType = "gdal.vect"
+	// , StorageReadOnly = "true"
+	// {
+	// }
+	// unit<uint32> WithResiduals := select_with_attr_by_cond(Read_Data_with_residuals, IsDefined(float32(Read_Data_with_residuals/residuals)))
+	// {
+		// attribute<rdc> geometry := point_xy(float32(x), float32(y), rdc);
+		// attribute<float32> resi := float32(residuals);
 		
-	}
+	// }
 }

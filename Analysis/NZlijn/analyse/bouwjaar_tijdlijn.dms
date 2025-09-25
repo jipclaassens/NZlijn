@@ -22,12 +22,12 @@ container Bouwjaar_tijdlijn:  using = "eenheden;typeringen"
 		parameter<string> year_name;
 		////
 		
-		unit<uint32> Pand_per_jaar := subset(bouwjaar_trunc <= int16(year))
+		unit<uint32> Pand_per_jaar := select_with_org_rel(bouwjaar_trunc <= int16(year))
 		, DialogType = "map"
 		, DialogData = "geometry"
 		{
-			attribute<geography/rdc>        geometry       (poly)                 := Bouwjaar_tijdlijn/geometry[nr_OrgEntity];
-			attribute<bj>                   bouwjaar                              := Bouwjaar_tijdlijn/bouwjaar_trunc[nr_OrgEntity];
+			attribute<geography/rdc>        geometry       (poly)                 := Bouwjaar_tijdlijn/geometry[org_rel];
+			attribute<bj>                   bouwjaar                              := Bouwjaar_tijdlijn/bouwjaar_trunc[org_rel];
 		}
 	}
 	

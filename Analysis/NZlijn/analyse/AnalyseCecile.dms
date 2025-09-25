@@ -35,9 +35,9 @@ Container Analyse_Cecile
 	container Distance2Haarlemmerliede := Rekenschemas/CalculateDistance(HaarlemmerliedeSpaarnwoude/points/uq, transactie_uq);
 	container Distance2Waterland       := Rekenschemas/CalculateDistance(Waterland/points/uq, transactie_uq);
 	
-	unit<uint32> Amsterdam := subset(gemeente_naam == "Amsterdam")
+	unit<uint32> Amsterdam := select_with_org_rel(gemeente_naam == "Amsterdam")
 	{
-		attribute<geography/rdc>   geometry  (polygon) := gemeente_geometry[nr_OrgEntity];
+		attribute<geography/rdc>   geometry  (polygon) := gemeente_geometry[org_rel];
 		unit<uint32> points := sequence2points(geometry)
 		{
 			attribute<geography/rdc>  geometry := point;
@@ -47,9 +47,9 @@ Container Analyse_Cecile
 			}
 		}
 	}
-	unit<uint32> Amstelveen := subset(gemeente_naam == "Amstelveen")
+	unit<uint32> Amstelveen := select_with_org_rel(gemeente_naam == "Amstelveen")
 	{
-		attribute<geography/rdc>   geometry  (polygon) := gemeente_geometry[nr_OrgEntity];
+		attribute<geography/rdc>   geometry  (polygon) := gemeente_geometry[org_rel];
 		unit<uint32> points := sequence2points(geometry)
 		{
 			attribute<geography/rdc>  geometry := point;
@@ -59,9 +59,9 @@ Container Analyse_Cecile
 			}
 		}
 	}
-	unit<uint32> Diemen := subset(gemeente_naam == "Diemen")
+	unit<uint32> Diemen := select_with_org_rel(gemeente_naam == "Diemen")
 	{
-		attribute<geography/rdc>   geometry  (polygon) := gemeente_geometry[nr_OrgEntity];
+		attribute<geography/rdc>   geometry  (polygon) := gemeente_geometry[org_rel];
 		unit<uint32> points := sequence2points(geometry)
 		{
 			attribute<geography/rdc>  geometry := point;
@@ -71,9 +71,9 @@ Container Analyse_Cecile
 			}
 		}
 	}
-	unit<uint32> OuderAmstel := subset(gemeente_naam == "Ouder-Amstel")
+	unit<uint32> OuderAmstel := select_with_org_rel(gemeente_naam == "Ouder-Amstel")
 	{
-		attribute<geography/rdc>   geometry  (polygon) := gemeente_geometry[nr_OrgEntity];
+		attribute<geography/rdc>   geometry  (polygon) := gemeente_geometry[org_rel];
 		unit<uint32> points := sequence2points(geometry)
 		{
 			attribute<geography/rdc>  geometry := point;
@@ -83,9 +83,9 @@ Container Analyse_Cecile
 			}
 		}
 	}
-	unit<uint32> Landsmeer := subset(gemeente_naam == "Landsmeer")
+	unit<uint32> Landsmeer := select_with_org_rel(gemeente_naam == "Landsmeer")
 	{
-		attribute<geography/rdc>   geometry  (polygon) := gemeente_geometry[nr_OrgEntity];
+		attribute<geography/rdc>   geometry  (polygon) := gemeente_geometry[org_rel];
 		unit<uint32> points := sequence2points(geometry)
 		{
 			attribute<geography/rdc>  geometry := point;
@@ -95,9 +95,9 @@ Container Analyse_Cecile
 			}
 		}
 	}
-	unit<uint32> Oostzaan := subset(gemeente_naam == "Oostzaan")
+	unit<uint32> Oostzaan := select_with_org_rel(gemeente_naam == "Oostzaan")
 	{
-		attribute<geography/rdc>   geometry  (polygon) := gemeente_geometry[nr_OrgEntity];
+		attribute<geography/rdc>   geometry  (polygon) := gemeente_geometry[org_rel];
 		unit<uint32> points := sequence2points(geometry)
 		{
 			attribute<geography/rdc>  geometry := point;
@@ -107,9 +107,9 @@ Container Analyse_Cecile
 			}
 		}
 	}
-	unit<uint32> Zaanstad := subset(gemeente_naam == "Zaanstad")
+	unit<uint32> Zaanstad := select_with_org_rel(gemeente_naam == "Zaanstad")
 	{
-		attribute<geography/rdc>   geometry  (polygon) := gemeente_geometry[nr_OrgEntity];
+		attribute<geography/rdc>   geometry  (polygon) := gemeente_geometry[org_rel];
 		unit<uint32> points := sequence2points(geometry)
 		{
 			attribute<geography/rdc>  geometry := point;
@@ -119,9 +119,9 @@ Container Analyse_Cecile
 			}
 		}
 	}
-	unit<uint32> Haarlemmermeer := subset(gemeente_naam == "Haarlemmermeer")
+	unit<uint32> Haarlemmermeer := select_with_org_rel(gemeente_naam == "Haarlemmermeer")
 	{
-		attribute<geography/rdc>   geometry  (polygon) := gemeente_geometry[nr_OrgEntity];
+		attribute<geography/rdc>   geometry  (polygon) := gemeente_geometry[org_rel];
 		unit<uint32> points := sequence2points(geometry)
 		{
 			attribute<geography/rdc>  geometry := point;
@@ -131,9 +131,9 @@ Container Analyse_Cecile
 			}
 		}
 	}
-	unit<uint32> HaarlemmerliedeSpaarnwoude := subset(gemeente_naam == "Haarlemmerliede en Spaarnwoude")
+	unit<uint32> HaarlemmerliedeSpaarnwoude := select_with_org_rel(gemeente_naam == "Haarlemmerliede en Spaarnwoude")
 	{
-		attribute<geography/rdc>   geometry  (polygon) := gemeente_geometry[nr_OrgEntity];
+		attribute<geography/rdc>   geometry  (polygon) := gemeente_geometry[org_rel];
 		unit<uint32> points := sequence2points(geometry)
 		{
 			attribute<geography/rdc>  geometry := point;
@@ -143,9 +143,9 @@ Container Analyse_Cecile
 			}
 		}
 	}
-	unit<uint32> Waterland := subset(gemeente_naam == "Waterland")
+	unit<uint32> Waterland := select_with_org_rel(gemeente_naam == "Waterland")
 	{
-		attribute<geography/rdc>   geometry  (polygon) := gemeente_geometry[nr_OrgEntity];
+		attribute<geography/rdc>   geometry  (polygon) := gemeente_geometry[org_rel];
 		unit<uint32> points := sequence2points(geometry)
 		{
 			attribute<geography/rdc>  geometry := point;

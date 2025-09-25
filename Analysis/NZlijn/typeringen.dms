@@ -30,16 +30,16 @@ container typeringen: using = "eenheden"
 		attribute<bool>   IsLijn53   := IsDefined(rlookup(name, /Brondata/Metrostations/Lijn53/name));
 		attribute<bool>   IsLijn54   := IsDefined(rlookup(name, /Brondata/Metrostations/Lijn54/name));
 		
-		unit<uint32> NZ_stations := subset(IsLijn52)
+		unit<uint32> NZ_stations := select_with_org_rel(IsLijn52)
 		{
-			attribute<string> name       := ../name[nr_OrgEntity];
-			attribute<string> var_name   := ../var_name[nr_OrgEntity];
+			attribute<string> name       := ../name[org_rel];
+			attribute<string> var_name   := ../var_name[org_rel];
 			attribute<string> Label      := name, DialogType = "LabelText";
 		}
-		unit<uint32> lijn50_stations := subset(IsLijn50)
+		unit<uint32> lijn50_stations := select_with_org_rel(IsLijn50)
 		{
-			attribute<string> name       := ../name[nr_OrgEntity];
-			attribute<string> var_name   := ../var_name[nr_OrgEntity];
+			attribute<string> name       := ../name[org_rel];
+			attribute<string> var_name   := ../var_name[org_rel];
 		}
 	}
 	
@@ -166,10 +166,10 @@ container typeringen: using = "eenheden"
 		attribute<bool>              IsSemiDetached      :  [false, false, true, false, false];
 	}
 	
-	unit<uint8> WP4 := subset(id(WP) <> WP/V/geen_woonpand) 
+	unit<uint8> WP4 := select_with_org_rel(id(WP) <> WP/V/geen_woonpand) 
 	{
 		attribute<uint8>             id                  := id(.);
-		attribute<WP>                WP_rel              := nr_OrgEntity;
+		attribute<WP>                WP_rel              := org_rel;
 		attribute<string>            name                := WP/name[WP_rel];
 		attribute<string>            abbrev              : ['vrij', 'Tweeo1', 'rij', 'app']; //BR@Jip, 20190110: graag deze abbreviation onnodig maken en verwijderen
 		attribute<string>            name_english        := WP/name_english[WP_rel];

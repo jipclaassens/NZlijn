@@ -119,12 +119,12 @@ container Regios
 		
 		attribute<.>                    grid      (NL_grid/domain) 	:= poly2grid(geometry, NL_grid/domain);
 		
-		unit<uint32> MRA := subset(IsDefined(Amsterdam_rel))
+		unit<uint32> MRA := select_with_org_rel(IsDefined(Amsterdam_rel))
 		{
-			attribute<geography/rdc>       geometry  (poly) := ../geometry[nr_OrgEntity];
-			attribute<geography/rdc>       centroid         := ../centroid[nr_OrgEntity];
+			attribute<geography/rdc>       geometry  (poly) := ../geometry[org_rel];
+			attribute<geography/rdc>       centroid         := ../centroid[org_rel];
 			attribute<Buurten/src_2021>    buurt_rel        := point_in_polygon(centroid, Buurten/src_2021/geometry);
-			attribute<string>              label            := ../label[nr_OrgEntity], DialogType = "LabelText";
+			attribute<string>              label            := ../label[org_rel], DialogType = "LabelText";
 		}
 	}	
 	unit<uint32> Stadsdelen

@@ -24,7 +24,7 @@ container Netwerk :	Using      = "Eenheden;Typeringen",	isTemplate = "True"
 
 	// end case parameters
 	
-	attribute<geography/rdc> NetwerkSpec (arc,OrgToDest/RoadsWithLocations):= OrgToDest/RoadsWithLocations/UnionData
+	attribute<geography/rdc> NetwerkSpec (arc,OrgToDest/RoadsWithLocations):= OrgToDest/RoadsWithLocations/geometry
 	{
 		parameter<color> PenColor := rgb(255,0,0), DialogType = "PenColor";
 		parameter<size>  PenSize  := value(1, size), DialogType = "PenWidth";

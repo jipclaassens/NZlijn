@@ -26,8 +26,8 @@ container MakeConnectedRoads
 	{
 		attribute<geography/rdc>                point;
 		attribute<geography/rdc>                nextpoint;
-		attribute<roadDomain>                    SequenceNr;
-		attribute<typeringen/wegtype>            wegtype       := roadDomain/wegtype[SequenceNr];
+		// attribute<roadDomain>                    SequenceNr;
+		attribute<typeringen/wegtype>            wegtype       := roadDomain/wegtype[Sequence_rel];
 		attribute<m>                             lengte        := arc_length(segments, m), DisableStorage = "True";
 		attribute<bool>                          isConnected   := all(pointset/isConnected, pointset/ArcID);
 
@@ -35,7 +35,7 @@ container MakeConnectedRoads
 		{
 			attribute<geography/rdc>   point        := Union_Data(pointset, LinkSet/point, LinkSet/nextpoint);
 			attribute<bool>             isConnected  := isNull(rlookup(point, NodesNotConnected/point));
-			attribute<roadDomain>       roadsnr      := Union_Data(pointset, LinkSet/SequenceNr, LinkSet/SequenceNr);
+			attribute<roadDomain>       roadsnr      := Union_Data(pointset, LinkSet/Sequence_rel, LinkSet/Sequence_rel);
 			attribute<LinkSet>          ArcID        := value(ID(pointset) % nrofrows(LinkSet), LinkSet);
 			attribute<uint32>           VolgNr       := ID(pointset) / nrofrows(LinkSet);
 		}
@@ -47,7 +47,7 @@ container MakeConnectedRoads
 	{
 		attribute<geography/rdc>   Values;
 		attribute<Linkset>          LinkSetnr := rlookup(Values, LinkSet/point);
-		attribute<roadDomain>       roadsnr := LinkSet/SequenceNr[LinkSetnr];
+		attribute<roadDomain>       roadsnr := LinkSet/Sequence_rel[LinkSetnr];
 	}
 	attribute<NodeSet> F1(LinkSet)  := rlookup(LinkSet/point,     NodeSet/Values);
 	attribute<NodeSet> F2(LinkSet)  := rlookup(LinkSet/nextpoint, NodeSet/Values);
@@ -59,20 +59,20 @@ container MakeConnectedRoads
 		parameter<uint32>   MaxNrNodex  := max(networks/nr_nodes);
 		parameter<networks> main        := rlookup(MaxNrNodex, nr_nodes); // we gaan ervan uit dat het netwerk met de meeste nodes het hoofd netwerk is
 	}
-	unit<uint32> NodesNotConnected := Subset(networks/partnr <> networks/main)
+	unit<uint32> NodesNotConnected := select_with_org_rel(networks/partnr <> networks/main)
 	{
-		attribute<geography/rdc> point := NodeSet/Values[Nr_OrgEntity];
+		attribute<geography/rdc> point := NodeSet/Values[org_rel];
 	}
-	unit<uint32> NodesNotConnectedNetwork_gt5km := Subset(networks/partnr <> networks/main && networks/lengte[networks/partnr] > float32(5000))
+	unit<uint32> NodesNotConnectedNetwork_gt5km := select_with_org_rel(networks/partnr <> networks/main && networks/lengte[networks/partnr] > float32(5000))
 	{
-		attribute<geography/rdc> point := NodeSet/Values[Nr_OrgEntity];
+		attribute<geography/rdc> point := NodeSet/Values[org_rel];
 	}
 	
-	unit<uint32> result := Subset(Linkset/isConnected)
+	unit<uint32> result := select_with_org_rel(Linkset/isConnected)
 	,	DialogType = "Map"
 	,	DialogData = "line"
 	{
-		attribute<geography/rdc>                line (arc) := Linkset/Segments[nr_OrgEntity];
-		attribute<typeringen/wegtype>            wegtype    := Linkset/wegtype[nr_OrgEntity];
+		attribute<geography/rdc>                line (arc) := Linkset/Segments[org_rel];
+		attribute<typeringen/wegtype>            wegtype    := Linkset/wegtype[org_rel];
 	}
 }
