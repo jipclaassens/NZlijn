@@ -1,7 +1,11 @@
 clear
 cd "D:\OneDrive\OneDrive - Objectvision\VU\Projects\202110-NZpaper" 
-
+cd "C:\Users\JipClaassens\OneDrive - Objectvision\VU\Projects\202110-NZpaper" //ovsrv08
+cd "C:\Users\jcs220\OneDrive - Objectvision\VU\Projects\202110-NZpaper" //Azure 
 **# Bookmark #7
+
+ssc install reghdfe, replace
+ssc install ftools 
 
 . import excel "Data\WN ToewijzingenWachttijd PC6 2017-2022Q2_edit.xlsx", sheet("Wachttijd PC6 2020-22 Q3") firstrow clear
 
@@ -98,36 +102,12 @@ drop if Gem_Wachttijd < 1
 g all_ta = 0
 g all_ca = 0
 
-
-
-/* Analyse zonder pc6 characteristics */
-
-
 local stations "noord noorderpark centraal rokin vijzelgracht depijp europaplein zuid all"
 foreach s of local stations{ 
 	replace all_ta = 1 if `s'_ta == 1
 	replace all_ca = 1 if `s'_ca == 1
 }
 
-
-local stations "noord noorderpark centraal rokin vijzelgracht depijp europaplein zuid all"
-foreach s of local stations{ 
-		
-
-		g treated = `s'_ta
-		g treattime = jaar > 2018
-		g did = treattime * treated
-
-		
-		g ca = `s'_ca + `s'_ta
-		
-		areg Gem_Wachttijd treated treattime did if ca == 1, r absorb(buurt_22_rel) 
-		outreg2 using did_wachttijden_base_2, excel cttop (`s') label dec(3) addtext (Year FE, Yes, Neighbourhood FE, Yes) keep(treat* did*) 
-	 drop treated treattime did ca
-	}
-
-
-	
 /* Analyse met pc6 characteristics */
 
 . destring fractie_app avg_opp_app median_bouwjaar_app, replace force
@@ -161,21 +141,62 @@ replace construction_period_label = "Construction unknown" if d_constr_unknown =
 encode construction_period_label, generate(construction_period)
 
 	
-local stations "noord noorderpark centraal rokin vijzelgracht depijp europaplein zuid all"
-foreach s of local stations{ 
-		
-		g treated = `s'_ta
-		g treattime = jaar > 2018
-		g did = treattime * treated
-
-		g ca = `s'_ca + `s'_ta
-		
-		areg Gem_Wachttijd avg_opp_app b1.construction_period treated treattime did if ca == 1, r absorb(buurt_22_rel) 
-		outreg2 using did_wachttijden_ext, excel cttop (`s') label dec(3) addtext (Property char., Yes, Year FE, Yes, Neighbourhood FE, Yes) keep(treat* did*)
-	 drop treated treattime did ca
-	}
-	
 // b1 stelt "Construction after 1998" (eerste categorie van construction_period) in als referentiecategorie
+// incl test voor collineariteit
+local stations "noord noorderpark centraal rokin vijzelgracht depijp europaplein zuid all"
+// local stations "rokin"
+foreach s of local stations{ 
+	
+	display "================================"
+	display "Start calculation of Station `s'"
+	display "================================"
+	
+	g treated = `s'_ta
+	g post = jaar > 2018
+	g did = post * treated
+
+	g ca = `s'_ca + `s'_ta
+		
+	* Within-residuals t.o.v. buurt + jaar
+	quietly reghdfe Gem_Wachttijd if ca==1, absorb(buurt_22_rel jaar) resid
+	predict double y_w if e(sample), resid
+
+	quietly reghdfe did            if ca==1, absorb(buurt_22_rel jaar) resid
+	predict double did_w   if e(sample), resid
+
+	quietly reghdfe avg_opp_app    if ca==1, absorb(buurt_22_rel jaar) resid
+	predict double avg_opp_app_w if e(sample), resid
+
+	* VIF op within-varianten
+	quietly reg y_w did_w c.avg_opp_app_w if ca==1
+	estat vif
+
+	* Aux: R²(did | X + FE)  → VIF_did
+	quietly reghdfe did c.avg_opp_app i.construction_period if ca==1, absorb(buurt_22_rel jaar)
+
+	* Robuust de juiste R² ophalen (within-R² als die bestaat)
+	scalar R2w = .
+	scalar R2w = e(r2_within)
+	scalar VIF_did = 1/(1 - R2w)
+    display "Within R2(did | X + FE) = " %6.3f R2w
+    display "VIF_did (given FE)     = " %6.2f VIF_did	
+	
+	* Maak mooie strings (of "n/a") en voeg die met addtext toe
+	local vif_str = cond(missing(VIF_did), "n/a", strofreal(VIF_did,"%6.2f"))
+	local r2w_str = cond(missing(R2w),    "n/a", strofreal(R2w,   "%6.3f"))	
+	
+// 	VIF ≈ 1–3 → geen zorg.
+// 	VIF > 5 (≈ R2>0.80) → opletten; collineariteit merkbaar.
+// 	VIF > 10 (≈ R2>0.90) → probleem: SE's zwellen sterk (SE ≈ sqrt(VIF)​ keer groter).
+// 	VIF > 20 (≈ R2>0.95) → zeer zwak geïdentificeerd.
+		
+	areg Gem_Wachttijd c.avg_opp_app b1.construction_period i.jaar i.treated did if ca == 1,r absorb(buurt_22_rel) 
+	
+	outreg2 using "output/wachttijden/did_wachttijden_ext_sept25", excel cttop("`s'") label dec(3) addtext("Property char.","Yes","Year FE","Yes","Neighbourhood FE","Yes","VIF_did (within)","`vif_str'","Within R2(did|X+FE)","`r2w_str'")
+
+	drop treated post did ca y_w did_w avg_opp_app_w _reghd* 
+}
+	
 	
 //descriptives
 
@@ -198,7 +219,28 @@ foreach s of local stations{
 	}
 
 
-	
+/* Analyse zonder pc6 characteristics */
+
+
+
+
+local stations "noord noorderpark centraal rokin vijzelgracht depijp europaplein zuid all"
+foreach s of local stations{ 
+		
+
+		g treated = `s'_ta
+		g treattime = jaar > 2018
+		g did = treattime * treated
+
+		
+		g ca = `s'_ca + `s'_ta
+		
+		areg Gem_Wachttijd treated treattime did if ca == 1, r absorb(buurt_22_rel) 
+		outreg2 using did_wachttijden_base_2, excel cttop (`s') label dec(3) addtext (Year FE, Yes, Neighbourhood FE, Yes) keep(treat* did*) 
+	 drop treated treattime did ca
+	}
+
+
 
 	
 // Achtergrondanalyses	

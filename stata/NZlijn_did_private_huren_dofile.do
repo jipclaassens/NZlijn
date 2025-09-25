@@ -1,5 +1,7 @@
 clear
 cd "D:\OneDrive\OneDrive - Objectvision\VU\Projects\202110-NZpaper" //laptop
+cd "C:\Users\Jip Claassens\OneDrive - Objectvision\VU\Projects\202110-NZpaper" //OVSRV06
+
 // cd "C:\Users\Jip Claassens\OneDrive - Objectvision\VU\Projects\202110-NZpaper" //ovsrv6
 
 // import excel "C:\Users\mln740\OneDrive - Vrije Universiteit Amsterdam\NZL_privatehuur\Huurtransacties_clean.xlsx", sheet("Brondata_WatsonHolmes_Huurtrans") firstrow
@@ -190,44 +192,8 @@ tab zone
 drop if zone == .
 
 
-
-/* Analyse zonder housing characteristics */
-
-
-g all_ta = 0
-g all_ca = 0
-
-
-local stations "noord noorderpark centraal rokin vijzelgracht depijp europaplein zuid all"
-foreach s of local stations{ 
-	replace all_ta = 1 if `s'_ta == 1
-	replace all_ca = 1 if `s'_ca == 1
-}
-
-
-local stations "noord noorderpark centraal rokin vijzelgracht depijp europaplein zuid all"
-foreach s of local stations{ 
-		
-	local dates "21072018"
-	foreach d of local dates{
-		g treated = `s'_ta
-		g treattime = trans_date >= td(`d')
-		g did = treattime * treated
-		
-		g ca = `s'_ca + `s'_ta
-		
-		areg lnhp treated treattime did i.trans_year i.trans_month if ca == 1, r absorb(buurt_22_rel)
-		outreg2 using output/did_rents_base, excel cttop (`s') label dec(3) addtext (Year FE, Yes, Month FE, Yes, Neighbourhood FE, Yes) keep(treat* did*) 
-		
-		drop did treated treattime ca
-	}	  
-}
-	
-
 	
 /* Analyse met housing characteristics */
-
-
 g d_constr_unknown = 0
 replace d_constr_unknown = 1 if bouwjaar == .  
 g d_constrlt1920 = 0
@@ -266,11 +232,96 @@ encode construction_period_label, generate(construction_period)
 
 encode pc6, generate(pc6_code)
 
+keep lnhp huurprijs lnsize gebruiksoppervlakte nkamers app kaleverhuur nieuwbouw construction_period* trans_year trans_month buurt_22_rel pc6_code noord_ta noord_ca noorderpark_ta noorderpark_ca centraal_ta centraal_ca rokin_ta rokin_ca vijzelgracht_ta vijzelgracht_ca depijp_ta depijp_ca europaplein_ta europaplein_ca zuid_ta zuid_ca trans_date
+
+g all_ta = 0
+g all_ca = 0
+
+
+local stations "noord noorderpark centraal rokin vijzelgracht depijp europaplein zuid all"
+foreach s of local stations{ 
+	replace all_ta = 1 if `s'_ta == 1
+	replace all_ca = 1 if `s'_ca == 1
+}
+
+
+gen ym = mofd(trans_date)
+format ym %tm
 
 // met pc6 SE clustering
 local stations "noord noorderpark centraal rokin vijzelgracht depijp europaplein zuid all"  
+// local stations "noord"  
 foreach s of local stations{ 
+// 	local dates "22042003 01082009 08072016 21072018"
  	local dates "21072018"
+	foreach d of local dates{
+
+		display "================================"
+		display "Start calculation of Station `s', for date `d'"
+		display "================================"
+	
+		g treated = `s'_ta
+		g post = trans_date >= td(`d')
+		g did = post * treated
+		
+		g ca = `s'_ca + `s'_ta
+		
+		* Within-residuals t.o.v. buurt + jaar + maand. Dummy vars hoeven niet mee te doen.
+		quietly reghdfe c.lnhp if ca==1, absorb(buurt_22_rel ym) resid
+		predict double y_w if e(sample), resid
+
+		quietly reghdfe did            if ca==1, absorb(buurt_22_rel ym) resid
+		predict double did_w   if e(sample), resid
+
+		quietly reghdfe c.lnsize    if ca==1, absorb(buurt_22_rel ym) resid
+		predict double lnsize_w if e(sample), resid
+
+		quietly reghdfe c.nkamers    if ca==1, absorb(buurt_22_rel ym) resid
+		predict double nrooms_w if e(sample), resid
+
+		* VIF op within-varianten
+		quietly reg y_w did_w c.lnsize_w c.nrooms_w if ca==1
+		estat vif
+
+		* Aux: R²(did | X + FE)  → VIF_did
+		quietly reghdfe did c.lnsize c.nkamers i.app i.kaleverhuur i.nieuwbouw b1.construction_period if ca==1, absorb(buurt_22_rel ym)
+
+		* Robuust de juiste R² ophalen (within-R² als die bestaat)
+		scalar R2w = .
+		scalar R2w = e(r2_within)
+		scalar VIF_did = 1/(1 - R2w)
+		display "Within R2(did | X + FE) = " %6.3f R2w
+		display "VIF_did (given FE)     = " %6.2f VIF_did	
+		
+		* Maak mooie strings (of "n/a") en voeg die met addtext toe
+		local vif_str = cond(missing(VIF_did), "n/a", strofreal(VIF_did,"%6.2f"))
+		local r2w_str = cond(missing(R2w),    "n/a", strofreal(R2w,   "%6.3f"))	
+		
+	// 	VIF ≈ 1–3 → geen zorg.
+	// 	VIF > 5 (≈ R2>0.80) → opletten; collineariteit merkbaar.
+	// 	VIF > 10 (≈ R2>0.90) → probleem: SE's zwellen sterk (SE ≈ sqrt(VIF)​ keer groter).
+	// 	VIF > 20 (≈ R2>0.95) → zeer zwak geïdentificeerd.
+					
+		areg c.lnhp i.did i.treated c.lnsize c.nkamers i.app i.kaleverhuur i.nieuwbouw b1.construction_period i.ym if ca == 1, absorb(buurt_22_rel) vce(cluster pc6_code)
+		outreg2 using Output\PrivateRents\did_rents_vce_sept25, excel cttop (`s', `d') label dec(3) addtext (Year-Month FE, Yes, Neighbourhood FE, Yes,"VIF_did (within)","`vif_str'","Within R2(did|X+FE)","`r2w_str'") 
+		
+		drop treated post did ca y_w did_w lnsize_w nrooms_w _reghd* 
+	}	  
+}
+
+
+// b1 stelt "Construction after 1998" (eerste categorie van construction_period) in als referentiecategorie
+
+
+
+
+
+
+/* Analyse zonder housing characteristics */
+local stations "noord noorderpark centraal rokin vijzelgracht depijp europaplein zuid all"
+foreach s of local stations{ 
+		
+	local dates "21072018"
 	foreach d of local dates{
 		g treated = `s'_ta
 		g treattime = trans_date >= td(`d')
@@ -278,13 +329,12 @@ foreach s of local stations{
 		
 		g ca = `s'_ca + `s'_ta
 		
-		areg lnhp lnsize nkamers app kaleverhuur nieuwbouw b1.construction_period treated treattime did i.trans_year i.trans_month if ca == 1, absorb(buurt_22_rel) vce(cluster pc6_code)
-		outreg2 using Output\PrivateRents\did_rents_vce, excel cttop (`s') label dec(3) addtext (Year FE, Yes, Month FE, Yes, Neighbourhood FE, Yes) keep(treat* did*)
-
+		areg lnhp treated treattime did i.trans_year i.trans_month if ca == 1, r absorb(buurt_22_rel)
+		outreg2 using output/did_rents_base, excel cttop (`s') label dec(3) addtext (Year FE, Yes, Month FE, Yes, Neighbourhood FE, Yes) keep(treat* did*) 
+		
 		drop did treated treattime ca
 	}	  
 }
-
 // zonder pc6 SE clustering
 local stations "noord noorderpark centraal rokin vijzelgracht depijp europaplein zuid all"  
 foreach s of local stations{ 
@@ -303,8 +353,6 @@ foreach s of local stations{
 	}	  
 }
 
-
-// b1 stelt "Construction after 1998" (eerste categorie van construction_period) in als referentiecategorie
 
 
 	

@@ -147,20 +147,54 @@ foreach s of local stations{
 local stations "noord noorderpark centraal rokin vijzelgracht depijp europaplein zuid all"
 // local stations "noord"
 foreach s of local stations{ 
-	local dates "22042003 01082009 08072016 21072018"
-// 	local dates "21072018"
+// 	local dates "22042003 01082009 08072016 21072018"
+	local dates "21072018"
 	foreach d of local dates{
+		
+		display "================================"
+		display "Start calculation of Station `s', for date `d'"
+		display "================================"
+	
 		g treated = `s'_ta
-		g treattime = trans_date >= td(`d')
-		g did = treattime * treated
+		g post = trans_date >= td(`d')
+		g did = post * treated
 		
 		g ca = `s'_ca + `s'_ta
 		
-// 		areg lnwon treated treattime did i.year if ca == 1, r absorb(buurt_rel)
-		areg lnwon treated treattime did i.year if ca == 1, absorb(buurt_rel) vce(cluster identificatie)
-		outreg2 using output/verdichting/did_windows_indiv_AccBased_${acc_range}min_buurt_${TAsize}_${CAsize}min_${filedate}_vce, excel cttop (`s', `d') label dec(3) addtext (Year FE, Yes, Neighbourhood FE, Yes) keep(treat* did*) 
+		* Within-residuals t.o.v. buurt + jaar + maand. Dummy vars hoeven niet mee te doen.
+		quietly reghdfe c.lnwon if ca==1, absorb(buurt_rel year) resid
+		predict double y_w if e(sample), resid
+
+		quietly reghdfe did            if ca==1, absorb(buurt_rel year) resid
+		predict double did_w   if e(sample), resid
+
+		* VIF op within-varianten
+		quietly reg y_w did_w  if ca==1
+		estat vif
+
+		* Aux: R²(did | X + FE)  → VIF_did
+		quietly reghdfe did if ca==1, absorb(buurt_rel year)
+
+		* Robuust de juiste R² ophalen (within-R² als die bestaat)
+		scalar R2w = .
+		scalar R2w = e(r2_within)
+		scalar VIF_did = 1/(1 - R2w)
+		display "Within R2(did | X + FE) = " %6.3f R2w
+		display "VIF_did (given FE)     = " %6.2f VIF_did	
 		
-		drop did* treated treattime* ca
+		* Maak mooie strings (of "n/a") en voeg die met addtext toe
+		local vif_str = cond(missing(VIF_did), "n/a", strofreal(VIF_did,"%6.2f"))
+		local r2w_str = cond(missing(R2w),    "n/a", strofreal(R2w,   "%6.3f"))	
+		
+	// 	VIF ≈ 1–3 → geen zorg.
+	// 	VIF > 5 (≈ R2>0.80) → opletten; collineariteit merkbaar.
+	// 	VIF > 10 (≈ R2>0.90) → probleem: SE's zwellen sterk (SE ≈ sqrt(VIF)​ keer groter).
+	// 	VIF > 20 (≈ R2>0.95) → zeer zwak geïdentificeerd.
+	
+		areg c.lnwon i.did i.treated i.year if ca == 1, absorb(buurt_rel) vce(cluster identificatie)
+		outreg2 using output/verdichting/did_windows_indiv_AccBased_${acc_range}min_buurt_${TAsize}_${CAsize}min_${filedate}_vce_sept25, excel cttop (`s', `d') label dec(3) addtext (Year FE, Yes, Neighbourhood FE, Yes,"VIF_did (within)","`vif_str'","Within R2(did|X+FE)","`r2w_str'") 
+		
+		drop treated post did ca y_w did_w _reghd* 
 	}
 }
 

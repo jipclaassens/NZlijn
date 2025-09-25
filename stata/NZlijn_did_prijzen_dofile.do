@@ -1,6 +1,7 @@
 capture log close
 cd "D:\OneDrive\OneDrive - Objectvision\VU\Projects\202110-NZpaper\" //LAPTOP
 cd "C:\Users\Jip Claassens\OneDrive - Objectvision\VU\Projects\202110-NZpaper" //OVSRV06
+cd "C:\Users\jcs220\OneDrive - Objectvision\VU\Projects\202110-NZpaper" //Azure 
 log using temp\nzlijn_did_prijzen_log.txt, text replace
 
 global filedate = 20241003 // 20240926  20240530 20241003  20241107
@@ -166,24 +167,68 @@ fvset base 1 construction_period
 
 // gen buurt_rel_augm = .
 
+
+gen ym = mofd(trans_date)
+format ym %tm
+
 // local stations "noorderpark"
 local stations "noord noorderpark centraal rokin vijzelgracht depijp europaplein zuid all"
 foreach s of local stations{ 
-	local dates "22042003 01082009 08072016 21072018"
-// 	local dates "21072018"
+// 	local dates "22042003 01082009 08072016 21072018"
+	local dates "21072018"
 	foreach d of local dates{
+		
+		display "================================"
+		display "Start calculation of Station `s', for date `d'"
+		display "================================"
+	
 		g treated = `s'_ta
-		g treattime = trans_date >= td(`d')
-		g did = treattime * treated
+		g post = trans_date >= td(`d')
+// 		g post = trans_date >= td(21jul2018)   // of exact jouw openingsdag
+		g did = post * treated
 		
 		g ca = `s'_ca + `s'_ta
 		
-// 		replace buurt_rel_augm = buurt_rel + 100000*`s'_ta
+		* Within-residuals t.o.v. buurt + jaar + maand. Dummy vars hoeven niet mee te doen.
+		quietly reghdfe lnprice if ca==1, absorb(buurt_rel ym) resid
+		predict double y_w if e(sample), resid
 
-		areg lnprice treated treattime did lnsize nrooms d_maintgood i.building_type b1.construction_period i.trans_year i.trans_month if ca == 1, absorb(buurt_rel) vce(cluster pc6_code)
-		outreg2 using output/prijzen/did_windows_indiv_AccBased_${acc_range}min_buurt_${TAsize}_${CAsize}min_${filedate}_vce, excel cttop (`s', `d') label dec(3) addtext (Year FE, Yes, Month FE, Yes, Neighbourhood FE, Yes) keep(treat* did*)  
+		quietly reghdfe did            if ca==1, absorb(buurt_rel ym) resid
+		predict double did_w   if e(sample), resid
+
+		quietly reghdfe lnsize    if ca==1, absorb(buurt_rel ym) resid
+		predict double lnsize_w if e(sample), resid
+
+		quietly reghdfe nrooms    if ca==1, absorb(buurt_rel ym) resid
+		predict double nrooms_w if e(sample), resid
+
+		* VIF op within-varianten
+		quietly reg y_w did_w c.lnsize_w c.nrooms_w if ca==1
+		estat vif
+
+		* Aux: R²(did | X + FE)  → VIF_did
+		quietly reghdfe did c.lnsize_w c.nrooms_w d_maintgood b1.building_type b1.construction_period if ca==1, absorb(buurt_rel ym)
+
+		* Robuust de juiste R² ophalen (within-R² als die bestaat)
+		scalar R2w = .
+		scalar R2w = e(r2_within)
+		scalar VIF_did = 1/(1 - R2w)
+		display "Within R2(did | X + FE) = " %6.3f R2w
+		display "VIF_did (given FE)     = " %6.2f VIF_did	
 		
-		drop did* treated treattime* ca
+		* Maak mooie strings (of "n/a") en voeg die met addtext toe
+		local vif_str = cond(missing(VIF_did), "n/a", strofreal(VIF_did,"%6.2f"))
+		local r2w_str = cond(missing(R2w),    "n/a", strofreal(R2w,   "%6.3f"))	
+		
+	// 	VIF ≈ 1–3 → geen zorg.
+	// 	VIF > 5 (≈ R2>0.80) → opletten; collineariteit merkbaar.
+	// 	VIF > 10 (≈ R2>0.90) → probleem: SE's zwellen sterk (SE ≈ sqrt(VIF)​ keer groter).
+	// 	VIF > 20 (≈ R2>0.95) → zeer zwak geïdentificeerd.
+					
+		areg lnprice treated did lnsize nrooms d_maintgood i.building_type b1.construction_period i.ym if ca == 1, absorb(buurt_rel) vce(cluster pc6_code) //post weglaten, want perfecte multicollineartiy met i.ym. Dus voegt niks toe.
+		outreg2 using output/prijzen/did_windows_indiv_AccBased_${acc_range}min_buurt_${TAsize}_${CAsize}min_${filedate}_vce_sept25_2, excel cttop (`s', `d') label dec(3) addtext (Year FE, Yes, Month FE, Yes, Neighbourhood FE, Yes,"VIF_did (within)","`vif_str'","Within R2(did|X+FE)","`r2w_str'") 
+
+		drop treated post did ca y_w did_w lnsize_w nrooms_w _reghd* 
 	}
 }
 
