@@ -33,6 +33,10 @@ container Analyse: Using = "Eenheden;geography;modelparameters"
 			attribute<float32> avg_pop_dens                    := impl/sum_pop / impl/cnt_pop, Descr = "";
 			attribute<float32> frac_nietwest_pop               := impl/sum_pop_nietwest / impl/sum_pop, Descr = "";
 			
+			attribute<float32> avg_pop_dens_2012               := impl/sum_pop_2012 / impl/cnt_pop_2012, Descr = "";
+			attribute<float32> avg_pop_dens_2022               := impl/sum_pop_2022 / impl/cnt_pop_2022, Descr = "";
+			attribute<float32> P_change_popdens                := (avg_pop_dens_2022 - avg_pop_dens_2012) / avg_pop_dens_2012; 
+			
 			unit<uint8> impl := .
 			{
 				attribute<float32> sum_price                       := ='union_data(., '+AsList('sum(result/'+name+' ? sum_price_grid : 0f)',',')+')';
@@ -41,17 +45,17 @@ container Analyse: Using = "Eenheden;geography;modelparameters"
 				attribute<float32> sum_size                        := ='union_data(., '+AsList('sum(result/'+name+' ? sum_size_grid : 0f)',',')+')';
 				attribute<float32> cnt_size                        := ='union_data(., '+AsList('sum(result/'+name+' ? cnt_size_grid : 0f)',',')+')';
 				
-				attribute<float32> sum_woz                         := ='union_data(., '+AsList('sum(result/'+name+' ? /Brondata/CBS_vierkanten/Vierkanten/avg_woz_edit : 0f)',',')+')';
-				attribute<float32> cnt_woz                         := ='union_data(., '+AsList('sum_uint32(result/'+name+' && IsDefined(Brondata/CBS_vierkanten/Vierkanten/avg_woz_edit))[float32]',',')+')';
+				attribute<float32> sum_woz                         := ='union_data(., '+AsList('sum(result/'+name+' ? /Brondata/CBS_vierkanten/Vierkanten/y2018_dom/avg_woz_edit : 0f)',',')+')';
+				attribute<float32> cnt_woz                         := ='union_data(., '+AsList('sum_uint32(result/'+name+' && IsDefined(Brondata/CBS_vierkanten/Vierkanten/y2018_dom/avg_woz_edit))[float32]',',')+')';
 				
-				attribute<float32> sum_pop_working                 := ='union_data(., '+AsList('sum(result/'+name+' ? /Brondata/CBS_vierkanten/Vierkanten/pop_working : 0f)',',')+')';
-				attribute<float32> sum_pop                         := ='union_data(., '+AsList('sum(result/'+name+' ? /Brondata/CBS_vierkanten/Vierkanten/pop : 0f)',',')+')';
-				attribute<float32> cnt_pop                         := ='union_data(., '+AsList('sum_uint32(result/'+name+' && IsDefined(Brondata/CBS_vierkanten/Vierkanten/pop))[float32]',',')+')';
-				attribute<float32> sum_won                         := ='union_data(., '+AsList('sum(result/'+name+' ? /Brondata/CBS_vierkanten/Vierkanten/won : 0f)',',')+')';
-				attribute<float32> sum_won_prewar                  := ='union_data(., '+AsList('sum(result/'+name+' ? /Brondata/CBS_vierkanten/Vierkanten/won_prewar : 0f)',',')+')';
+				attribute<float32> sum_pop_working                 := ='union_data(., '+AsList('sum(result/'+name+' ? /Brondata/CBS_vierkanten/Vierkanten/y2018_dom/pop_working : 0f)',',')+')';
+				attribute<float32> sum_pop                         := ='union_data(., '+AsList('sum(result/'+name+' ? /Brondata/CBS_vierkanten/Vierkanten/y2018_dom/pop : 0f)',',')+')';
+				attribute<float32> cnt_pop                         := ='union_data(., '+AsList('sum_uint32(result/'+name+' && IsDefined(Brondata/CBS_vierkanten/Vierkanten/y2018_dom/pop))[float32]',',')+')';
+				attribute<float32> sum_won                         := ='union_data(., '+AsList('sum(result/'+name+' ? /Brondata/CBS_vierkanten/Vierkanten/y2018_dom/won : 0f)',',')+')';
+				attribute<float32> sum_won_prewar                  := ='union_data(., '+AsList('sum(result/'+name+' ? /Brondata/CBS_vierkanten/Vierkanten/y2018_dom/won_prewar : 0f)',',')+')';
 				
-				attribute<float32> sum_pop_west                    := ='union_data(., '+AsList('sum(result/'+name+' ? /Brondata/CBS_vierkanten/Vierkanten/pop_west : 0f)',',')+')';
-				attribute<float32> sum_pop_nietwest                := ='union_data(., '+AsList('sum(result/'+name+' ? /Brondata/CBS_vierkanten/Vierkanten/pop_nietwest : 0f)',',')+')';
+				attribute<float32> sum_pop_west                    := ='union_data(., '+AsList('sum(result/'+name+' ? /Brondata/CBS_vierkanten/Vierkanten/y2018_dom/pop_west : 0f)',',')+')';
+				attribute<float32> sum_pop_nietwest                := ='union_data(., '+AsList('sum(result/'+name+' ? /Brondata/CBS_vierkanten/Vierkanten/y2018_dom/pop_nietwest : 0f)',',')+')';
 				
 
 				
@@ -59,6 +63,11 @@ container Analyse: Using = "Eenheden;geography;modelparameters"
 				attribute<float32> cnt_price_grid (NL_grid/domain) := count(DiD/DiD_Prijzen/trans_year >= 2000s ? DiD/DiD_Prijzen/price : 0f, DiD/DiD_Prijzen/NL_grid_domain_rel)[float32];
 				attribute<float32> sum_size_grid  (NL_grid/domain) := sum(DiD/DiD_Prijzen/trans_year >= 2000s ? DiD/DiD_Prijzen/size : 0f, DiD/DiD_Prijzen/NL_grid_domain_rel);
 				attribute<float32> cnt_size_grid  (NL_grid/domain) := count(DiD/DiD_Prijzen/trans_year >= 2000s ? DiD/DiD_Prijzen/size : 0f, DiD/DiD_Prijzen/NL_grid_domain_rel)[float32];
+				
+				attribute<float32> sum_pop_2012                    := ='union_data(., '+AsList('sum(result/'+name+' ? /Brondata/CBS_vierkanten/Vierkanten/y2012_dom/pop : 0f)',',')+')';
+				attribute<float32> cnt_pop_2012                    := ='union_data(., '+AsList('sum_uint32(result/'+name+' && IsDefined(Brondata/CBS_vierkanten/Vierkanten/y2012_dom/pop))[float32]',',')+')';
+				attribute<float32> sum_pop_2022                    := ='union_data(., '+AsList('sum(result/'+name+' ? /Brondata/CBS_vierkanten/Vierkanten/y2022_dom/pop : 0f)',',')+')';
+				attribute<float32> cnt_pop_2022                    := ='union_data(., '+AsList('sum_uint32(result/'+name+' && IsDefined(Brondata/CBS_vierkanten/Vierkanten/y2022_dom/pop))[float32]',',')+')';
 			}
 			
 			container V := for_each_nedv(name, String(ID(.))+'[..]', void, .);

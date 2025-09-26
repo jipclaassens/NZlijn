@@ -1,10 +1,11 @@
 capture log close
 cd "D:\OneDrive\OneDrive - Objectvision\VU\Projects\202110-NZpaper\" //LAPTOP
 cd "C:\Users\Jip Claassens\OneDrive - Objectvision\VU\Projects\202110-NZpaper" //OVSRV06
+cd "C:\Users\JipClaassens\OneDrive - Objectvision\VU\Projects\202110-NZpaper" //OVSRV08
 cd "C:\Users\jcs220\OneDrive - Objectvision\VU\Projects\202110-NZpaper" //Azure 
 log using temp\nzlijn_did_prijzen_log.txt, text replace
 
-global filedate = 20241003 // 20240926  20240530 20241003  20241107
+global filedate = 20250925 // 20240926  20240530 20241003  20241107
 global acc_range = 30
 global TAsize = 12
 global CAsize = 24
@@ -25,14 +26,14 @@ drop geometry* nl_grid_domain*
 
 rename v5 lon
 
-local replaceNullList = "bouwjaar bouwjaar_bag buurt_rel"
+local replaceNullList = "bouwjaar bouwjaar_bag buurt_rel crimeindex schoolquality"
 foreach x of local replaceNullList{
 	replace `x' = "" if `x' == "null"
 	destring `x', replace
 }
 
 rename station_stationcentraal_reistijd station_centraal_reistijds
-rename station_stationzuid_reistijds station_zuid_reistijds
+rename station_stationzuid_reistijd station_zuid_reistijds
 
 // replace lotsize = 1 if lotsize < 1
 // g lnlotsize = ln(lotsize) if lotsize > 1
@@ -96,7 +97,7 @@ g trans_date = date(trans_year_month, "YM")
 
 local stations "noord noorderpark centraal rokin vijzelgracht depijp europaplein zuid"
 foreach s of local stations{ 
-	g tt_`s'_min = station_`s'_reistijds / 60
+	g tt_`s'_min = station_`s'_reistijd / 60
 }
 
 replace postcode = "" if postcode == "'1000'"
@@ -202,12 +203,18 @@ foreach s of local stations{
 		quietly reghdfe nrooms    if ca==1, absorb(buurt_rel ym) resid
 		predict double nrooms_w if e(sample), resid
 
+		quietly reghdfe crimeindex    if ca==1, absorb(buurt_rel ym) resid
+		predict double crimeindex_w if e(sample), resid
+
+		quietly reghdfe schoolquality    if ca==1, absorb(buurt_rel ym) resid
+		predict double schoolquality_w if e(sample), resid
+
 		* VIF op within-varianten
-		quietly reg y_w did_w c.lnsize_w c.nrooms_w if ca==1
+		quietly reg y_w did_w c.lnsize_w c.nrooms_w c.crimeindex_w c.schoolquality_w if ca==1
 		estat vif
 
 		* Aux: R²(did | X + FE)  → VIF_did
-		quietly reghdfe did c.lnsize_w c.nrooms_w d_maintgood b1.building_type b1.construction_period if ca==1, absorb(buurt_rel ym)
+		quietly reghdfe did c.lnsize_w c.nrooms_w d_maintgood b1.building_type b1.construction_period c.crimeindex_w c.schoolquality_w if ca==1, absorb(buurt_rel ym)
 
 		* Robuust de juiste R² ophalen (within-R² als die bestaat)
 		scalar R2w = .
@@ -225,10 +232,10 @@ foreach s of local stations{
 	// 	VIF > 10 (≈ R2>0.90) → probleem: SE's zwellen sterk (SE ≈ sqrt(VIF)​ keer groter).
 	// 	VIF > 20 (≈ R2>0.95) → zeer zwak geïdentificeerd.
 					
-		areg lnprice treated did lnsize nrooms d_maintgood i.building_type b1.construction_period i.ym if ca == 1, absorb(buurt_rel) vce(cluster pc6_code) //post weglaten, want perfecte multicollineartiy met i.ym. Dus voegt niks toe.
+		areg lnprice i.treated i.did c.lnsize c.nrooms c.crimeindex c.schoolquality i.d_maintgood i.building_type b1.construction_period i.ym if ca == 1, absorb(buurt_rel) vce(cluster pc6_code) //post weglaten, want perfecte multicollineartiy met i.ym. Dus voegt niks toe.
 		outreg2 using output/prijzen/did_windows_indiv_AccBased_${acc_range}min_buurt_${TAsize}_${CAsize}min_${filedate}_vce_sept25_2, excel cttop (`s', `d') label dec(3) addtext (Year FE, Yes, Month FE, Yes, Neighbourhood FE, Yes,"VIF_did (within)","`vif_str'","Within R2(did|X+FE)","`r2w_str'") 
 
-		drop treated post did ca y_w did_w lnsize_w nrooms_w _reghd* 
+		drop treated post did ca y_w did_w lnsize_w nrooms_w crimeindex_w schoolquality_w _reghd* 
 	}
 }
 

@@ -1,0 +1,26 @@
+attribute<.>       NL_grid_domain_rel (NL_grid/domain) := poly2grid(geometry, NL_grid/domain);
+
+attribute<float32> avg_woz_src     (NL_grid/domain) := gemiddelde_woz_waarde_woning[NL_grid_domain_rel][float32];
+attribute<float32> avg_woz         (NL_grid/domain) := avg_woz_src == -99997f ? null_f : avg_woz_src * 1000f;
+attribute<float32> avg_woz_edit    (NL_grid/domain) := avg_woz <= 100000f ? null_f : avg_woz;
+ 
+attribute<float32> pop_working_src (NL_grid/domain) := (aantal_inwoners_15_tot_25_jaar + aantal_inwoners_25_tot_45_jaar + aantal_inwoners_45_tot_65_jaar)[NL_grid_domain_rel][float32];
+attribute<float32> pop_working     (NL_grid/domain) := pop_working_src < 0f ? null_f : pop_working_src;
+
+attribute<float32> pop_src         (NL_grid/domain) := aantal_inwoners[NL_grid_domain_rel][float32];
+attribute<float32> pop             (NL_grid/domain) := pop_src < 0f ? null_f : pop_src;
+
+attribute<float32> won_src         (NL_grid/domain) := aantal_woningen[NL_grid_domain_rel][float32];
+attribute<float32> won             (NL_grid/domain) := won_src < 0f ? null_f : won_src;
+
+attribute<float32> won_prewar_src  (NL_grid/domain) := aantal_woningen_bouwjaar_voor_1945[NL_grid_domain_rel][float32];
+attribute<float32> won_prewar      (NL_grid/domain) := won_prewar_src < 0f ? null_f : won_prewar_src;
+
+attribute<float32> p_nl_src        (NL_grid/domain) := percentage_nederlandse_achtergrond[NL_grid_domain_rel][float32];
+attribute<float32> p_west_src      (NL_grid/domain) := percentage_westerse_migr_achtergr[NL_grid_domain_rel][float32];
+attribute<float32> p_nietwest_src  (NL_grid/domain) := percentage_niet_westerse_migr_achtergr[NL_grid_domain_rel][float32];
+attribute<float32> p_nl            (NL_grid/domain) := p_nl_src < 0f ? 0f : p_nl_src / 100f;
+attribute<float32> p_west          (NL_grid/domain) := p_west_src < 0f ? 0f : p_west_src / 100f;
+attribute<float32> p_nietwest      (NL_grid/domain) := p_nietwest_src < 0f ? 0f : p_nietwest_src / 100f;
+attribute<float32> pop_west        (NL_grid/domain) := p_west + p_nl * pop;
+attribute<float32> pop_nietwest    (NL_grid/domain) := p_nietwest * pop;
