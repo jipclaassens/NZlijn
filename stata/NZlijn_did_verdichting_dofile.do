@@ -1,6 +1,9 @@
 capture log close
 cd "D:\OneDrive\OneDrive - Objectvision\VU\Projects\202110-NZpaper\"
 cd "C:\Users\Jip Claassens\OneDrive - Objectvision\VU\Projects\202110-NZpaper\"
+cd "C:\Users\JipClaassens\OneDrive - Objectvision\VU\Projects\202110-NZpaper" //OVSRV08
+
+
 log using Temp/nzlijn_did_verdichting_log.txt, text replace
 
 global filedate = 20240924
@@ -94,7 +97,8 @@ rename station_stationzuid_reistijds station_zuid_reistijds
 
 g lnwon = ln(won)
 
-local stations "noord noorderpark centraal rokin vijzelgracht depijp europaplein zuid"
+// local stations "noord noorderpark centraal rokin vijzelgracht depijp europaplein zuid"
+local stations "noord noorderpark vijzelgracht depijp europaplein"
 foreach s of local stations{ 
 	g tt_`s'_min = station_`s'_reistijd / 60
 }
@@ -137,14 +141,16 @@ g trans_date = date(trans_year_month, "YM")
 
 g all_ta = 0
 g all_ca = 0
-local stations "noord noorderpark centraal rokin vijzelgracht depijp europaplein zuid"
+// local stations "noord noorderpark centraal rokin vijzelgracht depijp europaplein zuid"
+local stations "noord noorderpark vijzelgracht depijp europaplein"
 foreach s of local stations{ 
 	replace all_ta = 1 if `s'_ta == 1
 	replace all_ca = 1 if `s'_ca == 1
 }
 
 
-local stations "noord noorderpark centraal rokin vijzelgracht depijp europaplein zuid all"
+// local stations "noord noorderpark centraal rokin vijzelgracht depijp europaplein zuid all"
+local stations "noord noorderpark vijzelgracht depijp europaplein all"
 // local stations "noord"
 foreach s of local stations{ 
 // 	local dates "22042003 01082009 08072016 21072018"
@@ -190,9 +196,9 @@ foreach s of local stations{
 	// 	VIF > 5 (≈ R2>0.80) → opletten; collineariteit merkbaar.
 	// 	VIF > 10 (≈ R2>0.90) → probleem: SE's zwellen sterk (SE ≈ sqrt(VIF)​ keer groter).
 	// 	VIF > 20 (≈ R2>0.95) → zeer zwak geïdentificeerd.
-	
-		areg c.lnwon i.did i.treated i.year if ca == 1, absorb(buurt_rel) vce(cluster identificatie)
-		outreg2 using output/verdichting/did_windows_indiv_AccBased_${acc_range}min_buurt_${TAsize}_${CAsize}min_${filedate}_vce_sept25, excel cttop (`s', `d') label dec(3) addtext (Year FE, Yes, Neighbourhood FE, Yes,"VIF_did (within)","`vif_str'","Within R2(did|X+FE)","`r2w_str'") 
+		
+		reghdfe  c.lnwon i.did i.treated if ca == 1, absorb(year buurt_rel) vce(cluster identificatie) 				
+		outreg2 using output/verdichting/did_windows_indiv_AccBased_${acc_range}min_buurt_${TAsize}_${CAsize}min_${filedate}_vce_okt25, excel cttop (`s', `d') label dec(3) addtext (Year FE, Yes, Neighbourhood FE, Yes,"VIF_did (within)","`vif_str'","Within R2(did|X+FE)","`r2w_str'") 
 		
 		drop treated post did ca y_w did_w _reghd* 
 	}

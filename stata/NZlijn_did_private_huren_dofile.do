@@ -1,6 +1,7 @@
 clear
 cd "D:\OneDrive\OneDrive - Objectvision\VU\Projects\202110-NZpaper" //laptop
 cd "C:\Users\Jip Claassens\OneDrive - Objectvision\VU\Projects\202110-NZpaper" //OVSRV06
+cd "C:\Users\JipClaassens\OneDrive - Objectvision\VU\Projects\202110-NZpaper" //OVSRV08
 
 // cd "C:\Users\Jip Claassens\OneDrive - Objectvision\VU\Projects\202110-NZpaper" //ovsrv6
 
@@ -238,7 +239,8 @@ g all_ta = 0
 g all_ca = 0
 
 
-local stations "noord noorderpark centraal rokin vijzelgracht depijp europaplein zuid all"
+// local stations "noord noorderpark centraal rokin vijzelgracht depijp europaplein zuid all"
+local stations "noord noorderpark vijzelgracht depijp europaplein"
 foreach s of local stations{ 
 	replace all_ta = 1 if `s'_ta == 1
 	replace all_ca = 1 if `s'_ca == 1
@@ -249,7 +251,8 @@ gen ym = mofd(trans_date)
 format ym %tm
 
 // met pc6 SE clustering
-local stations "noord noorderpark centraal rokin vijzelgracht depijp europaplein zuid all"  
+// local stations "noord noorderpark centraal rokin vijzelgracht depijp europaplein zuid all"  
+local stations "noord noorderpark vijzelgracht depijp europaplein all"  
 // local stations "noord"  
 foreach s of local stations{ 
 // 	local dates "22042003 01082009 08072016 21072018"
@@ -301,9 +304,9 @@ foreach s of local stations{
 	// 	VIF > 5 (≈ R2>0.80) → opletten; collineariteit merkbaar.
 	// 	VIF > 10 (≈ R2>0.90) → probleem: SE's zwellen sterk (SE ≈ sqrt(VIF)​ keer groter).
 	// 	VIF > 20 (≈ R2>0.95) → zeer zwak geïdentificeerd.
-					
-		areg c.lnhp i.did i.treated c.lnsize c.nkamers i.app i.kaleverhuur i.nieuwbouw b1.construction_period i.ym if ca == 1, absorb(buurt_22_rel) vce(cluster pc6_code)
-		outreg2 using Output\PrivateRents\did_rents_vce_sept25, excel cttop (`s', `d') label dec(3) addtext (Year-Month FE, Yes, Neighbourhood FE, Yes,"VIF_did (within)","`vif_str'","Within R2(did|X+FE)","`r2w_str'") 
+		
+		reghdfe c.lnhp i.did i.treated c.lnsize c.nkamers i.app i.kaleverhuur i.nieuwbouw b1.construction_period if ca == 1, absorb(ym buurt_22_rel) vce(cluster pc6_code) 				
+		outreg2 using Output\PrivateRents\did_rents_vce_okt25_reghfe, excel cttop (`s', `d') label dec(3) addtext (Year-Month FE, Yes, Neighbourhood FE, Yes,"VIF_did (within)","`vif_str'","Within R2(did|X+FE)","`r2w_str'") 
 		
 		drop treated post did ca y_w did_w lnsize_w nrooms_w _reghd* 
 	}	  

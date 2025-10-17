@@ -102,7 +102,8 @@ drop if Gem_Wachttijd < 1
 g all_ta = 0
 g all_ca = 0
 
-local stations "noord noorderpark centraal rokin vijzelgracht depijp europaplein zuid all"
+// local stations "noord noorderpark centraal rokin vijzelgracht depijp europaplein zuid all"
+local stations "noord noorderpark vijzelgracht depijp europaplein all"
 foreach s of local stations{ 
 	replace all_ta = 1 if `s'_ta == 1
 	replace all_ca = 1 if `s'_ca == 1
@@ -143,7 +144,8 @@ encode construction_period_label, generate(construction_period)
 	
 // b1 stelt "Construction after 1998" (eerste categorie van construction_period) in als referentiecategorie
 // incl test voor collineariteit
-local stations "noord noorderpark centraal rokin vijzelgracht depijp europaplein zuid all"
+// local stations "noord noorderpark centraal rokin vijzelgracht depijp europaplein zuid all"
+local stations "noord noorderpark vijzelgracht depijp europaplein all"
 // local stations "rokin"
 foreach s of local stations{ 
 	
@@ -189,10 +191,10 @@ foreach s of local stations{
 // 	VIF > 5 (≈ R2>0.80) → opletten; collineariteit merkbaar.
 // 	VIF > 10 (≈ R2>0.90) → probleem: SE's zwellen sterk (SE ≈ sqrt(VIF)​ keer groter).
 // 	VIF > 20 (≈ R2>0.95) → zeer zwak geïdentificeerd.
-		
-	areg Gem_Wachttijd c.avg_opp_app b1.construction_period i.jaar i.treated did if ca == 1,r absorb(buurt_22_rel) 
 	
-	outreg2 using "output/wachttijden/did_wachttijden_ext_sept25", excel cttop("`s'") label dec(3) addtext("Property char.","Yes","Year FE","Yes","Neighbourhood FE","Yes","VIF_did (within)","`vif_str'","Within R2(did|X+FE)","`r2w_str'")
+// 	areg Gem_Wachttijd i.did i.treated c.avg_opp_app b1.construction_period i.jaar if ca == 1, absorb(buurt_22_rel)				
+	reghdfe Gem_Wachttijd i.did i.treated c.avg_opp_app b1.construction_period if ca == 1, absorb(jaar buurt_22_rel)				
+	outreg2 using "output/wachttijden/did_wachttijden_ext_okt25_areg", excel cttop("`s'") label dec(3) addtext("Property char.","Yes","Year FE","Yes","Neighbourhood FE","Yes","VIF_did (within)","`vif_str'","Within R2(did|X+FE)","`r2w_str'")
 
 	drop treated post did ca y_w did_w avg_opp_app_w _reghd* 
 }
