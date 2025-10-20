@@ -41,10 +41,63 @@ container DiD_Prijzen :=
 	// attribute<uint2>          d_listed                             (NVM_AMS) := NVM_AMS/d_listed;
 	
 	attribute<uint32>         CrimeIndex                           (NVM_AMS) := /Brondata/Regios/Buurt/CI_2021[buurt_rel];
-	attribute<uint32>         SchoolQuality                        (NVM_AMS) := uint32(/Brondata/Schoolkwaliteit/result/Uitgesmeerd)[NL_grid_domain_rel];
+	attribute<uint32>         SchoolQuality                        (NVM_AMS) := switch(
+																				 case(trans_year <= 2010[jaar], uint32(/Brondata/Schoolkwaliteit/Toetsscores/PerPeiljaar/Y2010/Result/Uitgesmeerd)[NL_grid_domain_rel])
+																				 ,case(trans_year == 2011[jaar], uint32(/Brondata/Schoolkwaliteit/Toetsscores/PerPeiljaar/Y2011/Result/Uitgesmeerd)[NL_grid_domain_rel])
+																				 ,case(trans_year == 2012[jaar], uint32(/Brondata/Schoolkwaliteit/Toetsscores/PerPeiljaar/Y2012/Result/Uitgesmeerd)[NL_grid_domain_rel])
+																				 ,case(trans_year == 2013[jaar], uint32(/Brondata/Schoolkwaliteit/Toetsscores/PerPeiljaar/Y2013/Result/Uitgesmeerd)[NL_grid_domain_rel])
+																				 ,case(trans_year == 2014[jaar], uint32(/Brondata/Schoolkwaliteit/Toetsscores/PerPeiljaar/Y2014/Result/Uitgesmeerd)[NL_grid_domain_rel])
+																				 ,case(trans_year == 2015[jaar], uint32(/Brondata/Schoolkwaliteit/Toetsscores/PerPeiljaar/Y2015/Result/Uitgesmeerd)[NL_grid_domain_rel])
+																				 ,case(trans_year == 2016[jaar], uint32(/Brondata/Schoolkwaliteit/Toetsscores/PerPeiljaar/Y2016/Result/Uitgesmeerd)[NL_grid_domain_rel])
+																				 ,case(trans_year == 2017[jaar], uint32(/Brondata/Schoolkwaliteit/Toetsscores/PerPeiljaar/Y2017/Result/Uitgesmeerd)[NL_grid_domain_rel])
+																				 ,case(trans_year == 2018[jaar], uint32(/Brondata/Schoolkwaliteit/Toetsscores/PerPeiljaar/Y2018/Result/Uitgesmeerd)[NL_grid_domain_rel])
+																				 ,case(trans_year == 2019[jaar], uint32(/Brondata/Schoolkwaliteit/Toetsscores/PerPeiljaar/Y2018/Result/Uitgesmeerd)[NL_grid_domain_rel]) //er zijn geen scores voor 2019
+																				 ,case(trans_year == 2020[jaar], uint32(/Brondata/Schoolkwaliteit/Toetsscores/PerPeiljaar/Y2020/Result/Uitgesmeerd)[NL_grid_domain_rel])
+																				 ,case(trans_year == 2021[jaar], uint32(/Brondata/Schoolkwaliteit/Toetsscores/PerPeiljaar/Y2021/Result/Uitgesmeerd)[NL_grid_domain_rel])
+																				 ,case(trans_year == 2022[jaar], uint32(/Brondata/Schoolkwaliteit/Toetsscores/PerPeiljaar/Y2022/Result/Uitgesmeerd)[NL_grid_domain_rel])
+																				 ,case(trans_year == 2023[jaar], uint32(/Brondata/Schoolkwaliteit/Toetsscores/PerPeiljaar/Y2023/Result/Uitgesmeerd)[NL_grid_domain_rel])
+																				 ,null_u);
+	attribute<uint32>         CountWoning                          (NVM_AMS) := switch(
+																				 case(trans_year <= 2012[jaar], uint32(/Brondata/BAG/Snapshots/VBOs/Y201201/vbo/count_doelen/woon)[NL_grid_domain_rel])
+																				 ,case(trans_year == 2013[jaar], uint32(Brondata/BAG/Snapshots/VBOs/Y201301/vbo/count_doelen/woon)[NL_grid_domain_rel])
+																				 ,case(trans_year == 2014[jaar], uint32(Brondata/BAG/Snapshots/VBOs/Y201401/vbo/count_doelen/woon)[NL_grid_domain_rel])
+																				 ,case(trans_year == 2015[jaar], uint32(Brondata/BAG/Snapshots/VBOs/Y201501/vbo/count_doelen/woon)[NL_grid_domain_rel])
+																				 ,case(trans_year == 2016[jaar], uint32(Brondata/BAG/Snapshots/VBOs/Y201601/vbo/count_doelen/woon)[NL_grid_domain_rel])
+																				 ,case(trans_year == 2017[jaar], uint32(Brondata/BAG/Snapshots/VBOs/Y201701/vbo/count_doelen/woon)[NL_grid_domain_rel])
+																				 ,case(trans_year == 2018[jaar], uint32(Brondata/BAG/Snapshots/VBOs/Y201801/vbo/count_doelen/woon)[NL_grid_domain_rel])
+																				 ,case(trans_year == 2019[jaar], uint32(Brondata/BAG/Snapshots/VBOs/Y201901/vbo/count_doelen/woon)[NL_grid_domain_rel])
+																				 ,case(trans_year == 2020[jaar], uint32(Brondata/BAG/Snapshots/VBOs/Y202001/vbo/count_doelen/woon)[NL_grid_domain_rel])
+																				 ,case(trans_year == 2021[jaar], uint32(Brondata/BAG/Snapshots/VBOs/Y202101/vbo/count_doelen/woon)[NL_grid_domain_rel])
+																				 ,case(trans_year == 2022[jaar], uint32(Brondata/BAG/Snapshots/VBOs/Y202201/vbo/count_doelen/woon)[NL_grid_domain_rel])
+																				 ,case(trans_year == 2023[jaar], uint32(Brondata/BAG/Snapshots/VBOs/Y202301/vbo/count_doelen/woon)[NL_grid_domain_rel])
+																				 ,null_u);
+	attribute<uint32>         CountPop_NonWestern                  (NVM_AMS) := switch(
+																				 case(trans_year <= 2015[jaar], uint32(Brondata/CBS_vierkanten/Vierkanten/PerJaar/Y2015/domain/pop_nietwest)[NL_grid_domain_rel])
+																				 ,case(trans_year == 2016[jaar], uint32(Brondata/CBS_vierkanten/Vierkanten/PerJaar/Y2016/domain/pop_nietwest)[NL_grid_domain_rel])
+																				 ,case(trans_year == 2017[jaar], uint32(Brondata/CBS_vierkanten/Vierkanten/PerJaar/Y2017/domain/pop_nietwest)[NL_grid_domain_rel])
+																				 ,case(trans_year == 2018[jaar], uint32(Brondata/CBS_vierkanten/Vierkanten/PerJaar/Y2018/domain/pop_nietwest)[NL_grid_domain_rel])
+																				 ,case(trans_year == 2019[jaar], uint32(Brondata/CBS_vierkanten/Vierkanten/PerJaar/Y2019/domain/pop_nietwest)[NL_grid_domain_rel])
+																				 ,case(trans_year == 2020[jaar], uint32(Brondata/CBS_vierkanten/Vierkanten/PerJaar/Y2020/domain/pop_nietwest)[NL_grid_domain_rel])
+																				 ,case(trans_year == 2021[jaar], uint32(Brondata/CBS_vierkanten/Vierkanten/PerJaar/Y2021/domain/pop_nietwest)[NL_grid_domain_rel])
+																				 ,case(trans_year == 2022[jaar], uint32(Brondata/CBS_vierkanten/Vierkanten/PerJaar/Y2021/domain/pop_nietwest)[NL_grid_domain_rel]) //zit er niet in dat jaar.
+																				 ,case(trans_year == 2023[jaar], uint32(Brondata/CBS_vierkanten/Vierkanten/PerJaar/Y2021/domain/pop_nietwest)[NL_grid_domain_rel]) //zit er niet in dat jaar.
+																				 ,null_u);
+	attribute<uint32>         CountPop_WorkingAge                  (NVM_AMS) := switch(
+																				 case(trans_year <= 2015[jaar], uint32(Brondata/CBS_vierkanten/Vierkanten/PerJaar/Y2015/domain/pop_working)[NL_grid_domain_rel])
+																				 ,case(trans_year == 2016[jaar], uint32(Brondata/CBS_vierkanten/Vierkanten/PerJaar/Y2016/domain/pop_working)[NL_grid_domain_rel])
+																				 ,case(trans_year == 2017[jaar], uint32(Brondata/CBS_vierkanten/Vierkanten/PerJaar/Y2017/domain/pop_working)[NL_grid_domain_rel])
+																				 ,case(trans_year == 2018[jaar], uint32(Brondata/CBS_vierkanten/Vierkanten/PerJaar/Y2018/domain/pop_working)[NL_grid_domain_rel])
+																				 ,case(trans_year == 2019[jaar], uint32(Brondata/CBS_vierkanten/Vierkanten/PerJaar/Y2019/domain/pop_working)[NL_grid_domain_rel])
+																				 ,case(trans_year == 2020[jaar], uint32(Brondata/CBS_vierkanten/Vierkanten/PerJaar/Y2020/domain/pop_working)[NL_grid_domain_rel])
+																				 ,case(trans_year == 2021[jaar], uint32(Brondata/CBS_vierkanten/Vierkanten/PerJaar/Y2021/domain/pop_working)[NL_grid_domain_rel])
+																				 ,case(trans_year == 2022[jaar], uint32(Brondata/CBS_vierkanten/Vierkanten/PerJaar/Y2022/domain/pop_working)[NL_grid_domain_rel])
+																				 ,case(trans_year == 2023[jaar], uint32(Brondata/CBS_vierkanten/Vierkanten/PerJaar/Y2023/domain/pop_working)[NL_grid_domain_rel])
+																				 ,null_u);
+
 	
 	attribute<string>         gemeente_name                        (NVM_AMS) := NVM_AMS/gem_naam;
 	attribute<uint32>         buurt_rel                            (NVM_AMS) := NVM_AMS/buurt_rel;
+	attribute<uint32>         wijk_rel                             (NVM_AMS) := NVM_AMS/wijk_rel;
 	// attribute<uint32>         pc6_rel                              (NVM_AMS) := NVM_AMS/pc6_rel;
 	
 	attribute<uint2>          HasEverHadAWoning                    (NVM_AMS) := /Analyse/HasWoning/HasWoning[NL_grid_domain_rel][uint2];

@@ -159,9 +159,10 @@ container NVM: using = "eenheden"
 		attribute<uint32> CriminaliteitsIndex_2021  := /Brondata/Regios/Buurt/CI_2021[buurt_rel];
 		attribute<uint32> CriminaliteitsIndex_2022  := /Brondata/Regios/Buurt/CI_2022[buurt_rel];
 		
-		attribute<string>           gem_naam         := Brondata/Regios/gemeente/name[gem_rel];
+		attribute<string>                             gem_naam         := Brondata/Regios/gemeente/name[gem_rel];
 		attribute<Brondata/Regios/gemeente>           gem_rel          := point_in_polygon(geometry, /Brondata/Regios/gemeente/Geometry);
-		attribute<Brondata/Regios/buurt>           buurt_rel        := point_in_polygon(geometry, /Brondata/Regios/buurt/Geometry);
+		attribute<Brondata/Regios/wijk>               wijk_rel         := point_in_polygon(geometry, /Brondata/Regios/wijk/Geometry);
+		attribute<Brondata/Regios/buurt>              buurt_rel        := point_in_polygon(geometry, /Brondata/Regios/buurt/Geometry);
 	}
 	
 	// unit<uint32> Read_Data_with_residuals 

@@ -1,6 +1,6 @@
 container Regios
 {
-	parameter<string> Regio_jaar := '2024'; //analyse op 2022 gedaan.
+	parameter<string> Regio_jaar := '2022'; //analyse op 2022 gedaan.
 
 	unit<uint32> Gebiedsindelingen_jaren := range(uint32, 2000, 2025)
 	{
