@@ -192,8 +192,8 @@ local stations "all"
 // local stations "noord noorderpark centraal rokin vijzelgracht depijp europaplein zuid all"
 // local stations "noord noorderpark vijzelgracht depijp europaplein all"
 foreach s of local stations{ 
-	local dates "22042003 01082009 08072016 21072018 21072020"
-// 	local dates "21072018"
+// 	local dates "22042003 01082009 08072016 21072018 21072020"
+	local dates "21072018"
 	foreach d of local dates{
 		
 		display "================================"
@@ -203,9 +203,10 @@ foreach s of local stations{
 		g treated = `s'_ta
 		g post = trans_date >= td(`d')
 		g did = post * treated
-		
+
 		g ca = `s'_ca + `s'_ta
 		
+/*	
 // 		Within-residuals t.o.v. buurt + jaar + maand. Dummy vars hoeven niet mee te doen.
 		quietly reghdfe lnprice if ca==1, absorb(buurt_rel ym) resid
 		predict double y_w if e(sample), resid
@@ -247,12 +248,14 @@ foreach s of local stations{
 // 		VIF > 5 (≈ R2>0.80) → opletten; collineariteit merkbaar.
 // 		VIF > 10 (≈ R2>0.90) → probleem: SE's zwellen sterk (SE ≈ sqrt(VIF)​ keer groter).
 // 		VIF > 20 (≈ R2>0.95) → zeer zwak geïdentificeerd.
-					
-		reghdfe lnprice i.treated i.did c.lnsize c.nrooms i.d_maintgood c.schoolquality c.countwoning i.building_type b1.construction_period if ca == 1, absorb(ym cell_id) vce(cluster pc6_code) //post weglaten, want perfecte multicollineartiy met i.ym. Dus voegt niks toe. Samen met cell_id valt treated natuurlijk ook weg.
-		outreg2 using output/prijzen/did_windows_indiv_AccBased_${acc_range}min_buurt_${TAsize}_${CAsize}min_${filedate}_vce_cellFE_all, excel cttop (`s', `d') label dec(3) addtext (Year-Month FE, Yes, Cell FE, Yes, "VIF_did (within)","`vif_str'","Within R2(did|X+FE)","`r2w_str'") 
+*/
+				
+// 		reghdfe lnprice i.treated i.did c.lnsize c.nrooms i.d_maintgood c.schoolquality c.countwoning i.building_type b1.construction_period if ca == 1, absorb(ym cell_id) vce(cluster pc6_code) //post weglaten, want perfecte multicollineartiy met i.ym. Dus voegt niks toe. Samen met cell_id valt treated natuurlijk ook weg.
+		reghdfe lnprice i.treated i.did#c.diff_spits_abs_30min c.lnsize c.nrooms i.d_maintgood c.schoolquality c.countwoning i.building_type b1.construction_period if ca == 1, absorb(ym buurt_rel) vce(cluster pc6_code) //post weglaten, want perfecte multicollineartiy met i.ym. Dus voegt niks toe. Samen met cell_id valt treated natuurlijk ook weg.
+// 		outreg2 using output/prijzen/did_windows_indiv_AccBased_${acc_range}min_buurt_${TAsize}_${CAsize}min_${filedate}_vce_cellFE_all, excel cttop (`s', `d') label dec(3) addtext (Year-Month FE, Yes, Cell FE, Yes, "VIF_did (within)","`vif_str'","Within R2(did|X+FE)","`r2w_str'") 
 
-		drop treated post did ca y_w did_w lnsize_w nrooms_w countwoning_w schoolquality_w _reghd* 
-// 		drop treated post did ca  
+// 		drop treated post did ca y_w did_w lnsize_w nrooms_w countwoning_w schoolquality_w _reghd* 
+		drop treated post did ca  
 	}
 }
 
